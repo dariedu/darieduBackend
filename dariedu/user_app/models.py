@@ -16,9 +16,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
 
-    rating = models.ForeignKey('Rating', on_delete=models.CASCADE)
+    rating = models.ForeignKey('Rating', on_delete=models.CASCADE, blank=True, null=True)
 
-    city = models.ForeignKey('address_app.City', on_delete=models.CASCADE)
+    city = models.ForeignKey('address_app.City', on_delete=models.CASCADE, blank=True, null=True)
 
     USERNAME_FIELD = 'tg_id'
     REQUIRED_FIELDS = []
