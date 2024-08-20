@@ -25,8 +25,8 @@ class Task(models.Model):
     is_active = models.BooleanField()  # TODO: default: true of false ?
 
     city = models.ForeignKey(City, on_delete=models.CASCADE)
-    curator = models.ForeignKey(User, on_delete=models.CASCADE)
-    volunteer = models.ForeignKey(User, on_delete=models.CASCADE)
+    curator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_curator')
+    volunteer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_volunteer')
 
     def __str__(self):
         return self.name

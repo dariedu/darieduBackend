@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
 from .managers import UserManager
-from address_app.models import City
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -18,7 +17,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
 
     rating = models.ForeignKey('Rating', on_delete=models.CASCADE)
-    city = models.ForeignKey(City, on_delete=models.CASCADE)
+
+    city = models.ForeignKey('address_app.City', on_delete=models.CASCADE)
 
     USERNAME_FIELD = 'tg_id'
     REQUIRED_FIELDS = []

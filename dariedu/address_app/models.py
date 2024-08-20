@@ -29,7 +29,7 @@ class Address(models.Model):
     address = models.CharField(max_length=255)
     link = models.URLField(max_length=255)
 
-    location = models.ForeignKey(Location, on_delete=models.CASCADE)
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='address_location')
     route_sheet = models.ForeignKey(RouteSheet, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -41,7 +41,7 @@ class Beneficiar(models.Model):
     full_name = models.CharField(max_length=255)
     comment = models.TextField(blank=True, null=True)
 
-    address = models.ForeignKey(Address, on_delete=models.CASCADE)
+    address = models.ForeignKey(Address, on_delete=models.CASCADE, related_name='beneficiar_address')
 
     def __str__(self):
         return self.full_name
