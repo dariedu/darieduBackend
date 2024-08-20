@@ -31,6 +31,8 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    'localhost',
+    '0.0.0.0',
     '127.0.0.1',
     '192.168.0.12',
     '95.163.185.57',
@@ -46,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
 ]
 
 MIDDLEWARE = [

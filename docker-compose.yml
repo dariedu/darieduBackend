@@ -1,0 +1,43 @@
+#version: '3.10'
+
+services:
+  dariedu-server:
+    build: ./dariedu
+    command: bash -c "
+      python manage.py migrate &&
+      python manage.py collectstatic --noinput &&
+      gunicorn dariedu.wsgi:application --bind 0.0.0.0:8000 --reload"
+    env_file:
+      - .env
+    volumes:
+      - ./dariedu:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://postgres:$Staff2110.@127.0.0.1:5433/dariedu
+#      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+    networks:
+      - mynetwork
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=dariedu
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Staff2110.
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/pg_data
+    networks:
+      - mynetwork
+
+volumes:
+  pg_data: null
+
+networks:
+  mynetwork:
+    external: true
+
