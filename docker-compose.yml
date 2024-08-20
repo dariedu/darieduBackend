@@ -16,7 +16,7 @@ services:
     depends_on:
       - db
     environment:
-      - DATABASE_URL=postgresql://postgres:$Staff2110.@127.0.0.1:5433/dariedu
+      - DATABASE_URL=postgresql://postgres:$Staff2110.@db:5433/dariedu
 #      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
     networks:
       - mynetwork
