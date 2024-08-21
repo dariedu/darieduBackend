@@ -24,7 +24,7 @@ ENV DJANGO_SETTINGS_MODULE=dariedu.settings
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
 
-# RUN python manage.py collectstatic --noinput
+RUN python manage.py collectstatic --noinput
 
 
 CMD ["gunicorn", "dariedu.wsgi:application", "--bind", "0.0.0.0:8000"]
