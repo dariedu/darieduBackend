@@ -38,7 +38,7 @@ ALLOWED_HOSTS = [
     '95.163.185.57',
 ]
 
-
+SITE_ID = 1
 # Application definition
 
 INSTALLED_APPS = [
