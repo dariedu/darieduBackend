@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Feedback, Request
+from .models import Feedback, RequestMessage
 
 
 @admin.register(Feedback)
@@ -15,8 +15,8 @@ class FeedbackAdmin(admin.ModelAdmin):
     search_fields = ('type', 'text', 'user')
 
 
-@admin.register(Request)
-class RequestAdmin(admin.ModelAdmin):
+@admin.register(RequestMessage)
+class RequestMessageAdmin(admin.ModelAdmin):
     list_display = (
         "type",
         "text",

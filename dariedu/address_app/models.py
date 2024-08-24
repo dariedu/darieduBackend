@@ -13,6 +13,7 @@ class City(models.Model):
 class Location(models.Model):
     address = models.CharField(max_length=500, verbose_name='адрес')
     link = models.URLField(max_length=500, verbose_name='ссылка')
+    subway = models.CharField(max_length=255, blank=True, null=True, verbose_name='метро')
 
     city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='город')
     curator = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='куратор')
