@@ -8,10 +8,10 @@ from .serializers import FeedbackSerializer, RequestMessageSerializer
 class FeedbackViewSet(viewsets.ModelViewSet):
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
-    filter_fields = ['type']
+    filterset_fields = ['type']
 
 
 class RequestMessageViewSet(viewsets.ModelViewSet):
     queryset = RequestMessage.objects.all()
     serializer_class = RequestMessageSerializer
-    filter_fields = ['type']
+    filterset_fields = ['type']

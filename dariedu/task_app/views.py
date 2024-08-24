@@ -11,7 +11,13 @@ class TaskViewSet(viewsets.ModelViewSet):
     """
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    filter_fields = ['is_active', 'is_completed', 'city', 'curator', 'volunteer', 'category', 'date']
+    filterset_fields = [
+        'is_active',
+        'curator',
+        'volunteer',
+        'category',
+        'date'
+    ]
     ordering_fields = ['date', 'price']
 
 
@@ -21,5 +27,11 @@ class DeliveryViewSet(viewsets.ModelViewSet):
     """
     queryset = Delivery.objects.all()
     serializer_class = DeliverySerializer
-    filter_fields = ['is_free', 'is_active', 'city', 'volunteer', 'route_sheet__address_route_sheet__location', 'date']
+    filterset_fields = [
+        'is_free',
+        'is_active',
+        'volunteer',
+        'route_sheet__address_route_sheet__location',
+        'date'
+    ]
     ordering_fields = ['date']
