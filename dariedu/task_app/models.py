@@ -13,6 +13,9 @@ class Delivery(models.Model):
     volunteer = models.OneToOneField(User, on_delete=models.CASCADE, blank=True, null=True, verbose_name='волонтер')
     route_sheet = models.ForeignKey(RouteSheet, on_delete=models.CASCADE, verbose_name='маршрутный лист') # TODO: add null=True??
 
+    class Meta:
+        verbose_name = 'доставка'
+        verbose_name_plural = 'доставки'
 
 class Task(models.Model):
     category = models.CharField(max_length=255, verbose_name='категория')
@@ -31,3 +34,7 @@ class Task(models.Model):
 
     def __str__(self):
         return f'{self.name}, {self.date}'
+
+    class Meta:
+        verbose_name = 'задание'
+        verbose_name_plural = 'задания'

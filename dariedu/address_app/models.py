@@ -9,6 +9,10 @@ class City(models.Model):
     def __str__(self):
         return self.city
 
+    class Meta:
+        verbose_name = 'город'
+        verbose_name_plural = 'города'
+
 
 class Location(models.Model):
     address = models.CharField(max_length=500, verbose_name='адрес')
@@ -17,12 +21,20 @@ class Location(models.Model):
     city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='город')
     curator = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='куратор')
 
+    class Meta:
+        verbose_name = 'локация'
+        verbose_name_plural = 'локации'
+
 
 class RouteSheet(models.Model):
     map = models.URLField(max_length=500, verbose_name='карта')
 
     def __str__(self):
         return self.map
+
+    class Meta:
+        verbose_name = 'маршрутный лист'
+        verbose_name_plural = 'маршрутные листы'
 
 
 class Address(models.Model):
@@ -37,6 +49,10 @@ class Address(models.Model):
     def __str__(self):
         return self.address
 
+    class Meta:
+        verbose_name = 'адрес'
+        verbose_name_plural = 'адреса'
+
 
 class Beneficiar(models.Model):
     phone = models.CharField(max_length=50, blank=True, null=True, verbose_name='телефон')
@@ -48,3 +64,7 @@ class Beneficiar(models.Model):
 
     def __str__(self):
         return self.full_name
+
+    class Meta:
+        verbose_name = 'благо получатель'
+        verbose_name_plural = 'благо получатели'

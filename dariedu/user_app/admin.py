@@ -1,9 +1,22 @@
 from django.contrib import admin
+from django.db import models
+from import_export.admin import ImportExportModelAdmin
+from unfold.admin import ModelAdmin
+from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
+                                                SelectableFieldsExportForm)
 
-from .models import User, Rating
+from .models import Rating, User
 
 
-class UserAdmin(admin.ModelAdmin):
+class UserAdmin(ModelAdmin, ImportExportModelAdmin):
+    import_form_class = ImportForm
+    export_form_class = SelectableFieldsExportForm  # ExportForm
+    compressed_fields = True  # Default: False
+    list_select_related = True  # Default: False
+    warn_unsaved_form = True  # Default: False
+    list_filter_submit = True
+    list_fullwidth = True
+
     list_display = (
         'tg_id',
         'photo',
