@@ -40,20 +40,6 @@ UNFOLD_CONFIG = {
             "show_all_applications": True,
             "navigation": [
                 {
-                    "title": _("Все приложения"),
-                    "separator": True,  # Top border
-                    "collapsible": True,  # Collapsible group of links
-                    "items": [
-                        {
-                            "title": _("Панель администратора"),
-                            "icon": "home",  # Supported icon set: https://fonts.google.com/icons
-                            "link": reverse_lazy("admin:index"),
-                            "badge": 'admin',
-                            "permission": lambda request: request.user.is_superuser,
-                        },
-                    ],
-                },
-                {
                     "title": _("Пользователи"),
                     "separator": True,
                     "collapsible": True,
