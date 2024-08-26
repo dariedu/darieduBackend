@@ -1,7 +1,7 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin
 
-from .models import Feedback, Request
+from .models import Feedback, RequestMessage
 
 
 class BaseAdmin(ModelAdmin):
@@ -23,8 +23,8 @@ class FeedbackAdmin(BaseAdmin):
     search_fields = ('type', 'text', 'user')
 
 
-@admin.register(Request)
-class RequestAdmin(BaseAdmin):
+@admin.register(RequestMessage)
+class RequestMessageAdmin(BaseAdmin):
     list_display = (
         "type",
         "text",

@@ -3,7 +3,9 @@
 services:
   dariedu-server:
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+        restart: true
     build: ./dariedu
     command: bash -c "
       python manage.py migrate &&
@@ -34,6 +36,12 @@ services:
       - pg_data:/var/lib/postgresql/pg_data
     networks:
       - mynetwork
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}" ]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 10s
 
 volumes:
   pg_data:

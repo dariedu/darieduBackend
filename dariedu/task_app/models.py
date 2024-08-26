@@ -11,7 +11,7 @@ class Delivery(models.Model):
     is_active = models.BooleanField(default=True, verbose_name='активная')
 
     volunteer = models.OneToOneField(User, on_delete=models.CASCADE, blank=True, null=True, verbose_name='волонтер')
-    route_sheet = models.ForeignKey(RouteSheet, on_delete=models.CASCADE, verbose_name='маршрутный лист') # TODO: add null=True??
+    route_sheet = models.ForeignKey(RouteSheet, on_delete=models.CASCADE, related_name='delivery', verbose_name='маршрутный лист') # TODO: add null=True??
 
     class Meta:
         verbose_name = 'доставка'

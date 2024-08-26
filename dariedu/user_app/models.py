@@ -13,6 +13,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(max_length=50, blank=True, null=True, verbose_name='телефон')
     photo = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name='фото')
     volunteer_hour = models.PositiveIntegerField(default=0, verbose_name='волонтерские часы')
+    point = models.PositiveIntegerField(default=0, verbose_name='баллы')
     is_superuser = models.BooleanField(default=False, verbose_name='Сотрудник')
     is_staff = models.BooleanField(default=False, verbose_name='Куратор')
 
@@ -35,7 +36,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Rating(models.Model):
-    level = models.PositiveIntegerField(default=0)
+    """
+    Maybe we don't need separate model for rating
+    """
+    level = models.CharField(max_length=255, verbose_name='рейтинг')
 
     def __str__(self):
         return self.level

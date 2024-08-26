@@ -3,7 +3,7 @@ from django.db import models
 from user_app.models import User
 
 
-class Request(models.Model):
+class RequestMessage(models.Model):
     type = models.CharField(max_length=255, verbose_name='тип запроса')
     text = models.TextField(verbose_name='текст', blank=True, null=True)
     form = models.URLField(max_length=500, blank=True, null=True, verbose_name='форма')
