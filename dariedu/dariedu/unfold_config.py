@@ -111,7 +111,7 @@ UNFOLD_CONFIG = {
                         {
                             "title": _("Запросы"),
                             "icon": "request_quote",
-                            "link": reverse_lazy("admin:feedback_app_request_changelist"),
+                            "link": reverse_lazy("admin:feedback_app_requestmessage_changelist"),
                             "badge": "main admin",
                             "permission": lambda request: request.user.is_superuser,
                         },
