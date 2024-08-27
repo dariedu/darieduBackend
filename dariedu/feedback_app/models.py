@@ -13,6 +13,10 @@ class RequestMessage(models.Model):
     def __str__(self):
         return self.type
 
+    class Meta:
+        verbose_name = 'запрос'
+        verbose_name_plural = 'запросы'
+
 
 class Feedback(models.Model):
     type = models.CharField(max_length=255, verbose_name='тип отзыва')
@@ -23,3 +27,7 @@ class Feedback(models.Model):
 
     def __str__(self):
         return self.type
+
+    class Meta:
+        verbose_name = 'отзыв'
+        verbose_name_plural = 'отзывы'

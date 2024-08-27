@@ -30,6 +30,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return f'{self.name} {self.last_name}, {self.tg_id}'
 
+    class Meta:
+        verbose_name = 'пользователь'
+        verbose_name_plural = 'пользователи'
+
 
 class Rating(models.Model):
     """
@@ -39,3 +43,7 @@ class Rating(models.Model):
 
     def __str__(self):
         return self.level
+
+    class Meta:
+        verbose_name = 'рейтинг'
+        verbose_name_plural = 'рейтинги'
