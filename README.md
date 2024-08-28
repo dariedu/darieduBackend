@@ -13,13 +13,24 @@ Backend telegram web app для НКО "Дари еду"
 git clone https://github.com/dariedu/darieduBackend.git
 cd darieduBackend
 ```
+При последующих запусках для обновления файлов:  
+``` bash 
+git pull
+```  
 В папку darieduBackend кладете файл .env (закеплен в канале разработчиков), потом в терминале из директории darieduBackend запускаете докер: 
 ``` bash
 docker-compose up 
 ```
 Первый запуск может занять пару минут. В приложении Docker должен появиться контейнер dariedubackend, в нем должно выполняться (running) два процесса: db и dariedu-server.  
 Возможно, вместо ```docker-compose``` сработает ```docker compose```.  
-Выход: Ctrl+C  
+Выход: Ctrl+C    
+  
+При последующих запусках для обновления файлов:  
+``` bash 
+git pull
+```  
+И далее запуск докера.  
+
 
 Для создания админа (суперпользователя), при запущенном докере в соседнем терминале из директории darieduBackend:
 ``` bash
