@@ -8,10 +8,11 @@ Backend telegram web app для НКО "Дари еду"
 -----------
 ### Windows и Linux:
 Установить и запустить докер https://www.docker.com/  
-После этого в терминале клонируете репозиторий:
+После этого в терминале клонируете репозиторий и создаете сеть:
 ``` bash
 git clone https://github.com/dariedu/darieduBackend.git
 cd darieduBackend
+docker network create mynetwork
 ```
 При последующих запусках для обновления файлов:  
 ``` bash 
