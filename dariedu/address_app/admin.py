@@ -38,7 +38,7 @@ class CityAdmin(BaseAdmin):
 
 @admin.register(RouteSheet)
 class RouteSheetAdmin(BaseAdmin):
-    list_display = ('map', 'address_route_sheet__location')
+    list_display = ('map', 'display_address')
 
 
 @admin.register(Beneficiar)
