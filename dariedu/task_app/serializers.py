@@ -23,3 +23,14 @@ class DeliverySerializer(serializers.ModelSerializer):
             'id': {'read_only': True},
             # TODO and all the others?
         }
+
+    def create(self, validated_data):
+        # Since we don't need any input parameters for the POST request,
+        # we can simply ignore the validated_data and update the instance
+        instance = self.context['view'].get_object()
+        instance.is_free = False
+        instance.is_active = True
+        instance.volunteer = None
+        instance.volunteer = self.context['request'].user
+        instance.save()
+        return instance

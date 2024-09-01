@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.core.exceptions import ValidationError
 from user_app.models import User
 from address_app.models import RouteSheet, City
 
@@ -13,9 +13,20 @@ class Delivery(models.Model):
     volunteer = models.OneToOneField(User, on_delete=models.CASCADE, blank=True, null=True, verbose_name='волонтер')
     route_sheet = models.ForeignKey(RouteSheet, on_delete=models.CASCADE, related_name='delivery', verbose_name='маршрутный лист') # TODO: add null=True??
 
-    class Meta:
-        verbose_name = 'доставка'
-        verbose_name_plural = 'доставки'
+    def clean(self):
+        if self.is_free:
+            self.is_active = False
+        else:
+            self.is_active = True
+        if not self.is_active:
+            self.volunteer = None
+        else:
+            if not self.volunteer:
+                raise ValidationError({'volunteer': 'Volunteer is required if delivery is free'})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 class Task(models.Model):
     category = models.CharField(max_length=255, verbose_name='категория')
