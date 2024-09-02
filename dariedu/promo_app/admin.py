@@ -12,6 +12,7 @@ class BaseAdmin(ModelAdmin):
     list_filter_submit = True
     list_fullwidth = True
 
+
 @admin.register(Promotion)
 class PromotionAdmin(BaseAdmin):
     list_display = ('category', 'name', 'price', 'description', 'date', 'quantity', 'is_active', 'city', 'user')

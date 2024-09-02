@@ -16,27 +16,30 @@ class City(models.Model):
 
 class Location(models.Model):
     address = models.CharField(max_length=500, verbose_name='адрес')
-    link = models.URLField(max_length=500, verbose_name='ссылка')
+    link = models.URLField(max_length=500, verbose_name='ссылка', blank=True, null=True)
     subway = models.CharField(max_length=255, blank=True, null=True, verbose_name='метро')
 
     city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='город')
-    curator = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='куратор')
+    curator = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='куратор',
+                                blank=True, null=True)
 
     class Meta:
         verbose_name = 'локация'
         verbose_name_plural = 'локации'
 
+    def __str__(self):
+        return f'{self.subway}, {self.address}'
+
 
 class RouteSheet(models.Model):
-    map = models.URLField(max_length=500, verbose_name='карта')
-    address = models.ManyToManyField('Address', on_delete=models.CASCADE, through='RoureAddress',
-                                     related_name='route_address', verbose_name='адреса')
+    number = models.IntegerField(verbose_name='номер', unique=True)
+    map = models.URLField(max_length=500, blank=True, null=True, verbose_name='карта')
 
     def __str__(self):
-        return self.map
+        return str(self.number)
 
     def display_address(self):
-        return ', '.join([(address.address, address.location) for address in self.route_address.all()])
+        return ', '.join([address.address for address in self.address.all()])
 
     class Meta:
         verbose_name = 'маршрутный лист'
@@ -45,10 +48,12 @@ class RouteSheet(models.Model):
 
 class Address(models.Model):
     address = models.CharField(max_length=255, verbose_name='адрес')
-    link = models.URLField(max_length=500, verbose_name='ссылка')
+    link = models.URLField(max_length=500, verbose_name='ссылка', blank=True, null=True)
 
-    location = models.ForeignKey(Location, on_delete=models.CASCADE,
-                                 related_name='address_location', verbose_name='локация')
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='address_location',
+                                 verbose_name='локация', blank=True, null=True)
+    route_sheet = models.ForeignKey(RouteSheet, on_delete=models.CASCADE, related_name='address',
+                                    verbose_name='маршрутный лист', blank=True, null=True)
 
     def __str__(self):
         return self.address
@@ -57,10 +62,8 @@ class Address(models.Model):
         verbose_name = 'адрес'
         verbose_name_plural = 'адреса'
 
-
-class RoureAddress(models.Model):
-    address = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name='адрес')
-    route_sheet = models.ForeignKey(RouteSheet, on_delete=models.CASCADE, verbose_name='маршрутный лист')
+    def display_beneficiar(self):  # TODO rewrite
+        return ', '.join([beneficiar.full_name for beneficiar in self.beneficiar.all()])
 
 
 class Beneficiar(models.Model):
@@ -69,7 +72,7 @@ class Beneficiar(models.Model):
     comment = models.TextField(blank=True, null=True, verbose_name='комментарий')
 
     address = models.ForeignKey(Address, on_delete=models.CASCADE,
-                                related_name='beneficiar_address', verbose_name='адрес')
+                                related_name='beneficiar', verbose_name='адрес')
 
     def __str__(self):
         return self.full_name
