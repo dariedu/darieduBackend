@@ -26,19 +26,19 @@ class TaskAdmin(BaseAdmin):
     list_display = (
         'name',
         'description',
-        'date',
+        'start_date',
+        'end_date',
         'category',
         'price',
-        'duration',
-        'quantity',
+        'volunteers_needed',
+        'volunteers_taken',
         'is_active',
-        'volunteer',
         'curator',
         'city',
     )
-    list_filter = ['is_active', 'category', ('date', RangeDateFilter)]
-    search_fields = ('name', 'date', 'description')
-    ordering = ('-date',)
+    list_filter = ['is_active', 'category', ('start_date', RangeDateFilter)]
+    search_fields = ('name', 'start_date', 'description')
+    ordering = ('-start_date',)
 
 
 @admin.register(Delivery)
