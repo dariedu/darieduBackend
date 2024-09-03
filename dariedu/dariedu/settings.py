@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+from import_export.formats.base_formats import XLSX, XLS
 from dotenv import load_dotenv, find_dotenv
 from pathlib import Path
 from .unfold_config import UNFOLD_CONFIG
@@ -198,3 +199,5 @@ SPECTACULAR_SETTINGS = {
     },
     "COMPONENT_SPLIT_REQUEST": True
 }
+
+IMPORT_EXPORT_FORMATS = [XLSX, XLS]
