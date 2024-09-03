@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+from django.conf import settings
+
 from import_export.formats.base_formats import XLSX, XLS
 from dotenv import load_dotenv, find_dotenv
 from pathlib import Path
@@ -26,7 +28,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
+# SECRET_KEY = os.getenv('SECRET_KEY')
+# TODO here is the secret key because JWT can not see it from env. To fix later
+SECRET_KEY = 'django-insecure-i)0i=dqjw4esh4d20@&c(-l(4p9tj)@)08_9vxyc+#%u&33ef$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -68,6 +72,7 @@ INSTALLED_APPS = [
     'django_filters',
     'drf_spectacular',
     'import_export',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -183,6 +188,7 @@ UNFOLD = UNFOLD_CONFIG
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
@@ -198,6 +204,11 @@ SPECTACULAR_SETTINGS = {
             "filter": True,
     },
     "COMPONENT_SPLIT_REQUEST": True
+}
+
+
+SIMPLE_JWT = {
+    "SIGNING_KEY": settings.SECRET_KEY,  # TODO add here another key
 }
 
 IMPORT_EXPORT_FORMATS = [XLSX, XLS]
