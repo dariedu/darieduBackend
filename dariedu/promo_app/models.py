@@ -22,5 +22,5 @@ class Promotion(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = 'акция'
-        verbose_name_plural = 'акции'
+        verbose_name = 'поощрение'
+        verbose_name_plural = 'поощрения'

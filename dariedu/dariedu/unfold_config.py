@@ -126,12 +126,12 @@ UNFOLD_CONFIG = {
                     ],
                 },
                 {
-                    "title": _("Акции"),
+                    "title": _("Поощрения"),
                     "separator": True,
                     "collapsible": True,
                     "items": [
                         {
-                            "title": _("Акции"),
+                            "title": _("Поощрения"),
                             "icon": "app_promo",
                             "link": reverse_lazy("admin:promo_app_promotion_changelist"),
                             "badge": "main admin",
