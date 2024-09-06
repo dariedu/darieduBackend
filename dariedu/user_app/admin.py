@@ -13,7 +13,6 @@ class UserAdmin(ModelAdmin, ImportExportModelAdmin):
     export_form_class = SelectableFieldsExportForm  # ExportForm
     compressed_fields = True  # Default: False
     list_select_related = True  # Default: False
-    warn_unsaved_form = True  # Default: False
     list_filter_submit = True
     list_fullwidth = True
 
