@@ -178,7 +178,7 @@ class DeliveryViewSet(viewsets.ModelViewSet):
         'is_free',
         'is_active',
         'volunteer',
-        'route_sheet__address_route_sheet__location',
+        # 'route_sheet__address_route_sheet__location',
         'date'
     ]
     ordering_fields = ['date']
