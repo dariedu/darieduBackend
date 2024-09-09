@@ -77,3 +77,13 @@ class DeliverySerializer(serializers.ModelSerializer):
             'id': {'read_only': True},
             # TODO and all the others?
         }
+
+    def create(self, validated_data):
+        instance = self.context['view'].get_object()
+        instance.is_free = False
+        instance.is_active = True
+        instance.in_execution = True
+        # instance.volunteer = None
+        instance.volunteer = self.context['request'].user
+        instance.save()
+        return instance

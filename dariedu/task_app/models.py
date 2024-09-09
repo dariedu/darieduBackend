@@ -1,4 +1,6 @@
 from django.db import models
+from django.core.exceptions import ValidationError
+from user_app.models import User
 
 from address_app.models import RouteSheet, City
 from user_app.models import User
@@ -9,13 +11,35 @@ class Delivery(models.Model):
     price = models.PositiveIntegerField('часы')
     is_free = models.BooleanField(default=True, verbose_name='свободная')
     is_active = models.BooleanField(default=True, verbose_name='активная')
+    is_completed = models.BooleanField(default=False, verbose_name='завершена')
+    in_execution = models.BooleanField(default=False, verbose_name='выполняется')
 
-    volunteer = models.OneToOneField(User, on_delete=models.CASCADE, blank=True, null=True, verbose_name='волонтер')
+    volunteer = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='deliveries',
+                                  null=True, blank=True, verbose_name='волонтер')
     route_sheet = models.ForeignKey(RouteSheet, on_delete=models.CASCADE, related_name='delivery', verbose_name='маршрутный лист') # TODO: add null=True??
 
-    class Meta:
-        verbose_name = 'доставка'
-        verbose_name_plural = 'доставки'
+    def clean(self):
+        if self.is_free:
+            self.is_completed = False
+            self.in_execution = False
+            if self.volunteer:
+                raise ValidationError({'volunteer': 'Volunteer should be False if delivery is free'})
+        elif self.is_completed:
+            self.is_active = False
+            self.is_free = False
+            self.in_execution = False
+        elif self.in_execution:
+            self.is_active = True
+            self.is_free = False
+            self.is_completed = False
+            if not self.volunteer:
+                raise ValidationError({'volunteer': 'Volunteer is required if delivery is in execution'})
+        else:
+            raise ValidationError({'volunteer': 'Invalid delivery status'})
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class Task(models.Model):
