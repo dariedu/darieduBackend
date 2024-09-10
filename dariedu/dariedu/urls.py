@@ -25,6 +25,7 @@ from task_app.urls import router as task_approuter
 from promo_app.urls import router as promo_approuter
 from feedback_app.urls import router as feedback_approuter
 from address_app.urls import router as address_approuter
+from stories_app.urls import router as stories_approuter
 
 
 router = routers.DefaultRouter()
@@ -33,6 +34,7 @@ router.registry.extend(task_approuter.registry)
 router.registry.extend(promo_approuter.registry)
 router.registry.extend(feedback_approuter.registry)
 router.registry.extend(address_approuter.registry)
+router.registry.extend(stories_approuter.registry)
 
 urlpatterns = [
     path('admin/', admin.site.urls),

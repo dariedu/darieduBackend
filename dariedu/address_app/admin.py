@@ -29,7 +29,7 @@ class AddressAdmin(BaseAdmin):
 
 @admin.register(Location)
 class LocationAdmin(BaseAdmin):
-    list_display = ('address', 'link', 'city', 'curator')
+    list_display = ('address', 'link', 'city', 'curator', 'media_files')
     list_filter = ('city', 'curator')
     search_fields = ('address', 'city', 'curator__last_name')
 

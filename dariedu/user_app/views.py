@@ -6,7 +6,7 @@ from .models import User, Rating
 from .serializers import UserSerializer, RatingSerializer
 
 
-class UserViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     # permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready

@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'task_app',
     'promo_app',
     'feedback_app',
+    'stories_app',
 
     'django.contrib.postgres',
     'rest_framework',

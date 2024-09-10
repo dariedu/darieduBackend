@@ -22,6 +22,7 @@ class Location(models.Model):
     city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='город')
     curator = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='куратор',
                                 blank=True, null=True)
+    media_files = models.FileField(blank=True, null=True, verbose_name='файлы', upload_to='location_files')
 
     class Meta:
         verbose_name = 'локация'

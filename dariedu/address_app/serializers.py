@@ -4,7 +4,6 @@ from .models import Address, Location, City, RouteSheet, Beneficiar
 
 
 class AddressSerializer(serializers.ModelSerializer):
-    # TODO we need only GET request here
     class Meta:
         model = Address
         fields = '__all__'
