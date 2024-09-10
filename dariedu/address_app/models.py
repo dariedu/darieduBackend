@@ -32,7 +32,7 @@ class Location(models.Model):
 
 
 class RouteSheet(models.Model):
-    number = models.IntegerField(verbose_name='номер', unique=True)
+    name = models.CharField(verbose_name='название', unique=True, max_length=500)
     map = models.URLField(max_length=500, blank=True, null=True, verbose_name='карта')
 
     def __str__(self):
