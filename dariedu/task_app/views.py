@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from isort.literal import assignment
 from rest_framework.generics import get_object_or_404
 from django.db.models import F
 from django.utils import timezone
@@ -9,9 +10,9 @@ from rest_framework.response import Response
 
 from user_app.models import User
 from .exceptions import BadRequest
-from .models import Task, Delivery
+from .models import Task, Delivery, DeliveryAssignment
 # from .permissions import IsAbleCompleteTask  # для метода завершения задачи куратором
-from .serializers import TaskSerializer, DeliverySerializer
+from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer
 
 
 class TaskViewSet(
@@ -174,37 +175,38 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = DeliverySerializer
     permission_classes = [IsAuthenticated]
 
-    def list(self, request, *args, **kwargs):
+    def get_queryset(self):
+        user = self.request.user
         queryset = Delivery.objects.all()
-        is_active = request.query_params.get('is_active')
-        is_completed = request.query_params.get('is_completed')
-        volunteer = request.query_params.get('volunteer')
-        if is_active is not None:
-            is_active = is_active.lower() == 'true'
-            queryset = queryset.filter(is_active=is_active)
-        if is_completed is not None:
-            is_completed = is_completed.lower() == 'true'
-            queryset = queryset.filter(is_completed=is_completed)
-        if volunteer is not None:
-            queryset = queryset.filter(volunteer=volunteer)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+
+        free = self.request.query_params.get('free', None)
+        active = self.request.query_params.get('active', None)
+        completed = self.request.query_params.get('completed', None)
+
+        if free is not None and free.lower() == 'true':
+            queryset = queryset.filter(is_free=True).distinct()
+        if active is not None and active.lower() == 'true':
+            queryset = queryset.filter(is_active=True, assignments__volunteer=user).distinct()
+        if completed is not None and completed.lower() == 'true':
+            queryset = queryset.filter(is_completed=True, assignments__volunteer=user).distinct()
+        return queryset
 
     @action(detail=False, methods=['get'], url_path='volunteer')
     def volunteer_deliveries(self, request):
-        user = request.user
-        is_free_deliveries = Delivery.objects.filter(is_free=True)
-        is_active_deliveries = Delivery.objects.filter(volunteer=user, is_active=True)
-        completed_deliveries = Delivery.objects.filter(volunteer=user, is_completed=True)
-        is_free_serializer = self.get_serializer(is_free_deliveries, many=True)
-        is_active_serializer = self.get_serializer(is_active_deliveries, many=True)
-        is_completed_serializer = self.get_serializer(completed_deliveries, many=True)
-
-        return Response({
-            'свободные': is_free_serializer.data,
-            'мои активные доставки': is_active_serializer.data,
-            'мои завершенные доставки': is_completed_serializer.data
-        })
+        free_deliveries = self.get_queryset().filter(is_free=True).exclude(
+            assignments__volunteer=request.user).distinct()
+        active_deliveries = self.get_queryset().filter(is_active=True, assignments__volunteer=request.user).distinct()
+        completed_deliveries = self.get_queryset().filter(is_completed=True,
+                                                          assignments__volunteer=request.user).distinct()
+        free_serializer = self.serializer_class(free_deliveries, many=True)
+        active_serializer = self.serializer_class(active_deliveries, many=True)
+        completed_serializer = self.serializer_class(completed_deliveries, many=True)
+        response_data = {
+            'свободные доставки': free_serializer.data,
+            'мои активные доставки': active_serializer.data,
+            'мои завершенные доставки': completed_serializer.data
+        }
+        return Response(response_data)
 
     @action(detail=False, methods=['get'], url_path='curator')
     def deliveries_curator(self, request):
@@ -218,39 +220,24 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     @action(detail=True, methods=['post'], url_path='take')
     def take_delivery(self, request, pk):
-        delivery = get_object_or_404(Delivery, pk=pk)
-        if delivery.volunteer:
+        delivery = self.get_object()
+
+        if delivery.is_free:
+            assignment = DeliveryAssignment.objects.create(delivery=delivery)
+            assignment.save()
+            assignment.volunteer.add(request.user)
+            serializer = DeliveryAssignmentSerializer(assignment)
+            return Response({status.HTTP_201_CREATED: serializer.data})
+        else:
             return Response({'error': 'Delivery is already taken'}, status=400)
-        serializer = DeliverySerializer(instance=delivery, data={}, context={'view': self, 'request': request},
-                                        partial=True)
-        try:
-            serializer.create(serializer.instance)
-            if serializer.is_valid():
-                return Response({status.HTTP_201_CREATED: serializer.data})
-        except ValidationError as e:
-            return Response({'error': 'Volunteer already assigned to this delivery'}, status=400)
-        except Exception as e:
-            return Response({'error': 'Internal Server Error'}, status=500)
 
     @action(detail=True, methods=['post'], url_path='cancel')
     def cancel_delivery(self, request, pk):
         delivery = self.get_object()
-        serializer = DeliverySerializer(instance=delivery, data={}, context={'view': self, 'request': request},
-                                        partial=True)
+        delivery_assignment = delivery.assignments.filter(volunteer=request.user).first()
 
-        if not delivery.is_active:
-            return Response({'error': 'Delivery is already finished'}, status=400)
-
-        if delivery.volunteer != request.user and delivery.volunteer is None:
-            return Response({'error': 'You are not authorized to cancel this delivery'}, status=403)
-
-        if delivery.volunteer == request.user:
-            delivery.is_active = True
-            delivery.is_free = True
-            delivery.in_execution = False
-            delivery.volunteer = None
-            delivery.save()
-        if serializer.is_valid():
-            return Response({status.HTTP_201_CREATED: serializer.data})
+        if delivery_assignment:
+            delivery_assignment.volunteer.remove(request.user)
+            return Response({'message': 'Delivery cancelled successfully'}, status=200)
         else:
             return Response({'error': 'You are not authorized to cancel this delivery'}, status=403)

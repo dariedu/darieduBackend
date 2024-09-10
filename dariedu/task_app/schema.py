@@ -13,14 +13,6 @@ class Fix2(OpenApiViewExtension):
         @extend_schema(tags=['Deliveries'])
         class Fixed(self.target_class):
             @extend_schema(
-                parameters=[
-                    OpenApiParameter("is_active", OpenApiTypes.BOOL, OpenApiParameter.QUERY,
-                                     description="Filter by is_active", required=False),
-                    OpenApiParameter("is_completed", OpenApiTypes.BOOL, OpenApiParameter.QUERY,
-                                     description="Filter by is_completed", required=False),
-                    OpenApiParameter("volunteer", OpenApiTypes.INT, OpenApiParameter.QUERY,
-                                     description="Filter by volunteer ID", required=False),
-                ],
                 summary="List deliveries",
                 operation_id="listDeliveries",
                 examples=[
