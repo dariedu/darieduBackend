@@ -4,7 +4,8 @@ from unfold.admin import ModelAdmin
 from unfold.contrib.filters.admin import RangeDateFilter
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
-from .models import Delivery, Task
+
+from .models import Delivery, Task, DeliveryAssignment
 
 
 class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
@@ -41,14 +42,26 @@ class DeliveryAdmin(BaseAdmin):
     list_display = (
         'date',
         'price',
-        'is_free',
         'is_active',
-        'is_completed',
+        'is_free',
         'in_execution',
-        'route_sheet'
+        'is_completed',
     )
 
     list_filter = ['is_active', 'is_free', 'is_completed', 'in_execution',
-                   'route_sheet', ('date', RangeDateFilter)]
+                   ('date', RangeDateFilter)]
+
     search_fields = ('date', 'route_sheet')
     ordering = ('-date',)
+
+    @admin.register(DeliveryAssignment)
+    class DeliveryAssignmentAdmin(BaseAdmin):
+        list_display = (
+            'delivery',
+            'display_volunteers'
+        )
+
+        def display_volunteers(self, obj):
+            return ", ".join([f"{volunteer.tg_id}" for volunteer in obj.volunteer.all()])
+
+        display_volunteers.short_description = 'Волонтеры'

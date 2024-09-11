@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model  # TODO remove when authenticatio
 # from django.db.models import F  # для метода завершения задачи куратором
 from rest_framework import serializers
 
-from .models import Task, Delivery
+from .models import Task, Delivery, DeliveryAssignment
 
 User = get_user_model()  # TODO remove when authentication is ready
 
@@ -68,22 +68,16 @@ class TaskSerializer(serializers.ModelSerializer):
         return instance
 
 
+class DeliveryAssignmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeliveryAssignment
+        fields = ['id', 'delivery', 'volunteer']
+
 class DeliverySerializer(serializers.ModelSerializer):
-    # TODO we need only GET here and UPDATE to take the delivery
+    delivery_assignments = DeliveryAssignmentSerializer(many=True, source='assignments')
+
     class Meta:
         model = Delivery
-        fields = '__all__'
-        extra_kwargs = {
-            'id': {'read_only': True},
-            # TODO and all the others?
-        }
+        fields = ['id', 'date', 'price', 'is_free', 'is_active',
+                  'is_completed', 'in_execution', 'volunteers_needed', 'volunteers_taken', 'delivery_assignments']
 
-    def create(self, validated_data):
-        instance = self.context['view'].get_object()
-        instance.is_free = False
-        instance.is_active = True
-        instance.in_execution = True
-        # instance.volunteer = None
-        instance.volunteer = self.context['request'].user
-        instance.save()
-        return instance
