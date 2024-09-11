@@ -39,7 +39,7 @@ class RouteSheet(models.Model):
                              blank=True, null=True)
 
     def __str__(self):
-        return str(self.number)
+        return str(self.name)
 
     def display_address(self):
         return ', '.join([address.address for address in self.address.all()])
