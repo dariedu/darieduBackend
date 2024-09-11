@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+{% load i18n %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ stories.link_name }}</title>
+</head>
+
+{% comment %}
+<body style="background: url({{ stories.background.url }});">
+{% endcomment %}
+
+<body>
+
+<h1>{{ stories.title }}</h1>
+
+<p>{{ stories.text }}</p>
+<img src="{{ stories.media_files.url }}" alt="{{ stories.title }}">
+
+</body>
+</html>

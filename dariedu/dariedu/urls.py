@@ -20,6 +20,7 @@ from rest_framework import routers
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from stories_app.views import StoriesDetailView
 from user_app.urls import router as user_approuter
 from task_app.urls import router as task_approuter
 from promo_app.urls import router as promo_approuter
@@ -37,6 +38,7 @@ router.registry.extend(address_approuter.registry)
 router.registry.extend(stories_approuter.registry)
 
 urlpatterns = [
+    path('stories/<slug:slug>/', StoriesDetailView.as_view()),
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
 
