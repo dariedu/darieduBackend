@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     # apps
     'user_app',
     'address_app',
-    'task_app',
+    'task_app.apps.TaskAppConfig',
     'promo_app',
     'feedback_app',
 

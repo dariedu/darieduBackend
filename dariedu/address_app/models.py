@@ -34,6 +34,8 @@ class Location(models.Model):
 class RouteSheet(models.Model):
     number = models.IntegerField(verbose_name='номер', unique=True)
     map = models.URLField(max_length=500, blank=True, null=True, verbose_name='карта')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='route_sheets', verbose_name='пользователь',
+                             blank=True, null=True)
 
     def __str__(self):
         return str(self.number)

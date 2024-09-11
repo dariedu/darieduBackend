@@ -13,10 +13,21 @@ class Delivery(models.Model):
     is_active = models.BooleanField(default=True, verbose_name='активная')
     is_completed = models.BooleanField(default=False, verbose_name='завершена')
     in_execution = models.BooleanField(default=False, verbose_name='выполняется')
+    volunteers_needed = models.PositiveIntegerField(verbose_name='требуется волонтеров', default=1)
+    volunteers_taken = models.PositiveIntegerField(verbose_name='волонтеров взяли', default=0)
 
-    volunteer = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='deliveries',
-                                  null=True, blank=True, verbose_name='волонтер')
-    route_sheet = models.ForeignKey(RouteSheet, on_delete=models.CASCADE, related_name='delivery', verbose_name='маршрутный лист') # TODO: add null=True??
+    route_sheet = models.ManyToManyField(RouteSheet, related_name='delivery', verbose_name='маршрутный лист')
+
+    def clean(self):
+        if self.is_completed:
+            self.is_free = False
+            self.is_active = False
+            self.in_execution = False
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
 
     def clean(self):
         if self.is_free:
@@ -41,6 +52,14 @@ class Delivery(models.Model):
         self.full_clean()
         super().save(*args, **kwargs)
 
+class DeliveryAssignment(models.Model):
+    delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, related_name='assignments',
+                                 verbose_name='доставка')
+    volunteer = models.ManyToManyField(User, related_name='assignments', verbose_name='волонтер')
+
+    class Meta:
+        verbose_name = 'доставка волонтера'
+        verbose_name_plural = 'доставки волонтеров'
 
 class Task(models.Model):
     category = models.CharField(max_length=255, verbose_name='категория')
