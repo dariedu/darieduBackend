@@ -170,6 +170,7 @@ class TaskViewSet(
     #
     #     return Response(data=serializer.data, status=status.HTTP_200_OK)
 
+
 class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Delivery.objects.all()
     serializer_class = DeliverySerializer

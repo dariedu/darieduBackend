@@ -22,6 +22,7 @@ class Location(models.Model):
     city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='город')
     curator = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='куратор',
                                 blank=True, null=True)
+    media_files = models.FileField(blank=True, null=True, verbose_name='файлы', upload_to='location_files')
 
     class Meta:
         verbose_name = 'локация'
@@ -32,7 +33,7 @@ class Location(models.Model):
 
 
 class RouteSheet(models.Model):
-    number = models.IntegerField(verbose_name='номер', unique=True)
+    name = models.CharField(verbose_name='название', unique=True, max_length=500)
     map = models.URLField(max_length=500, blank=True, null=True, verbose_name='карта')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='route_sheets', verbose_name='пользователь',
                              blank=True, null=True)

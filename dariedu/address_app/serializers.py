@@ -4,7 +4,6 @@ from .models import Address, Location, City, RouteSheet, Beneficiar
 
 
 class AddressSerializer(serializers.ModelSerializer):
-    # TODO we need only GET request here
     class Meta:
         model = Address
         fields = '__all__'
@@ -14,7 +13,6 @@ class AddressSerializer(serializers.ModelSerializer):
 
 
 class LocationSerializer(serializers.ModelSerializer):
-    # TODO we need only GET request here
     class Meta:
         model = Location
         fields = '__all__'
@@ -24,7 +22,6 @@ class LocationSerializer(serializers.ModelSerializer):
 
 
 class CitySerializer(serializers.ModelSerializer):
-    # TODO we need only GET request here
     class Meta:
         model = City
         fields = '__all__'
@@ -44,7 +41,6 @@ class RouteSheetSerializer(serializers.ModelSerializer):
 
 
 class BeneficiarSerializer(serializers.ModelSerializer):
-    # TODO we need only GET request here
     class Meta:
         model = Beneficiar
         fields = '__all__'

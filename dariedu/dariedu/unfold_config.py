@@ -36,27 +36,25 @@ UNFOLD_CONFIG = {
         "SHOW_HISTORY": True,
         "SHOW_VIEW_ON_SITE": False,
         "SIDEBAR": {
-            "show_search": True,
+            "show_search": False,
             "show_all_applications": True,
             "navigation": [
                 {
-                    "title": _("Пользователи"),
+                    "title": _("Задания"),
                     "separator": True,
                     "collapsible": True,
                     "items": [
                         {
-                            "title": _("Пользователи"),
-                            "icon": "manage_accounts",
-                            "link": reverse_lazy("admin:user_app_user_changelist"),
-                            "badge": 'admin',
-                            "permission": lambda request: request.user.is_superuser,
+                          "title": _("доставка/волонтер"),
+                          "icon": "task",
+                          "link": reverse_lazy("admin:task_app_deliveryassignment_changelist"),
+                          "badge": "main admin",
+                          "permission": lambda request: request.user.is_superuser,
                         },
                         {
-                            "title": _("Рейтинг"),
-                            "icon": "trending_up",
-                            "link": reverse_lazy("admin:user_app_rating_changelist"),
-                            "badge": "admin",
-                            "permission": lambda request: request.user.is_superuser,
+                            "title": _("Задания"),
+                            "icon": "task",
+                            "link": reverse_lazy("admin:task_app_task_changelist"),
                         },
 
                     ],
@@ -104,6 +102,42 @@ UNFOLD_CONFIG = {
                     ],
                 },
                 {
+                    "title": _("Пользователи"),
+                    "separator": True,
+                    "collapsible": True,
+                    "items": [
+                        {
+                            "title": _("Пользователи"),
+                            "icon": "manage_accounts",
+                            "link": reverse_lazy("admin:user_app_user_changelist"),
+                            "badge": 'admin',
+                            "permission": lambda request: request.user.is_superuser,
+                        },
+                        {
+                            "title": _("Рейтинг"),
+                            "icon": "trending_up",
+                            "link": reverse_lazy("admin:user_app_rating_changelist"),
+                            "badge": "admin",
+                            "permission": lambda request: request.user.is_superuser,
+                        },
+
+                    ],
+                },
+                {
+                    "title": _("Поощрения"),
+                    "separator": True,
+                    "collapsible": True,
+                    "items": [
+                        {
+                            "title": _("Поощрения"),
+                            "icon": "app_promo",
+                            "link": reverse_lazy("admin:promo_app_promotion_changelist"),
+                            "badge": "main admin",
+                            "permission": lambda request: request.user.is_superuser,
+                        },
+                    ],
+                },
+                {
                     "title": _("Обратная связь"),
                     "separator": True,
                     "collapsible": True,
@@ -126,46 +160,17 @@ UNFOLD_CONFIG = {
                     ],
                 },
                 {
-                    "title": _("Поощрения"),
+                    "title": _("Сторисы"),
                     "separator": True,
                     "collapsible": True,
                     "items": [
                         {
-                            "title": _("Поощрения"),
-                            "icon": "app_promo",
-                            "link": reverse_lazy("admin:promo_app_promotion_changelist"),
+                            "title": _("Сторисы"),
+                            "icon": "request_quote",
+                            "link": reverse_lazy("admin:stories_app_stories_changelist"),
                             "badge": "main admin",
                             "permission": lambda request: request.user.is_superuser,
                         },
-                    ],
-                },
-                {
-                    "title": _("Задания"),
-                    "separator": True,
-                    "collapsible": True,
-                    "items": [
-                        {
-                            "title": _("Доставка"),
-                            "icon": "local_shipping",
-                            "link": reverse_lazy("admin:task_app_delivery_changelist"),
-                            "badge": "main admin",
-                            "permission": lambda request: request.user.is_superuser,
-                        },
-                        {
-                          "title": _("доставка/волонтер"),
-                          "icon": "task",
-                          "link": reverse_lazy("admin:task_app_deliveryassignment_changelist"),
-                          "badge": "main admin",
-                          "permission": lambda request: request.user.is_superuser,
-                        },
-                        {
-                            "title": _("Задания"),
-                            "icon": "task",
-                            "link": reverse_lazy("admin:task_app_task_changelist"),
-                            "badge": "main admin",
-                            "permission": lambda request: request.user.is_superuser,
-                        },
-
                     ],
                 },
             ],

@@ -22,14 +22,14 @@ class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
 
 @admin.register(Address)
 class AddressAdmin(BaseAdmin):
-    list_display = ('address', 'link', 'location', 'route_sheet__number')
+    list_display = ('address', 'link', 'location', 'route_sheet__name')
     list_filter = ('location__city', 'location')
     search_fields = ('address', 'location__city', 'location')
 
 
 @admin.register(Location)
 class LocationAdmin(BaseAdmin):
-    list_display = ('address', 'link', 'city', 'curator')
+    list_display = ('address', 'link', 'city', 'curator', 'media_files')
     list_filter = ('city', 'curator')
     search_fields = ('address', 'city', 'curator__last_name')
 

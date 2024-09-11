@@ -43,6 +43,9 @@ ALLOWED_HOSTS = [
     '95.163.185.57',
 ]
 
+CURRENT_HOST = '127.0.0.1:8000'  # TODO change it later
+
+
 SITE_ID = 1
 # Application definition
 
@@ -65,6 +68,7 @@ INSTALLED_APPS = [
     'task_app.apps.TaskAppConfig',
     'promo_app',
     'feedback_app',
+    'stories_app',
 
     'django.contrib.postgres',
     'rest_framework',
@@ -98,7 +102,7 @@ CORS_ALLOW_HEADERS = ["*"]
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
