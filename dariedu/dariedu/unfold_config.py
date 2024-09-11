@@ -36,7 +36,7 @@ UNFOLD_CONFIG = {
         "SHOW_HISTORY": True,
         "SHOW_VIEW_ON_SITE": False,
         "SIDEBAR": {
-            "show_search": True,
+            "show_search": False,
             "show_all_applications": True,
             "navigation": [
                 {
@@ -175,14 +175,6 @@ UNFOLD_CONFIG = {
                         },
                     ],
                 },
-                {
-                    "title": _("Сторисы"),
-                    "separator": True,
-                    "icon": "request_quote",
-                    "link": reverse_lazy("admin:stories_app_stories_changelist"),
-                    "badge": "main admin",
-                    "permission": lambda request: request.user.is_superuser,
-                        },
             ],
         },
     }

@@ -43,6 +43,9 @@ ALLOWED_HOSTS = [
     '95.163.185.57',
 ]
 
+CURRENT_HOST = '127.0.0.1:8000'  # TODO change it later
+
+
 SITE_ID = 1
 # Application definition
 
