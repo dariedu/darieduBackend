@@ -49,7 +49,7 @@ class AddressInline(admin.TabularInline):
 
 @admin.register(RouteSheet)
 class RouteSheetAdmin(BaseAdmin):
-    list_display = ('number', 'user', 'map',)
+    list_display = ('name', 'user', 'map',)
     # inlines = [AddressInline, ]
 
     # def address_link(self, obj):
