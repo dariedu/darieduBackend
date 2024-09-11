@@ -4,6 +4,7 @@ from unfold.admin import ModelAdmin
 from unfold.contrib.filters.admin import RangeDateFilter
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
+
 from .models import Delivery, Task, DeliveryAssignment
 
 
@@ -49,6 +50,7 @@ class DeliveryAdmin(BaseAdmin):
 
     list_filter = ['is_active', 'is_free', 'is_completed', 'in_execution',
                    ('date', RangeDateFilter)]
+
     search_fields = ('date', 'route_sheet')
     ordering = ('-date',)
 
