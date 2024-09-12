@@ -213,6 +213,7 @@ SPECTACULAR_SETTINGS = {
 
 SIMPLE_JWT = {
     "SIGNING_KEY": settings.SECRET_KEY,  # TODO add here another key
+    "TOKEN_OBTAIN_SERIALIZER": "my_app.serializers.MyTokenObtainPairSerializer",
 }
 
 IMPORT_EXPORT_FORMATS = [XLSX, XLS]

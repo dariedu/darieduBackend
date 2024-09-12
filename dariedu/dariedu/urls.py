@@ -28,7 +28,7 @@ from feedback_app.urls import router as feedback_approuter
 from address_app.urls import router as address_approuter
 from stories_app.urls import router as stories_approuter
 
-from user_app.views import RegistrationView, LoginView
+from user_app.views import RegistrationView, LoginView, CustomTokenRefreshView
 
 router = routers.DefaultRouter()
 router.registry.extend(user_approuter.registry)
@@ -42,11 +42,11 @@ urlpatterns = [
     path('stories/<slug:slug>/', StoriesDetailView.as_view()),
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-    path('api/auth/register/', RegistrationView.as_view(), name='register'),
-    path('api/auth/login/', LoginView.as_view(), name='login'),
 
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/registration/', RegistrationView.as_view()),
+
+    path('api/token/', LoginView.as_view()),
+    path('api/token/refresh/', CustomTokenRefreshView.as_view()),
 
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     # Optional UI:
