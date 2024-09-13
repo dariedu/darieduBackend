@@ -35,14 +35,16 @@ class Location(models.Model):
 class RouteSheet(models.Model):
     name = models.CharField(verbose_name='название', unique=True, max_length=500)
     map = models.URLField(max_length=500, blank=True, null=True, verbose_name='карта')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='route_sheets', verbose_name='пользователь',
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, blank=True,
+                                 related_name='route_sheets', verbose_name='локация')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='route_sheets', verbose_name='волонтер',
                              blank=True, null=True)
 
     def __str__(self):
         return str(self.name)
 
     def display_address(self):
-        return ', '.join([address.address for address in self.address.all()])
+        return '\n'.join([address.address for address in self.address.all()])
 
     class Meta:
         verbose_name = 'маршрутный лист'
@@ -59,14 +61,14 @@ class Address(models.Model):
                                     verbose_name='маршрутный лист', blank=True, null=True)
 
     def __str__(self):
-        return self.address
+        return f'{self.address}\n{self.link}\n{self.display_beneficiar}'
 
     class Meta:
         verbose_name = 'адрес'
         verbose_name_plural = 'адреса'
 
     def display_beneficiar(self):  # TODO rewrite
-        return ', '.join([beneficiar.full_name for beneficiar in self.beneficiar.all()])
+        return '\n'.join([beneficiar.full_name for beneficiar in self.beneficiar.all()])
 
 
 class Beneficiar(models.Model):
@@ -78,7 +80,7 @@ class Beneficiar(models.Model):
                                 related_name='beneficiar', verbose_name='адрес')
 
     def __str__(self):
-        return self.full_name
+        return f'{self.full_name}, {self.phone}\n{self.comment}'
 
     class Meta:
         verbose_name = 'благополучатель'

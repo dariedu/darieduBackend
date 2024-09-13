@@ -9,6 +9,8 @@ from user_app.models import User
 class Delivery(models.Model):
     date = models.DateTimeField(verbose_name='дата доставки')
     price = models.PositiveIntegerField('часы')
+    curator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='delivery',
+                                blank=True, null=True, verbose_name='куратор',)
     is_free = models.BooleanField(default=True, verbose_name='свободная')
     is_active = models.BooleanField(default=True, verbose_name='активная')
     is_completed = models.BooleanField(default=False, verbose_name='завершена')
@@ -27,7 +29,6 @@ class Delivery(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
-
 
     def clean(self):
         if self.is_free:
@@ -52,6 +53,7 @@ class Delivery(models.Model):
         self.full_clean()
         super().save(*args, **kwargs)
 
+
 class DeliveryAssignment(models.Model):
     delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, related_name='assignments',
                                  verbose_name='доставка')
@@ -60,6 +62,7 @@ class DeliveryAssignment(models.Model):
     class Meta:
         verbose_name = 'доставка волонтера'
         verbose_name_plural = 'доставки волонтеров'
+
 
 class Task(models.Model):
     category = models.CharField(max_length=255, verbose_name='категория')

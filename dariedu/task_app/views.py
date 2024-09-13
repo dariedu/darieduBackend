@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from user_app.models import User
 from .exceptions import BadRequest
 from .models import Task, Delivery, DeliveryAssignment
-# from .permissions import IsAbleCompleteTask  # для метода завершения задачи куратором
+from .permissions import IsAbleCompleteTask  # для метода завершения задачи куратором
 from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer
 
 
@@ -79,9 +79,9 @@ class TaskViewSet(
 
         # Вернуть по необходимости!
         # Для метода завершения задачи куратором
-        # elif self.action == 'complete':
-        #     # can complete only active and uncompleted tasks
-        #     return Task.objects.filter(is_active=True, is_completed=False)
+        elif self.action == 'complete':
+            # can complete only active and uncompleted tasks
+            return Task.objects.filter(is_active=True, is_completed=False)
 
         # all available tasks
         return super().get_queryset()
@@ -90,7 +90,7 @@ class TaskViewSet(
         if self.action == 'complete':
             pass
             # для метода завершения задачи куратором
-            # permission_classes = [IsAbleCompleteTask]
+            permission_classes = [IsAbleCompleteTask]
         else:
             # permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready
             permission_classes = [AllowAny]
@@ -152,23 +152,23 @@ class TaskViewSet(
 
     # Вернуть по необходимости!
     # Метод завершения задачи куратором
-    # @action(detail=True, methods=['post'], url_name='task_complete')
-    # def complete(self, request, pk=None):
-    #     """
-    #     Complete the task.
-    #     Can only complete an active uncompleted task.
-    #
-    #     Post request body should be empty. Will be ignored anyway.
-    #
-    #     Curators only.
-    #     """
-    #     task = self.get_object()
-    #
-    #     serializer = self.get_serializer(task, data={'is_active': False, 'is_completed': True}, partial=True)
-    #     serializer.is_valid(raise_exception=True)
-    #     serializer.save()
-    #
-    #     return Response(data=serializer.data, status=status.HTTP_200_OK)
+    @action(detail=True, methods=['post'], url_name='task_complete')
+    def complete(self, request, pk=None):
+        """
+        Complete the task.
+        Can only complete an active uncompleted task.
+
+        Post request body should be empty. Will be ignored anyway.
+
+        Curators only.
+        """
+        task = self.get_object()
+
+        serializer = self.get_serializer(task, data={'is_active': False, 'is_completed': True}, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
 class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
