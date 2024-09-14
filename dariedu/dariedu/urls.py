@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenBlacklistView, TokenRefreshView
 
 from stories_app.views import StoriesDetailView
 from user_app.urls import router as user_approuter
@@ -27,8 +27,7 @@ from promo_app.urls import router as promo_approuter
 from feedback_app.urls import router as feedback_approuter
 from address_app.urls import router as address_approuter
 from stories_app.urls import router as stories_approuter
-
-from user_app.views import RegistrationView, LoginView, CustomTokenRefreshView
+from user_app.views import RegistrationView, CustomTokenObtainPairView
 
 router = routers.DefaultRouter()
 router.registry.extend(user_approuter.registry)
@@ -45,8 +44,9 @@ urlpatterns = [
 
     path('api/registration/', RegistrationView.as_view()),
 
-    path('api/token/', LoginView.as_view()),
-    path('api/token/refresh/', CustomTokenRefreshView.as_view()),
+    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/blacklist/', TokenBlacklistView.as_view(), name='token_blacklist'),
 
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     # Optional UI:

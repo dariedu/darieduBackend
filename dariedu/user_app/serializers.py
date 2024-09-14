@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import User, Rating
 
@@ -7,22 +6,10 @@ from .models import User, Rating
 class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('tg_id', 'email', 'password', 'last_name', 'name', 'surname', 'phone')
+        fields = ('tg_id', 'email', 'last_name', 'name', 'surname', 'phone', 'is_adult', 'consent_to_personal_data')
 
-    def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
-
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token['tg_id'] = user.tg_id
-        return token
-
-    def validate(self, attrs):
-        data = super().validate(attrs)
-        data['tg_id'] = self.user.tg_id
-        return data
+class TelegramDataSerializer(serializers.Serializer):
+    tg_id = serializers.IntegerField()
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

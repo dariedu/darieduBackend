@@ -1,15 +1,12 @@
-from django.contrib.auth import get_user_model
 from django.shortcuts import render
 from rest_framework import viewsets, mixins, generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework import status
 
 from .models import User, Rating
-from .serializers import UserSerializer, RatingSerializer, RegistrationSerializer, MyTokenObtainPairSerializer
+from .serializers import UserSerializer, RatingSerializer, RegistrationSerializer, TelegramDataSerializer
 
 
 class RegistrationView(generics.CreateAPIView):
@@ -17,30 +14,26 @@ class RegistrationView(generics.CreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = RegistrationSerializer
 
+class CustomTokenObtainPairView(APIView):
+    serializer_class = TelegramDataSerializer
 
-class LoginView(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
+    def post(self, request):
+        tg_id = request.data.get('tg_id')
 
-class CustomTokenRefreshView(TokenRefreshView):
-    def post(self, request, *args, **kwargs):
-        refresh_token = request.data.get('refresh')
+        if not tg_id:
+            return Response({'error': 'tg_id is required'}, status=400)
 
-        if not refresh_token:
-            return Response({"error": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+        user = User.objects.filter(tg_id=tg_id).first()
 
-        try:
-            token = RefreshToken(refresh_token)
-            user = get_user_model().objects.get(tg_id=token['tg_id'])
-            new_token = TokenObtainPairSerializer.get_token(user)
-            new_refresh = RefreshToken.for_user(user)
+        if not user:
+            return Response({'error': 'User not found'}, status=404)
 
-            return Response({
-                'refresh': str(new_refresh),
-                'access': str(new_token),
-                'tg_id': user.tg_id
-            })
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        })
 
 class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()

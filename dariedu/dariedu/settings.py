@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+from datetime import timedelta
+
 from django.conf import settings
 
 from import_export.formats.base_formats import XLSX, XLS
@@ -63,7 +65,7 @@ INSTALLED_APPS = [
     'django.contrib.flatpages',
 
     # apps
-    'user_app',
+    'user_app.apps.UserAppConfig',
     'address_app',
     'task_app.apps.TaskAppConfig',
     'promo_app',
@@ -77,6 +79,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'import_export',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
@@ -212,8 +215,14 @@ SPECTACULAR_SETTINGS = {
 
 
 SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ALGORITHM": "HS256",
     "SIGNING_KEY": settings.SECRET_KEY,  # TODO add here another key
-    "TOKEN_OBTAIN_SERIALIZER": "my_app.serializers.MyTokenObtainPairSerializer",
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": False,
 }
 
 IMPORT_EXPORT_FORMATS = [XLSX, XLS]
