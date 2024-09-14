@@ -2,14 +2,17 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from address_app.models import City
 from user_app.models import User
+from django.utils import timezone
 
 class Promotion(models.Model):
     category = models.CharField(max_length=255, verbose_name='категория')
     name = models.CharField(max_length=255, verbose_name='название')
     price = models.PositiveIntegerField(verbose_name='стоимость')
     description = models.TextField(blank=True, null=True, verbose_name='описание')
-    start_date = models.DateTimeField(verbose_name='дата начала поощрения')
-    quantity = models.PositiveIntegerField(verbose_name='количество')
+    start_date = models.DateTimeField(default=timezone.now, verbose_name='дата начала поощрения')
+    quantity = models.PositiveIntegerField(verbose_name='количество') # общее количество поощрений
+    available_quantity = models.PositiveIntegerField(verbose_name='доступное количество',
+                                                     default=0)  # показ доступного количества поощрений
     for_curators_only = models.BooleanField(default=False, verbose_name='только для кураторов')
     is_active = models.BooleanField(default=True, verbose_name='активная')
     file = models.FileField(upload_to='promotion/', blank=True, null=True, verbose_name='файл')  # TODO: upload to where ?
@@ -43,6 +46,17 @@ class Promotion(models.Model):
             raise ValidationError("Укажите срок действия или отметьте поощрение как бессрочное.")
         if self.is_permanent and self.end_date:
             raise ValidationError("Бессрочное поощрение не должно иметь срока действия.")
+        if self.available_quantity > self.quantity:
+            raise ValidationError("Доступное количество не может быть больше общего количества.")
+
+    def save(self, *args, **kwargs):
+        if not self.pk:  # Если поощрение создаётся впервые, синхронизируем available_quantity с quantity
+            self.available_quantity = self.quantity
+        super().save(*args, **kwargs)
+
+    # Подсчет числа участников поощрений
+    def volunteers_count(self):
+        return self.participation_set.count()
 
     class Meta:
         verbose_name = 'поощрение'
@@ -56,6 +70,24 @@ class Participation(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.promotion}"
+
+    def save(self, *args, **kwargs):
+        # Проверяем, есть ли доступные поощрения
+        if self.promotion.available_quantity <= 0:
+            raise ValidationError("Нет доступных поощрений.")
+
+        # Уменьшаем доступное количество поощрений
+        self.promotion.available_quantity = F('available_quantity') - 1
+        self.promotion.save()
+
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # Возвращаем поощрение в доступное количество
+        self.promotion.available_quantity = F('available_quantity') + 1
+        self.promotion.save()
+
+        super().delete(*args, **kwargs)
 
     class Meta:
         verbose_name = 'участие'

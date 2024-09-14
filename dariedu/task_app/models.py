@@ -66,7 +66,7 @@ class Task(models.Model):
     name = models.CharField(max_length=255, verbose_name='название')
     price = models.PositiveIntegerField(verbose_name='часы')
     description = models.TextField(blank=True, null=True, verbose_name='описание')
-    -start_date = models.DateTimeField(verbose_name='дата начала')
+    start_date = models.DateTimeField(verbose_name='дата начала')
     end_date = models.DateTimeField(verbose_name='дата конца')
     volunteers_needed = models.PositiveIntegerField(verbose_name='требуется волонтеров')
     volunteers_taken = models.PositiveIntegerField(verbose_name='волонтеров взяли', default=0)
