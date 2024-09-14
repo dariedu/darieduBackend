@@ -16,8 +16,8 @@ from django.core.exceptions import ValidationError
 class PromotionViewSet(viewsets.ModelViewSet):
     queryset = Promotion.objects.all()
     serializer_class = PromotionSerializer
-    filterset_fields = ['category', 'city', 'date', 'is_active']
-    ordering_fields = ['date', 'price']
+    filterset_fields = ['category', 'city', 'start_date', 'is_active']
+    ordering_fields = ['start_date', 'price']
 
     @action(detail=True, methods=['post'], url_path='redeem')
     def redeem_promotion(self, request, pk):
@@ -70,7 +70,7 @@ class VolunteerPromotionsView(APIView):
         # Только активные поощрения, которые доступны волонтерам
         now = timezone.now()
         promotions = Promotion.objects.filter(is_active=True, for_curators_only=False).filter(
-            models.Q(is_permanent=True) | models.Q(expiry_date__gte=now)
+            models.Q(is_permanent=True) | models.Q(end_date__gte=now)
         )
         serializer = PromotionSerializer(promotions, many=True)
         return Response(serializer.data)
@@ -83,7 +83,7 @@ class CuratorPromotionsView(APIView):
         # Кураторы видят все активные поощрения
         now = timezone.now()
         promotions = Promotion.objects.filter(is_active=True).filter(
-            models.Q(is_permanent=True) | models.Q(expiry_date__gte=now)
+            models.Q(is_permanent=True) | models.Q(end_date__gte=now)
         )
         serializer = PromotionSerializer(promotions, many=True)
         return Response(serializer.data)
