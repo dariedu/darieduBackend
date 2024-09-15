@@ -45,6 +45,13 @@ UNFOLD_CONFIG = {
                     "collapsible": True,
                     "items": [
                         {
+                            "title": _("Доставка"),
+                            "icon": "local_shipping",
+                            "link": reverse_lazy("admin:task_app_delivery_changelist"),
+                            "badge": "main admin",
+                            "permission": lambda request: request.user.is_superuser,
+                        },
+                        {
                           "title": _("доставка/волонтер"),
                           "icon": "task",
                           "link": reverse_lazy("admin:task_app_deliveryassignment_changelist"),
