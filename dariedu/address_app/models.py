@@ -61,7 +61,7 @@ class Address(models.Model):
                                     verbose_name='маршрутный лист', blank=True, null=True)
 
     def __str__(self):
-        return f'{self.address}\n{self.link}\n{self.display_beneficiar}'
+        return f'{self.address}\n{self.link}'
 
     class Meta:
         verbose_name = 'адрес'

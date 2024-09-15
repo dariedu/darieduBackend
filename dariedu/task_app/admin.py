@@ -62,6 +62,6 @@ class DeliveryAdmin(BaseAdmin):
         )
 
         def display_volunteers(self, obj):
-            return ", ".join([f"{volunteer.tg_id}" for volunteer in obj.volunteer.all()])
+            return "\n".join([f"{volunteer.tg_id}" for volunteer in obj.volunteer.all()])
 
         display_volunteers.short_description = 'Волонтеры'
