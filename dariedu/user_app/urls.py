@@ -11,4 +11,4 @@ router.register(r'ratings', views.RatingViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('api/', views.FlatpageView, name='FlatpageView'),
-    ]
+]
