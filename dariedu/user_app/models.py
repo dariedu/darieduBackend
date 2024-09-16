@@ -4,7 +4,7 @@ from .managers import UserManager
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    tg_id = models.PositiveBigIntegerField(unique=True, verbose_name='телеграм ID')
+    tg_id = models.PositiveBigIntegerField(unique=True, db_index=True, verbose_name='телеграм ID')
     email = models.EmailField(unique=True, blank=True, null=True, verbose_name='email')
     last_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='фамилия')
     name = models.CharField(max_length=255, blank=True, null=True, verbose_name='имя')
@@ -15,7 +15,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     point = models.PositiveIntegerField(default=0, verbose_name='баллы')
     is_superuser = models.BooleanField(default=False, verbose_name='Сотрудник')
     is_staff = models.BooleanField(default=False, verbose_name='Куратор')
-
+    consent_to_personal_data = models.BooleanField(default=False, verbose_name='Согласие на обработку '
+                                                                               'персональных данных')
+    is_adult = models.BooleanField(default=False, verbose_name='18+')
     rating = models.ForeignKey('Rating', on_delete=models.CASCADE, blank=True, null=True, verbose_name='рейтинг')
 
     city = models.ForeignKey('address_app.City', on_delete=models.CASCADE, blank=True, null=True,
