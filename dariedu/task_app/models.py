@@ -30,30 +30,6 @@ class Delivery(models.Model):
         self.clean()
         super().save(*args, **kwargs)
 
-    def clean(self):
-        if self.is_free:
-            self.is_completed = False
-            self.in_execution = False
-            # if self.volunteer:
-            #     raise ValidationError({'volunteer': 'Volunteer should be False if delivery is free'})
-        elif self.is_completed:
-            self.is_active = False
-            self.is_free = False
-            self.in_execution = False
-        elif self.in_execution:
-            self.is_active = True
-            self.is_free = False
-            self.is_completed = False
-            # if not self.volunteer:
-            #     raise ValidationError({'volunteer': 'Volunteer is required if delivery is in execution'})
-        else:
-            raise ValidationError({'volunteer': 'Invalid delivery status'})
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super().save(*args, **kwargs)
-
-
 class DeliveryAssignment(models.Model):
     delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, related_name='assignments',
                                  verbose_name='доставка')
