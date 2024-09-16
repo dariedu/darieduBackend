@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model  # TODO remove when authentication is ready
 # from django.db.models import F  # для метода завершения задачи куратором
 from rest_framework import serializers
-
 from .models import Task, Delivery, DeliveryAssignment
 
 User = get_user_model()  # TODO remove when authentication is ready
