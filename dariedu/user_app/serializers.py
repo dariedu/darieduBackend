@@ -3,6 +3,14 @@ from rest_framework import serializers
 from .models import User, Rating
 
 
+class RegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('tg_id', 'email', 'last_name', 'name', 'surname', 'phone', 'is_adult', 'consent_to_personal_data')
+
+class TelegramDataSerializer(serializers.Serializer):
+    tg_id = serializers.IntegerField()
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
