@@ -14,6 +14,7 @@ class RegistrationView(generics.CreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = RegistrationSerializer
 
+    
 class CustomTokenObtainPairView(APIView):
     serializer_class = TelegramDataSerializer
 
@@ -35,6 +36,7 @@ class CustomTokenObtainPairView(APIView):
             'access': str(refresh.access_token),
         })
 
+      
 class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer

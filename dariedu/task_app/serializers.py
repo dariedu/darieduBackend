@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model  # TODO remove when authentication is ready
-# from django.db.models import F  # для метода завершения задачи куратором
+from django.db.models import F  # для метода завершения задачи куратором
 from rest_framework import serializers
 from .models import Task, Delivery, DeliveryAssignment
 
@@ -31,16 +31,16 @@ class TaskSerializer(serializers.ModelSerializer):
 
         # Вернуть по необходимости!
         # Для метода завершения задачи куратором
-        # is_active = validated_data.get('is_active', instance.is_active)
-        # is_completed = validated_data.get('is_completed', instance.is_completed)
+        is_active = validated_data.get('is_active', instance.is_active)
+        is_completed = validated_data.get('is_completed', instance.is_completed)
 
         # update instance fields
         instance.volunteers_taken = volunteers_taken
 
         # Вернуть по необходимости!
         # Для метода завершения задачи куратором
-        # instance.is_active = is_active
-        # instance.is_completed = is_completed
+        instance.is_active = is_active
+        instance.is_completed = is_completed
 
         instance.save()
 
@@ -57,12 +57,12 @@ class TaskSerializer(serializers.ModelSerializer):
 
         # Вернуть по необходимости!
         # Для метода завершения задачи куратором
-        # elif path == view.reverse_action('task_complete', args=[instance.pk]):
-        #     # task complete logic
-        #     instance.volunteers.update(
-        #         volunteer_hour=F('volunteer_hour') + instance.price,
-        #         point=F('point') + instance.price
-        #     )
+        elif path == view.reverse_action('task_complete', args=[instance.pk]):
+            # task complete logic
+            instance.volunteers.update(
+                volunteer_hour=F('volunteer_hour') + instance.price,
+                point=F('point') + instance.price
+            )
 
         return instance
 
@@ -72,11 +72,12 @@ class DeliveryAssignmentSerializer(serializers.ModelSerializer):
         model = DeliveryAssignment
         fields = ['id', 'delivery', 'volunteer']
 
+
 class DeliverySerializer(serializers.ModelSerializer):
     delivery_assignments = DeliveryAssignmentSerializer(many=True, source='assignments')
 
     class Meta:
         model = Delivery
-        fields = ['id', 'date', 'price', 'is_free', 'is_active',
+        fields = ['id', 'date', 'curator', 'price', 'is_free', 'is_active',
                   'is_completed', 'in_execution', 'volunteers_needed', 'volunteers_taken', 'delivery_assignments']
 

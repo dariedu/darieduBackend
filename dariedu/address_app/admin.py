@@ -22,7 +22,7 @@ class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
 
 @admin.register(Address)
 class AddressAdmin(BaseAdmin):
-    list_display = ('address', 'link', 'location', 'route_sheet__name')
+    list_display = ('address', 'link', 'location', 'route_sheet__name', 'display_beneficiar')
     list_filter = ('location__city', 'location')
     search_fields = ('address', 'location__city', 'location')
 
@@ -49,7 +49,7 @@ class AddressInline(admin.TabularInline):
 
 @admin.register(RouteSheet)
 class RouteSheetAdmin(BaseAdmin):
-    list_display = ('name', 'user', 'map',)
+    list_display = ('name', 'user', 'map', 'location', 'location__curator', 'display_address')
     # inlines = [AddressInline, ]
 
     # def address_link(self, obj):

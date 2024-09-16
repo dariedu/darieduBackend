@@ -17,7 +17,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False, verbose_name='Куратор')
     consent_to_personal_data = models.BooleanField(default=False, verbose_name='Согласие на обработку '
                                                                                'персональных данных')
-    is_adult = models.BooleanField(default=False, verbose_name='18+')
+    is_adult = models.BooleanField(default=True, verbose_name='18+')
     rating = models.ForeignKey('Rating', on_delete=models.CASCADE, blank=True, null=True, verbose_name='рейтинг')
 
     city = models.ForeignKey('address_app.City', on_delete=models.CASCADE, blank=True, null=True,
@@ -41,6 +41,7 @@ class Rating(models.Model):
     Maybe we don't need separate model for rating
     """
     level = models.CharField(max_length=255, verbose_name='рейтинг')
+    hours_needed = models.PositiveIntegerField(verbose_name='часы')
 
     def __str__(self):
         return self.level

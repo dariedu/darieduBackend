@@ -4,7 +4,7 @@ from user_app.models import User
 
 
 class RequestMessage(models.Model):
-    type = models.CharField(max_length=255, verbose_name='тип запроса')
+    type = models.CharField(max_length=255, verbose_name='тип заявки')
     text = models.TextField(verbose_name='текст', blank=True, null=True)
     form = models.URLField(max_length=500, blank=True, null=True, verbose_name='форма')
 
@@ -14,8 +14,8 @@ class RequestMessage(models.Model):
         return self.type
 
     class Meta:
-        verbose_name = 'запрос'
-        verbose_name_plural = 'запросы'
+        verbose_name = 'заявка'
+        verbose_name_plural = 'заявки'
 
 
 class Feedback(models.Model):
