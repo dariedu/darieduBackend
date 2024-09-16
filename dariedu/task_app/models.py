@@ -18,7 +18,7 @@ class Delivery(models.Model):
     volunteers_needed = models.PositiveIntegerField(verbose_name='требуется волонтеров', default=1)
     volunteers_taken = models.PositiveIntegerField(verbose_name='волонтеров взяли', default=0)
 
-    route_sheet = models.ManyToManyField(RouteSheet, through='DeliveryRoute', related_name='delivery', verbose_name='маршрутный лист')
+    route_sheet = models.ManyToManyField(RouteSheet, related_name='delivery', verbose_name='маршрутный лист')
 
     def clean(self):
         if self.is_completed:
@@ -34,8 +34,8 @@ class Delivery(models.Model):
         if self.is_free:
             self.is_completed = False
             self.in_execution = False
-            if self.volunteer:
-                raise ValidationError({'volunteer': 'Volunteer should be False if delivery is free'})
+            # if self.volunteer:
+            #     raise ValidationError({'volunteer': 'Volunteer should be False if delivery is free'})
         elif self.is_completed:
             self.is_active = False
             self.is_free = False
@@ -44,8 +44,8 @@ class Delivery(models.Model):
             self.is_active = True
             self.is_free = False
             self.is_completed = False
-            if not self.volunteer:
-                raise ValidationError({'volunteer': 'Volunteer is required if delivery is in execution'})
+            # if not self.volunteer:
+            #     raise ValidationError({'volunteer': 'Volunteer is required if delivery is in execution'})
         else:
             raise ValidationError({'volunteer': 'Invalid delivery status'})
 
@@ -62,17 +62,6 @@ class DeliveryAssignment(models.Model):
     class Meta:
         verbose_name = 'доставка волонтера'
         verbose_name_plural = 'доставки волонтеров'
-
-
-class DeliveryRoute(models.Model):
-    delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, related_name='delivery_route',
-                                 verbose_name='доставка')
-    route_sheet = models.ForeignKey(RouteSheet, on_delete=models.CASCADE, related_name='delivery_route',
-                                    verbose_name='маршрутный лист')
-
-    class Meta:
-        verbose_name = 'маршрутный лист для доставки'
-        verbose_name_plural = 'маршрутные листы для доставок'
 
 
 class Task(models.Model):
