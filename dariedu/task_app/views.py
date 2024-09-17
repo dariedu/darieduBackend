@@ -1,17 +1,13 @@
-from django.core.exceptions import ValidationError
-from isort.literal import assignment
-from rest_framework.generics import get_object_or_404
 from django.db.models import F
 from django.utils import timezone
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from user_app.models import User
 from .exceptions import BadRequest
 from .models import Task, Delivery, DeliveryAssignment
-from .permissions import IsAbleCompleteTask  # для метода завершения задачи куратором
+from .permissions import IsAbleCompleteTask, IsCurator  # для метода завершения задачи куратором
 from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer
 
 
@@ -27,6 +23,8 @@ class TaskViewSet(
         my: get a user specific tasks (supports filtering)
         accept: accept an available task
         refuse: refuse a user specific active uncompleted task
+        complete: mark task as completed and add points to volunteers
+        curator_of: get list of tasks where current user is curator
     """
     queryset = Task.objects.filter(
         is_active=True,
@@ -47,11 +45,11 @@ class TaskViewSet(
             accept: all available tasks
             refuse: user specific active uncompleted tasks
             complete: active uncompleted tasks only
+            curator_of: all tasks where current user is the curator
         """
         if self.action == 'my':
             # all tasks of current user
-            queryset = User.objects.get(pk=1).tasks.all()
-            # queryset = self.request.user.tasks.all() # TODO swap to comment
+            queryset = self.request.user.tasks.all()
 
             is_active = self.request.query_params.get('is_active', None)
             is_completed = self.request.query_params.get('is_completed', None)
@@ -74,14 +72,17 @@ class TaskViewSet(
 
         elif self.action == 'refuse':
             # the user can only abandon his active uncompleted task
-            # return self.request.user.tasks.filter(is_active=True, is_completed=False)
-            return User.objects.get(pk=1).tasks.filter(is_active=True, is_completed=False)  # TODO swap to comment
+            return self.request.user.tasks.filter(is_active=True, is_completed=False)
 
         # Вернуть по необходимости!
         # Для метода завершения задачи куратором
         elif self.action == 'complete':
             # can complete only active and uncompleted tasks
             return Task.objects.filter(is_active=True, is_completed=False)
+
+        elif self.action == 'curator_of':
+            # return tasks where the current user is curator
+            return self.request.user.task_curator.all()
 
         # all available tasks
         return super().get_queryset()
@@ -91,9 +92,10 @@ class TaskViewSet(
             pass
             # для метода завершения задачи куратором
             permission_classes = [IsAbleCompleteTask]
+        elif self.action == 'curator_of':
+            permission_classes = [IsCurator]
         else:
-            # permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready
-            permission_classes = [AllowAny]
+            permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
 
     @action(detail=False, methods=['get'], url_name='my_tasks')
@@ -122,8 +124,7 @@ class TaskViewSet(
         """
         task = self.get_object()
 
-        user = User.objects.get(pk=1)
-        if user in task.volunteers.all():  # TODO change to request.user
+        if request.user in task.volunteers.all():
             raise BadRequest("You have already taken this task!")
 
         serializer = self.get_serializer(task, data={'volunteers_taken': task.volunteers_taken + 1}, partial=True)
@@ -167,6 +168,18 @@ class TaskViewSet(
         serializer = self.get_serializer(task, data={'is_active': False, 'is_completed': True}, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_name='task_curator_of')
+    def curator_of(self, request):
+        """
+        Get all tasks where current user is the curator of the task.
+
+        Curators only.
+        """
+        tasks = self.get_queryset()
+        serializer = self.get_serializer(tasks, many=True)
 
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 

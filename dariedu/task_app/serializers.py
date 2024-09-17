@@ -1,18 +1,20 @@
-from django.contrib.auth import get_user_model  # TODO remove when authentication is ready
 from django.db.models import F  # для метода завершения задачи куратором
 from rest_framework import serializers
-from .models import Task, Delivery, DeliveryAssignment
 
-User = get_user_model()  # TODO remove when authentication is ready
+from address_app.serializers import CitySerializer
+from .models import Task, Delivery, DeliveryAssignment
 
 
 class TaskSerializer(serializers.ModelSerializer):
+    city = CitySerializer(read_only=True)
+
     class Meta:
         model = Task
         fields = '__all__'
-        extra_kwargs = {
-            'id': {'read_only': True},
-        }
+        read_only_fields = [
+            'id', 'category', 'name', 'price', 'description', 'start_date', 'end_date', 'volunteers_needed',
+            'volunteers_taken', 'is_active', 'is_completed', 'curator', 'volunteers'
+        ]
 
     def update(self, instance, validated_data):
         """
@@ -48,12 +50,10 @@ class TaskSerializer(serializers.ModelSerializer):
         path = request.build_absolute_uri()
         if path == view.reverse_action('task_accept', args=[instance.pk]):
             # task accept logic
-            # instance.volunteers.add(request.user)
-            instance.volunteers.add(User.objects.get(pk=1))  # TODO swap to comment when authentication is ready
+            instance.volunteers.add(request.user)
         elif path == view.reverse_action('task_refuse', args=[instance.pk]):
             # task refuse logic
-            # instance.volunteers.remove(request.user)
-            instance.volunteers.remove(User.objects.get(pk=1))  # TODO swap to comment when authentication is ready
+            instance.volunteers.remove(request.user)
 
         # Вернуть по необходимости!
         # Для метода завершения задачи куратором
@@ -80,4 +80,3 @@ class DeliverySerializer(serializers.ModelSerializer):
         model = Delivery
         fields = ['id', 'date', 'curator', 'price', 'is_free', 'is_active',
                   'is_completed', 'in_execution', 'volunteers_needed', 'volunteers_taken', 'delivery_assignments']
-
