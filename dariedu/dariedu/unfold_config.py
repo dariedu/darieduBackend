@@ -35,6 +35,29 @@ UNFOLD_CONFIG = {
             },
         "SHOW_HISTORY": True,
         "SHOW_VIEW_ON_SITE": False,
+        "COLORS": {
+            "font": {
+                "subtle-light": "107 114 128",
+                "subtle-dark": "156 163 175",
+                "default-light": "75 85 99",
+                "default-dark": "209 213 219",
+                "important-light": "17 24 39",
+                "important-dark": "243 244 246",
+            },
+            "primary": {
+                "50": "250 245 255",
+                "100": "243 232 255",
+                "200": "233 213 255",
+                "300": "216 180 254",
+                "400": "192 132 252",
+                "500": "56 177 120",
+                "600": "56 177 120",
+                "700": "126 34 206",
+                "800": "107 33 168",
+                "900": "88 28 135",
+                "950": "59 7 100",
+            },
+        },
         "SIDEBAR": {
             "show_search": False,
             "show_all_applications": True,
@@ -48,7 +71,7 @@ UNFOLD_CONFIG = {
                             "title": _("Доставка"),
                             "icon": "local_shipping",
                             "link": reverse_lazy("admin:task_app_delivery_changelist"),
-#                             "badge": "main admin",
+                            # "badge": "main admin",
                             "permission": lambda request: request.user.is_superuser,
                         },
                         {
@@ -130,8 +153,9 @@ UNFOLD_CONFIG = {
                     ],
                 },
                 {
+                    "title": _("Поощрения"),
                     "separator": True,
-                    "collapsible": False,
+                    "collapsible": True,
                     "items": [
                         {
                             "title": _("Поощрения"),
@@ -140,6 +164,13 @@ UNFOLD_CONFIG = {
                             # "badge": "main admin",
                             "permission": lambda request: request.user.is_superuser,
                         },
+                        {
+                            "title": _("Категории"),
+                            "icon": "category",
+                            "link": reverse_lazy("admin:promo_app_promocategory_changelist"),
+                            # "badge": "main admin",
+                            "permission": lambda request: request.user.is_superuser,
+                        }
                     ],
                 },
                 {
