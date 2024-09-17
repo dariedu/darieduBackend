@@ -27,7 +27,7 @@ class Promotion(models.Model):
     is_permanent = models.BooleanField(default=False, verbose_name='бессрочное поощрение')
     end_date = models.DateTimeField(blank=True, null=True, verbose_name='срок действия')  # Дата окончания действия
 
-    city = models.ForeignKey(City, on_delete=models.CASCADE, blank=True, null=True, verbose_name='город')
+    city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='город')
     users = models.ManyToManyField(User, through='Participation', blank=True, verbose_name='получатель')
     picture = models.ImageField(blank=True, null=True, verbose_name='картинка')  # TODO: or URL?
 
