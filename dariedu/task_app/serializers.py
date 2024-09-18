@@ -2,11 +2,18 @@ from django.db.models import F  # для метода завершения за�
 from rest_framework import serializers
 
 from address_app.serializers import CitySerializer
-from .models import Task, Delivery, DeliveryAssignment
+from .models import Task, Delivery, DeliveryAssignment, TaskCategory
+
+
+class TaskCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaskCategory
+        fields = '__all__'
 
 
 class TaskSerializer(serializers.ModelSerializer):
     city = CitySerializer(read_only=True)
+    category = TaskCategorySerializer(read_only=True)
 
     class Meta:
         model = Task
