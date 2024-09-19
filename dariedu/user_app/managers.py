@@ -1,11 +1,10 @@
 from django.contrib.auth.models import BaseUserManager
-from django.db import models
 
 
 class UserManager(BaseUserManager):
     def create_user(self, tg_id, password=None, **extra_fields):
         """
-            Create and save a user with the given tg id and password.
+            Create and save a user with the given tg id.
         """
         if not tg_id:
             raise ValueError("The Telegram ID must be set")

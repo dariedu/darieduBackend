@@ -5,7 +5,7 @@ from unfold.contrib.filters.admin import RangeDateFilter
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
 
-from .models import Delivery, Task, DeliveryAssignment
+from .models import Delivery, Task, DeliveryAssignment, TaskCategory
 
 
 class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
@@ -37,15 +37,25 @@ class TaskAdmin(BaseAdmin):
     ordering = ('-start_date',)
 
 
+@admin.register(TaskCategory)
+class TaskCategoryAdmin(BaseAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+
 @admin.register(Delivery)
 class DeliveryAdmin(BaseAdmin):
     list_display = (
+        'location',
         'date',
         'price',
         'is_active',
         'is_free',
         'in_execution',
         'is_completed',
+        'curator',
+        'volunteers_needed',
+        'volunteers_taken',
     )
 
     list_filter = ['is_active', 'is_free', 'is_completed', 'in_execution',
@@ -54,14 +64,15 @@ class DeliveryAdmin(BaseAdmin):
     search_fields = ('date', 'route_sheet')
     ordering = ('-date',)
 
-    @admin.register(DeliveryAssignment)
-    class DeliveryAssignmentAdmin(BaseAdmin):
-        list_display = (
-            'delivery',
-            'display_volunteers'
-        )
 
-        def display_volunteers(self, obj):
-            return ", ".join([f"{volunteer.tg_id}" for volunteer in obj.volunteer.all()])
+@admin.register(DeliveryAssignment)
+class DeliveryAssignmentAdmin(BaseAdmin):
+    list_display = (
+        'delivery',
+        'display_volunteers'
+    )
 
-        display_volunteers.short_description = 'Волонтеры'
+    def display_volunteers(self, obj):
+        return "\n".join([f"{volunteer.tg_id}" for volunteer in obj.volunteer.all()])
+
+    display_volunteers.short_description = 'Волонтеры'

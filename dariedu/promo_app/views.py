@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
@@ -11,7 +11,8 @@ from django.shortcuts import get_object_or_404
 from .models import Promotion, User, Participation
 from django.core.exceptions import ValidationError
 
-class PromotionViewSet(viewsets.ModelViewSet):
+
+class PromotionViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Promotion.objects.all()
     serializer_class = PromotionSerializer
     filterset_fields = ['category', 'city', 'start_date', 'is_active']
@@ -69,10 +70,10 @@ class PromotionViewSet(viewsets.ModelViewSet):
         user.point += promotion.price
         user.save()
 
-        # Удаление записи о получении поощрения
+        # Удаляем запись о получении поощрения
         participation.delete()
 
-        # Обновление serializer для возврата актуальной информации
+        # Обновляем serializer для возврата актуальной информации
         serializer = PromotionSerializer(instance=promotion, context={'view': self, 'request': request})
 
         try:

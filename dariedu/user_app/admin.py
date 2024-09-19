@@ -26,6 +26,7 @@ class UserAdmin(ModelAdmin, ImportExportModelAdmin):
         'phone',
         'rating_id',
         'volunteer_hour',
+        'point',
         'is_superuser',
         'is_staff',
     )
@@ -41,11 +42,12 @@ class UserAdmin(ModelAdmin, ImportExportModelAdmin):
             "name",
             "surname",
             "photo",  # TODO: add preview
+            "volunteer_hour",
+            "point",
             "email",
             "phone",
-            # "rating_id", # TODO: add somehow
-            # "city_id",
-            "volunteer_hour"
+            "rating", # TODO: add somehow
+            "city",
         ]}),
         ("Permissions", {"fields": ["is_staff", "is_superuser"]}),
     ]

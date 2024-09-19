@@ -1,11 +1,20 @@
 from rest_framework import serializers
-from .models import Promotion
+from address_app.serializers import CitySerializer
+from .models import Promotion, PromoCategory
+
+
+class PromoCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PromoCategory
+        fields = '__all__'
+        extra_kwargs = {'id': {'read_only': True}, 'name': {'read_only': True}}
 
 
 class PromotionSerializer(serializers.ModelSerializer):
     volunteers_count = serializers.SerializerMethodField()
+    category = PromoCategorySerializer(read_only=True)
+    city = CitySerializer(read_only=True)
 
-    # TODO we need here only GET and UPDATE to take the promotion
     class Meta:
         model = Promotion
         fields = '__all__'
