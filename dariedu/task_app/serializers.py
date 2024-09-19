@@ -1,6 +1,5 @@
 from django.db.models import F  # для метода завершения задачи куратором
 from rest_framework import serializers
-
 from address_app.serializers import CitySerializer
 from .models import Task, Delivery, DeliveryAssignment, TaskCategory
 

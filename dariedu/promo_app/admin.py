@@ -3,7 +3,6 @@ from unfold.admin import ModelAdmin
 from unfold.contrib.filters.admin import RangeDateFilter
 from .models import Promotion, PromoCategory
 
-
 class BaseAdmin(ModelAdmin):
     compressed_fields = True  # Default: False
     list_select_related = True  # Default: False

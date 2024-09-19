@@ -20,6 +20,9 @@ class PromotionViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     @action(detail=True, methods=['post'], url_path='redeem')
     def redeem_promotion(self, request, pk):
+        """
+        Приобретение поощрения
+        """
         promotion = get_object_or_404(Promotion, pk=pk)
         user = request.user
 
@@ -50,9 +53,11 @@ class PromotionViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         except Exception as e:
             return Response({'error': 'Internal Server Error'}, status=500)
 
-    # Функция для отмены поощрения
     @action(detail=True, methods=['post'], url_path='cancel')
     def cancel_redeem(self, request, pk):
+        """
+        Отмена поощрения
+        """
         promotion = get_object_or_404(Promotion, pk=pk)
         user = request.user
 
@@ -78,8 +83,11 @@ class PromotionViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         except Exception as e:
             return Response({'error': 'Internal Server Error'}, status=500)
 
-    # Показ числа участников поощрений
-    def retrieve(self, request, pk=None):
+    @action(detail=True, methods=['get'], url_path='volunteers-count')
+    def retrieve_volunteers_count(self, request, pk=None):
+        """
+        Показ числа участников поощрений
+        """
         promotion = get_object_or_404(Promotion, pk=pk)
         data = {
             'promotion': PromotionSerializer(promotion).data,
@@ -88,12 +96,14 @@ class PromotionViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         return Response(data)
 
 
-
-class VolunteerPromotionsView(APIView):
+class VolunteerPromotionsViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        # Только активные поощрения, которые доступны волонтерам
+    @action(detail=False, methods=['get'], url_path='available_volunteer')
+    def get_volunteer_promotions(self, request):
+        """
+        Показ доступных поощрений для волонтера
+        """
         now = timezone.now()
         promotions = Promotion.objects.filter(is_active=True, for_curators_only=False).filter(
             models.Q(is_permanent=True) | models.Q(end_date__gte=now)
@@ -102,11 +112,14 @@ class VolunteerPromotionsView(APIView):
         return Response(serializer.data)
 
 
-class CuratorPromotionsView(APIView):
+class CuratorPromotionsViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        # Кураторы видят все активные поощрения
+    @action(detail=False, methods=['get'], url_path='available_curator')
+    def get_curator_promotions(self, request):
+        """
+        Кураторы видят все активные поощрения
+        """
         now = timezone.now()
         promotions = Promotion.objects.filter(is_active=True).filter(
             models.Q(is_permanent=True) | models.Q(end_date__gte=now)

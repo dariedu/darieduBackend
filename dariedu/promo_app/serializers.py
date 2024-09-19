@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from address_app.serializers import CitySerializer
 from .models import Promotion, PromoCategory
 
