@@ -17,6 +17,7 @@ class PromotionViewSet(viewsets.ModelViewSet):
     filterset_fields = ['category', 'city', 'start_date', 'is_active']
     ordering_fields = ['start_date', 'price']
 
+    # Приобретение поощрения
     @action(detail=True, methods=['post'], url_path='redeem')
     def redeem_promotion(self, request, pk):
         promotion = get_object_or_404(Promotion, pk=pk)
@@ -49,7 +50,7 @@ class PromotionViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'error': 'Internal Server Error'}, status=500)
 
-    # Функция для отмены поощрения
+    # Отмена поощрения
     @action(detail=True, methods=['post'], url_path='cancel')
     def cancel_redeem(self, request, pk):
         promotion = get_object_or_404(Promotion, pk=pk)
@@ -64,10 +65,10 @@ class PromotionViewSet(viewsets.ModelViewSet):
         user.point += promotion.price
         user.save()
 
-        # Удаляем запись о получении поощрения
+        # Удаление записи о получении поощрения
         participation.delete()
 
-        # Обновляем serializer для возврата актуальной информации
+        # Обновление serializer для возврата актуальной информации
         serializer = PromotionSerializer(instance=promotion, context={'view': self, 'request': request})
 
         try:
@@ -78,7 +79,8 @@ class PromotionViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Internal Server Error'}, status=500)
 
     # Показ числа участников поощрений
-    def retrieve(self, request, pk=None):
+    @action(detail=True, methods=['get'], url_path='volunteers-count')
+    def retrieve_volunteers_count(self, request, pk=None):
         promotion = get_object_or_404(Promotion, pk=pk)
         data = {
             'promotion': PromotionSerializer(promotion).data,
@@ -87,12 +89,12 @@ class PromotionViewSet(viewsets.ModelViewSet):
         return Response(data)
 
 
-
-class VolunteerPromotionsView(APIView):
+class VolunteerPromotionsViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        # Только активные поощрения, которые доступны волонтерам
+    # Показ доступных поощрений для волонтера
+    @action(detail=False, methods=['get'], url_path='available_volunteer')
+    def get_volunteer_promotions(self, request):
         now = timezone.now()
         promotions = Promotion.objects.filter(is_active=True, for_curators_only=False).filter(
             models.Q(is_permanent=True) | models.Q(end_date__gte=now)
@@ -101,10 +103,12 @@ class VolunteerPromotionsView(APIView):
         return Response(serializer.data)
 
 
-class CuratorPromotionsView(APIView):
+class CuratorPromotionsViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    # Показ доступных поощрений для куратора
+    @action(detail=False, methods=['get'], url_path='available_curator')
+    def get_curator_promotions(self, request):
         # Кураторы видят все активные поощрения
         now = timezone.now()
         promotions = Promotion.objects.filter(is_active=True).filter(
