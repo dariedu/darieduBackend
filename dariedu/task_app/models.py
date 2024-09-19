@@ -2,7 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from user_app.models import User
 
-from address_app.models import RouteSheet, City
+from address_app.models import RouteSheet, City, Location
 from user_app.models import User
 
 
@@ -11,6 +11,7 @@ class Delivery(models.Model):
     price = models.PositiveIntegerField('часы')
     curator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='delivery',
                                 blank=True, null=True, verbose_name='куратор',)
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='delivery', verbose_name='Локация')
     is_free = models.BooleanField(default=True, verbose_name='свободная')
     is_active = models.BooleanField(default=True, verbose_name='активная')
     is_completed = models.BooleanField(default=False, verbose_name='завершена')
@@ -30,6 +31,7 @@ class Delivery(models.Model):
         self.clean()
         super().save(*args, **kwargs)
 
+
 class DeliveryAssignment(models.Model):
     delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, related_name='assignments',
                                  verbose_name='доставка')
@@ -41,18 +43,19 @@ class DeliveryAssignment(models.Model):
 
 
 class Task(models.Model):
-    category = models.CharField(max_length=255, verbose_name='категория')
+    category = models.ForeignKey('TaskCategory', on_delete=models.CASCADE,
+                                 null=True, blank=True, verbose_name='категория')
     name = models.CharField(max_length=255, verbose_name='название')
     price = models.PositiveIntegerField(verbose_name='часы')
     description = models.TextField(blank=True, null=True, verbose_name='описание')
     start_date = models.DateTimeField(verbose_name='дата начала')
     end_date = models.DateTimeField(verbose_name='дата конца')
-    volunteers_needed = models.PositiveIntegerField(verbose_name='требуется волонтеров')
+    volunteers_needed = models.PositiveIntegerField(verbose_name='требуется волонтеров', default=1)
     volunteers_taken = models.PositiveIntegerField(verbose_name='волонтеров взяли', default=0)
     is_active = models.BooleanField(default=True, verbose_name='активная')
     is_completed = models.BooleanField(default=False, verbose_name='завершена')
 
-    city = models.ForeignKey(City, on_delete=models.CASCADE, null=True, blank=True, verbose_name='город')
+    city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='город')
     curator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_curator', verbose_name='куратор')
     volunteers = models.ManyToManyField(User, blank=True, related_name='tasks', verbose_name='волонтеры')
 
@@ -62,3 +65,14 @@ class Task(models.Model):
     class Meta:
         verbose_name = 'задание'
         verbose_name_plural = 'задания'
+
+
+class TaskCategory(models.Model):
+    name = models.CharField(max_length=255, verbose_name='название')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'категория задания'
+        verbose_name_plural = 'категории заданий'

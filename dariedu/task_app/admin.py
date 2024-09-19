@@ -5,7 +5,7 @@ from unfold.contrib.filters.admin import RangeDateFilter
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
 
-from .models import Delivery, Task, DeliveryAssignment
+from .models import Delivery, Task, DeliveryAssignment, TaskCategory
 
 
 class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
@@ -37,9 +37,16 @@ class TaskAdmin(BaseAdmin):
     ordering = ('-start_date',)
 
 
+@admin.register(TaskCategory)
+class TaskCategoryAdmin(BaseAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+
 @admin.register(Delivery)
 class DeliveryAdmin(BaseAdmin):
     list_display = (
+        'location',
         'date',
         'price',
         'is_active',

@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from user_app.models import User
+from user_app.serializers import UserSerializer
 from .models import Address, Location, City, RouteSheet, Beneficiar
 from .serializers import (
     AddressSerializer,
@@ -16,19 +17,6 @@ from .serializers import (
 )
 
 logging.basicConfig(level=logging.INFO)
-
-
-# TODO ask frontenders do they need this
-# class AddressViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-#     queryset = Address.objects.all()
-#     serializer_class = AddressSerializer
-#     # permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready
-#     filterset_fields = [
-#         'location__city',
-#         'location',
-#         'route_sheet',
-#         'location__curator'
-#     ]
 
 
 class LocationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -49,7 +37,7 @@ class CityViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     # permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready
 
 
-class RouteSheetViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = RouteSheet.objects.all()
     serializer_class = RouteSheetSerializer
     # permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready
@@ -59,25 +47,32 @@ class RouteSheetViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         if self.request.user.is_staff:
             # logging.info(RouteSheet.objects.filter(location__curator=self.request.user, delivery__is_active=True))
             # logging.info(RouteSheet.objects.filter(location__curator=self.request.user))
-            return RouteSheet.objects.filter(location__curator=self.request.user,delivery__is_active=True)
+            return RouteSheet.objects.filter(location__curator=self.request.user, delivery__is_active=True)
         else:
             return RouteSheet.objects.filter(user=self.request.user, delivery__in_execution=True)
 
-    @action(detail=False, methods=['post'], url_name='assign_route')
+    @action(detail=True, methods=['post'], url_name='assign_route')
     def assign(self, request, pk=None):
-        """Assign a routesheet by curator to a volunteer with pk=pk"""
+        """
+        Assign a routesheet by curator to a volunteer with id=volunteer_id
+        Body:
+        {
+            "volunteer_id":
+        }
+        """
         if self.request.user.is_staff:
             routesheet = self.get_object()
+            volunteer_id = self.request.data.get('volunteer_id', None)
             # все волонтеры, записанные на эту доставку:
             volunteers = routesheet.delivery.filter(is_active=True).assignment.volunteer.all()
             try:
-                user = User.get(pk=pk)
+                user = User.get(id=volunteer_id)
             except User.DoesNotExist as error:
-                logging.info(error, exc_info=True)
+                # logging.info(error, exc_info=True)
                 return Response(status=status.HTTP_404_NOT_FOUND,
                                 data={'detail': 'Такого пользователя не существует'})
             except Exception as error:
-                logging.info(error, exc_info=True)
+                # logging.info(error, exc_info=True)
                 return Response(status=status.HTTP_400_BAD_REQUEST,
                                 data={'detail': 'Неправильные данные'})
             if user in volunteers:
@@ -91,10 +86,3 @@ class RouteSheetViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             return Response(status=status.HTTP_403_FORBIDDEN,
                             data={'detail': 'Доступ запрещен'})
 #
-#
-# class BeneficiarViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-#     queryset = Beneficiar.objects.all()
-#     serializer_class = BeneficiarSerializer
-#     filterset_fields = ['address', 'address__location']
-#     # permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready
-

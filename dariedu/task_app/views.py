@@ -30,7 +30,7 @@ class TaskViewSet(
         is_active=True,
         is_completed=False,
         end_date__gt=timezone.now(),
-        volunteers_needed__gt=F('volunteers_taken')
+        volunteers_needed__gt=F('volunteers_taken')  #TODO switch off when we will make autocomplete
     )
     serializer_class = TaskSerializer
     ordering_fields = ['start_date', 'end_date', 'price']
@@ -82,7 +82,7 @@ class TaskViewSet(
 
         elif self.action == 'curator_of':
             # return tasks where the current user is curator
-            return self.request.user.task_curator.all()
+            return self.request.user.task_curator.filter(is_active=True, is_completed=False)
 
         # all available tasks
         return super().get_queryset()
@@ -197,6 +197,9 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         active = self.request.query_params.get('active', None)
         completed = self.request.query_params.get('completed', None)
 
+        if action == 'deliveries_curator' and self.request.user.is_staff:
+            return queryset.filter(is_active=True, curator=user)
+
         if free is not None and free.lower() == 'true':
             queryset = queryset.filter(is_free=True).distinct()
         if active is not None and active.lower() == 'true':
@@ -225,11 +228,11 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     @action(detail=False, methods=['get'], url_path='curator')
     def deliveries_curator(self, request):
         total_deliveries = Delivery.objects.filter(in_execution=True).count()
-        active_deliveries = Delivery.objects.filter(is_active=True).count()
+        active_deliveries_count = Delivery.objects.filter(is_active=True).count()
 
         return Response({
             'выполняются доставки': total_deliveries,
-            'количество активных доставок': active_deliveries
+            'количество активных доставок': active_deliveries_count,
         })
 
     @action(detail=True, methods=['post'], url_path='take')
