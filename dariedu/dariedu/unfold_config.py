@@ -198,6 +198,13 @@ UNFOLD_CONFIG = {
                     "collapsible": True,
                     "items": [
                         {
+                            "title": _("Фотоотчеты"),
+                            "icon": "request_quote",
+                            "link": reverse_lazy("admin:feedback_app_photoreport_changelist"),
+                            # "badge": "main admin",
+                            "permission": lambda request: request.user.is_superuser,
+                        },
+                        {
                             "title": _("Заявки"),
                             "icon": "request_quote",
                             "link": reverse_lazy("admin:feedback_app_requestmessage_changelist"),

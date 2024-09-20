@@ -69,6 +69,7 @@ class TaskSerializer(serializers.ModelSerializer):
                 volunteer_hour=F('volunteer_hour') + instance.price,
                 point=F('point') + instance.price
             )
+            instance.curator.update(curator_hour=F('curator_hour') + instance.price)
 
         return instance
 
