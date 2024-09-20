@@ -1,7 +1,7 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin
 
-from .models import Feedback, RequestMessage
+from .models import Feedback, RequestMessage, PhotoReport
 
 
 class BaseAdmin(ModelAdmin):
@@ -32,3 +32,16 @@ class RequestMessageAdmin(BaseAdmin):
     )
     list_filter = ('type',)
     search_fields = ('type', 'text', 'user')
+
+
+@admin.register(PhotoReport)
+class PhotoReportAdmin(BaseAdmin):
+    list_display = (
+        "address",
+        "photo",
+        "date",
+        "user",
+        'comment',
+    )
+    list_filter = ('date', 'user')
+    search_fields = ('address', 'user', 'comment')
