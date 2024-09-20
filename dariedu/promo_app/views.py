@@ -1,24 +1,34 @@
 from rest_framework import viewsets, mixins
-from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 
-from task_app.permissions import IsCurator
-from .serializers import PromotionSerializer
+from .serializers import PromotionSerializer, PromoCategorySerializer
 from django.db import models
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from .models import Promotion, User, Participation
+from .models import Promotion, User, Participation, PromoCategory
 from django.core.exceptions import ValidationError
 
 
 class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """Curators can see all available promotions, users can see only his"""
     queryset = Promotion.objects.all()
     serializer_class = PromotionSerializer
     filterset_fields = ['category', 'city', 'start_date', 'is_active']
     ordering_fields = ['start_date', 'price']
+
+    def get_queryset(self):
+        """Curator can see all active promotions, user can see only his"""
+        if self.action == 'list':
+            now = timezone.now()
+            if self.request.user.is_staff:
+                return Promotion.objects.filter(is_active=True).filter(
+                    models.Q(is_permanent=True) | models.Q(end_date__gte=now))
+            else:
+                return Promotion.objects.filter(is_active=True, for_curators_only=False).filter(
+                    models.Q(is_permanent=True) | models.Q(end_date__gte=now))
 
     @action(detail=True, methods=['post'], url_path='redeem')
     def redeem_promotion(self, request, pk):
@@ -53,7 +63,7 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
         except ValidationError as e:
             return Response({'error': str(e)}, status=400)
         except Exception as e:
-            return Response({'error': 'Internal Server Error'}, status=500)
+            return Response({'error': str(e)}, status=500)
 
     @action(detail=True, methods=['post'], url_path='cancel')
     def cancel_redeem(self, request, pk):
@@ -84,40 +94,18 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
             return Response({'error': str(e)}, status=400)
         except Exception as e:
             return Response({'error': 'Internal Server Error'}, status=500)
-    #
-    # @action(detail=True, methods=['get'], url_path='volunteers-count')
-    # def retrieve_volunteers_count(self, request, pk=None):
-    #     """
-    #     Показ числа участников поощрений
-    #     """
-    #     promotion = get_object_or_404(Promotion, pk=pk)
-    #     data = {
-    #         'promotion': PromotionSerializer(promotion).data,
-    #         'volunteers_count': promotion.volunteers_count()  # Получаем количество волонтеров
-    #     }
-    #     return Response(data)
 
-    @action(detail=False, methods=['get'])
-    def get_volunteer_promotions(self, request):
+    @action(detail=False, methods=['get'], url_path='promo_categories')
+    def get_categories(self, request):
         """
-        Показ доступных поощрений для волонтера
+        Вывод категорий поощрений
         """
-        now = timezone.now()
-        promotions = Promotion.objects.filter(is_active=True, for_curators_only=False).filter(
-            models.Q(is_permanent=True) | models.Q(end_date__gte=now)
-        )
-        serializer = PromotionSerializer(promotions, many=True)
+        categories = PromoCategory.objects.all()
+        serializer = PromoCategorySerializer(categories, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['get'])
-    def get_curator_promotions(self, request):
-        """
-        Кураторы видят все активные поощрения
-        """
-        permissions_classes = [IsAuthenticated, IsCurator]
-        now = timezone.now()
-        promotions = Promotion.objects.filter(is_active=True).filter(
-            models.Q(is_permanent=True) | models.Q(end_date__gte=now)
-        )
-        serializer = PromotionSerializer(promotions, many=True)
-        return Response(serializer.data)
+
+# class PromoCategoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+#     queryset = PromoCategory.objects.all()
+#     serializer_class = PromoCategorySerializer
+#     permission_classes = [IsAuthenticated]

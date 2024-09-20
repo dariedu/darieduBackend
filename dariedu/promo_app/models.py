@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models
+
 from address_app.models import City
 from user_app.models import User
 from django.utils import timezone
@@ -79,14 +80,14 @@ class Participation(models.Model):
             raise ValidationError("Нет доступных поощрений.")
 
         # Уменьшаем доступное количество поощрений
-        self.promotion.available_quantity = F('available_quantity') - 1
+        self.promotion.available_quantity -= 1
         self.promotion.save()
 
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         # Возвращаем поощрение в доступное количество
-        self.promotion.available_quantity = F('available_quantity') + 1
+        self.promotion.available_quantity += 1
         self.promotion.save()
 
         super().delete(*args, **kwargs)

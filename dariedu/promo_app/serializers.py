@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from address_app.serializers import CitySerializer
-from .models import Promotion, PromoCategory
+from .models import Promotion, PromoCategory, Participation
 
 
 class PromoCategorySerializer(serializers.ModelSerializer):
@@ -23,9 +23,9 @@ class PromotionSerializer(serializers.ModelSerializer):
             'id': {'read_only': True},
             'quantity': {'read_only': True},
             'available_quantity': {'read_only': True},
-            'users': {'read_only': True},  # Список пользователей будет меняться через модель 'Participation'
+            'volunteers_count': {'read_only': True},
         }
 
     # Подсчет числа участников поощрений
     def get_volunteers_count(self, obj):
-        return obj.volunteers_count()
+        return Participation.objects.filter(promotion=obj).count()

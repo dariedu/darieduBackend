@@ -43,7 +43,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '192.168.0.12',
     '95.163.185.57',
-]
+] + [os.getenv('ALLOWED_HOST')]
 
 CURRENT_HOST = '127.0.0.1:8000'  # TODO change it later
 

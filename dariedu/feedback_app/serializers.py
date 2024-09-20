@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Feedback, RequestMessage
+from .models import Feedback, RequestMessage, PhotoReport
 
 
 class FeedbackSerializer(serializers.ModelSerializer):
@@ -18,4 +18,14 @@ class RequestMessageSerializer(serializers.ModelSerializer):
         fields = '__all__'
         extra_kwargs = {
             'id': {'read_only': True},
+        }
+
+
+class PhotoReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PhotoReport
+        fields = '__all__'
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'user': {'read_only': True},
         }
