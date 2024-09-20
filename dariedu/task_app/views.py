@@ -6,9 +6,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .exceptions import BadRequest
-from .models import Task, Delivery, DeliveryAssignment
+from .models import Task, Delivery, DeliveryAssignment, TaskCategory
 from .permissions import IsAbleCompleteTask, IsCurator  # для метода завершения задачи куратором
-from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer
+from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer, TaskVolunteerSerializer, \
+    TaskCategorySerializer, DeliveryVolunteerSerializer
 
 
 class TaskViewSet(
@@ -30,7 +31,7 @@ class TaskViewSet(
         is_active=True,
         is_completed=False,
         end_date__gt=timezone.now(),
-        volunteers_needed__gt=F('volunteers_taken')  #TODO switch off when we will make autocomplete
+        volunteers_needed__gt=F('volunteers_taken')  # TODO switch off when we will make autocomplete
     )
     serializer_class = TaskSerializer
     ordering_fields = ['start_date', 'end_date', 'price']
@@ -97,6 +98,12 @@ class TaskViewSet(
         else:
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
+
+    def get_serializer_class(self):
+        if self.request.user.is_staff:
+            return TaskSerializer
+        else:
+            return TaskVolunteerSerializer
 
     @action(detail=False, methods=['get'], url_name='my_tasks')
     def my(self, request):
@@ -183,6 +190,15 @@ class TaskViewSet(
 
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
+    @action(detail=False, methods=['get'], url_name='task_categories')
+    def get_categories(self, request):
+        """
+        Вывод категорий задач
+        """
+        categories = TaskCategory.objects.all()
+        serializer = TaskCategorySerializer(categories, many=True)
+        return Response(serializer.data)
+
 
 class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Delivery.objects.all()
@@ -208,16 +224,24 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             queryset = queryset.filter(is_completed=True, assignments__volunteer=user).distinct()
         return queryset
 
+    def get_serializer(self, *args, **kwargs):
+        if self.request.user.is_staff:
+            serializer = DeliverySerializer
+        else:
+            serializer = DeliveryVolunteerSerializer
+        return serializer(*args, **kwargs)
+
     @action(detail=False, methods=['get'], url_path='volunteer')
     def volunteer_deliveries(self, request):
+        # serializer = DeliveryVolunteerSerializer
         free_deliveries = self.get_queryset().filter(is_free=True).exclude(
             assignments__volunteer=request.user).distinct()
         active_deliveries = self.get_queryset().filter(is_active=True, assignments__volunteer=request.user).distinct()
         completed_deliveries = self.get_queryset().filter(is_completed=True,
                                                           assignments__volunteer=request.user).distinct()
-        free_serializer = self.serializer_class(free_deliveries, many=True)
-        active_serializer = self.serializer_class(active_deliveries, many=True)
-        completed_serializer = self.serializer_class(completed_deliveries, many=True)
+        free_serializer = self.get_serializer(free_deliveries, many=True)
+        active_serializer = self.get_serializer(active_deliveries, many=True)
+        completed_serializer = self.get_serializer(completed_deliveries, many=True)
         response_data = {
             'свободные доставки': free_serializer.data,
             'мои активные доставки': active_serializer.data,

@@ -73,6 +73,19 @@ class TaskSerializer(serializers.ModelSerializer):
         return instance
 
 
+class TaskVolunteerSerializer(serializers.ModelSerializer):
+    city = CitySerializer(read_only=True)
+    category = TaskCategorySerializer(read_only=True)
+
+    class Meta:
+        model = Task
+        extends = ['volunteers']
+        read_only_fields = [
+            'id', 'category', 'name', 'price', 'description', 'start_date', 'end_date', 'volunteers_needed',
+            'volunteers_taken', 'is_active', 'is_completed', 'curator', 'volunteers'
+        ]
+
+
 class DeliveryAssignmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeliveryAssignment
@@ -86,3 +99,11 @@ class DeliverySerializer(serializers.ModelSerializer):
         model = Delivery
         fields = ['id', 'date', 'curator', 'price', 'is_free', 'is_active',
                   'is_completed', 'in_execution', 'volunteers_needed', 'volunteers_taken', 'delivery_assignments']
+
+
+class DeliveryVolunteerSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Delivery
+        fields = ['id', 'date', 'curator', 'price', 'is_free', 'is_active',
+                  'is_completed', 'in_execution', 'volunteers_needed', 'volunteers_taken']
