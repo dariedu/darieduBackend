@@ -17,7 +17,8 @@ class PromotionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Promotion
-        fields = '__all__'
+        # fields = '__all__'
+        exclude = ['users']
         extra_kwargs = {
             'id': {'read_only': True},
             'quantity': {'read_only': True},

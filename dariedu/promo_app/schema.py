@@ -1,14 +1,14 @@
+from drf_spectacular.extensions import OpenApiViewExtension
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample, OpenApiResponse
 from drf_spectacular.types import OpenApiTypes
-from rest_framework import status
+from rest_framework import status, viewsets
 from django.utils import timezone
 from .models import Promotion
 from .serializers import PromotionSerializer
 
 
-@extend_schema(tags=['Promotions'])
-class PromotionSchemaExtension:
-
+# @extend_schema(tags=['Promotions'])
+class PromotionSchemaExtension(OpenApiViewExtension):
     @extend_schema(
         parameters=[
             OpenApiParameter(name="category", description="Filter by category", required=False, type=OpenApiTypes.STR),
@@ -71,8 +71,8 @@ class PromotionSchemaExtension:
         return super().retrieve_volunteers_count(request, pk)
 
 
-@extend_schema(tags=['Volunteer Promotions'])
-class VolunteerPromotionsSchemaExtension:
+# @extend_schema(tags=['Volunteer Promotions'])
+# class VolunteerPromotionsSchemaExtension(OpenApiViewExtension):
 
     @extend_schema(
         summary="Get available promotions for volunteers",
@@ -92,8 +92,8 @@ class VolunteerPromotionsSchemaExtension:
         return super().get_volunteer_promotions(request)
 
 
-@extend_schema(tags=['Curator Promotions'])
-class CuratorPromotionsSchemaExtension:
+# @extend_schema(tags=['Curator Promotions'])
+# class CuratorPromotionsSchemaExtension(OpenApiViewExtension):
 
     @extend_schema(
         summary="Get available promotions for curators",
