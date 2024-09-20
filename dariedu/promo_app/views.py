@@ -2,6 +2,8 @@ from rest_framework import viewsets, mixins
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
+
+from task_app.permissions import IsCurator
 from .serializers import PromotionSerializer
 from django.db import models
 from rest_framework.decorators import action
@@ -12,7 +14,7 @@ from .models import Promotion, User, Participation
 from django.core.exceptions import ValidationError
 
 
-class PromotionViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = Promotion.objects.all()
     serializer_class = PromotionSerializer
     filterset_fields = ['category', 'city', 'start_date', 'is_active']
@@ -82,24 +84,20 @@ class PromotionViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             return Response({'error': str(e)}, status=400)
         except Exception as e:
             return Response({'error': 'Internal Server Error'}, status=500)
+    #
+    # @action(detail=True, methods=['get'], url_path='volunteers-count')
+    # def retrieve_volunteers_count(self, request, pk=None):
+    #     """
+    #     Показ числа участников поощрений
+    #     """
+    #     promotion = get_object_or_404(Promotion, pk=pk)
+    #     data = {
+    #         'promotion': PromotionSerializer(promotion).data,
+    #         'volunteers_count': promotion.volunteers_count()  # Получаем количество волонтеров
+    #     }
+    #     return Response(data)
 
-    @action(detail=True, methods=['get'], url_path='volunteers-count')
-    def retrieve_volunteers_count(self, request, pk=None):
-        """
-        Показ числа участников поощрений
-        """
-        promotion = get_object_or_404(Promotion, pk=pk)
-        data = {
-            'promotion': PromotionSerializer(promotion).data,
-            'volunteers_count': promotion.volunteers_count()  # Получаем количество волонтеров
-        }
-        return Response(data)
-
-
-class VolunteerPromotionsViewSet(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated]
-
-    @action(detail=False, methods=['get'], url_path='available_volunteer')
+    @action(detail=False, methods=['get'])
     def get_volunteer_promotions(self, request):
         """
         Показ доступных поощрений для волонтера
@@ -111,15 +109,12 @@ class VolunteerPromotionsViewSet(viewsets.ViewSet):
         serializer = PromotionSerializer(promotions, many=True)
         return Response(serializer.data)
 
-
-class CuratorPromotionsViewSet(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated]
-
-    @action(detail=False, methods=['get'], url_path='available_curator')
+    @action(detail=False, methods=['get'])
     def get_curator_promotions(self, request):
         """
         Кураторы видят все активные поощрения
         """
+        permissions_classes = [IsAuthenticated, IsCurator]
         now = timezone.now()
         promotions = Promotion.objects.filter(is_active=True).filter(
             models.Q(is_permanent=True) | models.Q(end_date__gte=now)
