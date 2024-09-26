@@ -1,7 +1,6 @@
 from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
-
 from .serializers import PromotionSerializer, PromoCategorySerializer
 from django.db import models
 from rest_framework.decorators import action
@@ -10,6 +9,8 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import Promotion, User, Participation, PromoCategory
 from django.core.exceptions import ValidationError
+from django.shortcuts import render, redirect
+from .forms import FeedbackForm
 
 
 class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -109,3 +110,17 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
 #     queryset = PromoCategory.objects.all()
 #     serializer_class = PromoCategorySerializer
 #     permission_classes = [IsAuthenticated]
+
+
+
+
+def feedback_view(request):
+    if request.method == 'POST':
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('Спасибо')
+    else:
+        form = FeedbackForm()
+
+    return render(request, 'feedback_form.html', {'form': form})
