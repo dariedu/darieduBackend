@@ -1,13 +1,13 @@
 from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
-from .serializers import PromotionSerializer, PromoCategorySerializer
+from .serializers import PromotionSerializer, PromoCategorySerializer, FeedbackSerializer
 from django.db import models
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from .models import Promotion, User, Participation, PromoCategory
+from .models import Promotion, User, Participation, PromoCategory, Feedback
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
 from .forms import FeedbackForm
@@ -112,15 +112,50 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
 #     permission_classes = [IsAuthenticated]
 
 
+class FeedbackViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """
+    Пользователи могут создавать отзывы и просматривать только свои, администраторы могут просматривать все.
+    """
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
 
+    def get_queryset(self):
+        """Пользователи видят только свои отзывы, администраторы - все"""
+        if self.request.user.is_staff:
+            return Feedback.objects.all()
+        return Feedback.objects.filter(user=self.request.user)
 
-def feedback_view(request):
-    if request.method == 'POST':
-        form = FeedbackForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('Спасибо')
-    else:
-        form = FeedbackForm()
+    @action(detail=False, methods=['post'], url_path='submit')
+    def submit_feedback(self, request):
+        """
+        Отправка отзыва
+        """
+        serializer = FeedbackSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)  # Присваиваем отзыв пользователю
+            return Response({"message": "Спасибо за ваш отзыв!"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    return render(request, 'feedback_form.html', {'form': form})
+    @action(detail=True, methods=['delete'], url_path='cancel')
+    def cancel_feedback(self, request, pk):
+        """
+        Отмена отправленного отзыва
+        """
+        feedback = get_object_or_404(Feedback, pk=pk, user=request.user)
+
+        if feedback:
+            feedback.delete()
+            return Response({"message": "Отзыв успешно удален."}, status=status.HTTP_200_OK)
+        return Response({'error': 'Вы не можете удалить этот отзыв'}, status=status.HTTP_403_FORBIDDEN)
+
+    @action(detail=False, methods=['get'], url_path='feedback_stats')
+    def feedback_stats(self, request):
+        """
+        Получение статистики по отзывам (например, количество отзывов)
+        """
+        if self.request.user.is_staff:
+            total_feedback = Feedback.objects.count()
+        else:
+            total_feedback = Feedback.objects.filter(user=self.request.user).count()
+
+        return Response({"total_feedback": total_feedback})
