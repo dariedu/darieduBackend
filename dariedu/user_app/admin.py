@@ -4,10 +4,10 @@ from unfold.admin import ModelAdmin
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
 
-from .models import Rating, User
+from user_app.models import User, Rating
 
 
-class UserAdmin(ModelAdmin, ImportExportModelAdmin):
+class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
     import_form_class = ImportForm
     export_form_class = SelectableFieldsExportForm  # ExportForm
     compressed_fields = True  # Default: False
@@ -15,23 +15,27 @@ class UserAdmin(ModelAdmin, ImportExportModelAdmin):
     list_filter_submit = True
     list_fullwidth = True
 
+
+@admin.register(User)
+class UserAdmin(BaseAdmin):
+
     list_display = (
         'tg_id',
         'photo',
         'name',
         'surname',
         'last_name',
-        'city_id',
+        'city',
         'email',
         'phone',
-        'rating_id',
+        'rating',
         'volunteer_hour',
         'point',
         'is_superuser',
         'is_staff',
     )
     list_filter = (
-        'city_id',
+        'city',
         'is_superuser',
         'is_staff',
     )
@@ -46,7 +50,7 @@ class UserAdmin(ModelAdmin, ImportExportModelAdmin):
             "point",
             "email",
             "phone",
-            "rating", # TODO: add somehow
+            "rating",  # TODO: add somehow
             "city",
         ]}),
         ("Permissions", {"fields": ["is_staff", "is_superuser"]}),
@@ -54,6 +58,9 @@ class UserAdmin(ModelAdmin, ImportExportModelAdmin):
     search_fields = ('tg_id', 'name', 'surname', 'last_name', 'city_id', 'email', 'phone', 'rating_id')
 
 
-admin.site.register(User, UserAdmin)
-admin.site.register(Rating)
+@admin.register(Rating)
+class RatingAdmin(BaseAdmin):
 
+    list_display = ('level', 'hours_needed')
+    ordering = ('hours_needed',)
+    list_editable = ('hours_needed',)

@@ -31,6 +31,16 @@ class Delivery(models.Model):
         self.clean()
         super().save(*args, **kwargs)
 
+    def display_volunteers(self):
+        return '\n'.join([str(assignment.volunteer) for assignment in self.assignments.all()])
+
+    def display_route_sheet(self):
+        return '\n'.join([route_sheet.name for route_sheet in self.route_sheet.all()])
+
+    class Meta:
+        verbose_name = 'доставка'
+        verbose_name_plural = 'доставки'
+
 
 class DeliveryAssignment(models.Model):
     delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, related_name='assignments',

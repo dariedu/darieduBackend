@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from .managers import UserManager
@@ -27,6 +28,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = []
 
     objects = UserManager()
+
+    @admin.display(description="Город")
+    def city_id(self, obj):
+        return obj.city if obj.city else None
+
+    @admin.display(description="Рейтинг")
+    def rating_id(self, obj):
+        return obj.rating.level if obj.rating else None
 
     def __str__(self):
         return f'{self.name} {self.last_name}, {self.tg_id}'

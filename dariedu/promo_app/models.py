@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -60,6 +61,17 @@ class Promotion(models.Model):
     # Подсчет числа участников поощрений
     def volunteers_count(self):
         return self.participation_set.count()
+
+    # @admin.display
+    # def name(self):
+    #     return f'{self.name}'[:20]
+    #
+    # @admin.display
+    # def description(self):
+    #     return f'{self.description}'[:20]
+
+    def display_volunteers(self):
+        return "|".join([str(user) for user in self.users.all()])
 
     class Meta:
         verbose_name = 'поощрение'

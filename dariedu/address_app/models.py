@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.db import models
 
 from user_app.models import User
@@ -44,7 +45,7 @@ class RouteSheet(models.Model):
         return str(self.name)
 
     def display_address(self):
-        return '\n'.join([address.address for address in self.address.all()])
+        return ' | '.join([address.address for address in self.address.all()])
 
     class Meta:
         verbose_name = 'маршрутный лист'
@@ -63,12 +64,16 @@ class Address(models.Model):
     def __str__(self):
         return f'{self.address}\n{self.link}'
 
+    @admin.display(description='маршрутный лист')
+    def display_route_sheet(self):
+        return self.route_sheet.name
+
     class Meta:
         verbose_name = 'адрес'
         verbose_name_plural = 'адреса'
 
-    def display_beneficiar(self):  # TODO rewrite
-        return '\n'.join([beneficiar.full_name for beneficiar in self.beneficiar.all()])
+    def display_beneficiar(self):
+        return '|'.join([beneficiar.full_name for beneficiar in self.beneficiar.all()])
 
 
 class Beneficiar(models.Model):
