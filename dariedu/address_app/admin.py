@@ -56,10 +56,10 @@ class AddressAdmin(BaseAdmin):
 
 @admin.register(Location)
 class LocationAdmin(BaseAdmin):
-    list_display = ('address', 'link', 'city', 'curator', 'media_files')
+    list_display = ('address', 'link', 'subway', 'curator', 'media_files', 'city')
     list_filter = ('city', 'curator')
-    search_fields = ('address', 'city', 'curator__last_name')
-    fields = ('address', 'link', 'city', 'curator', 'media_files')
+    search_fields = ('address', 'city', 'subway', 'curator__last_name')
+    fields = ('address', 'link', 'subway', 'curator', 'media_files', 'city')
     inlines = [AddressInline, ]
     readonly_fields = (AddressInline, )
 

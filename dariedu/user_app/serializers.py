@@ -6,10 +6,25 @@ from .models import User, Rating
 class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('tg_id', 'email', 'last_name', 'name', 'surname', 'phone', 'is_adult', 'consent_to_personal_data')
+        fields = (
+            'tg_id',
+            'tg_username',
+            'email',
+            'last_name',
+            'name',
+            'surname',
+            'phone',
+            'photo',
+            'birthday',
+            'is_adult',
+            'interests',
+            'consent_to_personal_data'
+        )
+
 
 class TelegramDataSerializer(serializers.Serializer):
     tg_id = serializers.IntegerField()
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -17,18 +32,24 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'tg_id',
+            'tg_username',
             'email',
             'last_name',
             'name',
             'surname',
             'phone',
             'photo',
+            'avatar',
+            'birthday',
+            'is_adult',
             'volunteer_hour',
             'point',
             'rating',
             'city',
             'is_superuser',
             'is_staff',
+            'interests',
+            'consent_to_personal_data'
         ]
         extra_kwargs = {
             'id': {'read_only': True},
@@ -44,12 +65,18 @@ class UserSerializer(serializers.ModelSerializer):
             instance.email = validated_data.get('email', instance.email)
             instance.photo = validated_data.get('photo', instance.photo)
             instance.city = validated_data.get('city', instance.city)
+            instance.interests = validated_data.get('interests', instance.interests)
+            instance.consent_to_personal_data = validated_data.get('consent_to_personal_data',
+                                                                   instance.consent_to_personal_data)
+            instance.avatar = validated_data.get('avatar', instance.avatar)
 
             if any([
                 instance.last_name != validated_data.get('last_name', instance.last_name),
                 instance.name != validated_data.get('name', instance.name),
                 instance.surname != validated_data.get('surname', instance.surname),
-                instance.phone != validated_data.get('phone', instance.phone)
+                instance.phone != validated_data.get('phone', instance.phone),
+                instance.birthday != validated_data.get('birthday', instance.birthday),
+                instance.tg_username != validated_data.get('tg_username', instance.tg_username),
             ]):
                 raise serializers.ValidationError('Поьзовательские данные не могут быть изменены')
             instance.save()

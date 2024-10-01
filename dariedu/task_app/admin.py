@@ -28,9 +28,9 @@ class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
 @admin.register(Task)
 class TaskAdmin(BaseAdmin):
 
-    formfield_overrides = {
-        models.ManyToManyField: {'widget': forms.CheckboxSelectMultiple},
-    }
+    # formfield_overrides = {
+    #     models.ManyToManyField: {'widget': forms.CheckboxSelectMultiple},
+    # }
 
     list_display = (
         'name',
@@ -48,6 +48,7 @@ class TaskAdmin(BaseAdmin):
     )
     list_editable = ('price', 'volunteers_needed', 'is_active', 'is_completed')
     list_filter = ['is_active', 'category', ('start_date', RangeDateFilter)]
+    readonly_fields = ('volunteers', )  # TODO maybe we should have opportunity to edit volunteers
     search_fields = ('name', 'start_date', 'description')
     ordering = ('-start_date',)
 
@@ -61,8 +62,16 @@ class TaskAdmin(BaseAdmin):
 
 @admin.register(TaskCategory)
 class TaskCategoryAdmin(BaseAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'icon')
     search_fields = ('name',)
+
+
+class VolunteerInline(admin.TabularInline):
+    model = DeliveryAssignment
+    extra = 0
+    can_delete = False
+    verbose_name = 'Волонтер'
+    verbose_name_plural = 'Волонтеры'
 
 
 @admin.register(Delivery)
@@ -87,8 +96,21 @@ class DeliveryAdmin(BaseAdmin):
 
     search_fields = ('date', 'route_sheet')
     ordering = ('-date',)
-    # fields = ('date', 'price', 'curator', 'location', 'is_free', 'is_active', 'is_completed', 'in_execution',
-    #           'volunteers_needed', 'volunteers_taken', 'route_sheet')  # TODO add volunteers somehow
+    fields = (
+        'date',
+        'price',
+        'curator',
+        'location',
+        'is_free',
+        'is_active',
+        'is_completed',
+        'in_execution',
+        'volunteers_needed',
+        'volunteers_taken',
+        'route_sheet'
+    )  # TODO add volunteers somehow
+    inlines = [VolunteerInline, ]
+    readonly_fields = (VolunteerInline, )
     list_editable = ('is_active', 'is_completed', 'in_execution', 'is_free', 'volunteers_needed')
 
     def formfield_for_foreignkey(
@@ -105,8 +127,3 @@ class DeliveryAssignmentAdmin(BaseAdmin):
         'delivery',
         'display_volunteers'
     )
-
-    def display_volunteers(self, obj):
-        return "\n".join([f"{volunteer.tg_id}" for volunteer in obj.volunteer.all()])
-
-    display_volunteers.short_description = 'Волонтеры'

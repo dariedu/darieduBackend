@@ -15,6 +15,13 @@ class BaseAdmin(ModelAdmin):
     list_fullwidth = True
 
 
+class UsersInline(admin.TabularInline):
+    model = Promotion.users.through
+    extra = 0
+
+    can_delete = False
+
+
 @admin.register(Promotion)
 class PromotionAdmin(BaseAdmin):
     list_display = (
@@ -48,6 +55,8 @@ class PromotionAdmin(BaseAdmin):
         'city',
         'file',
     )
+    inlines = [UsersInline, ]
+    readonly_fields = (UsersInline, )
     list_filter = ('is_active', 'city', 'category', ('start_date', RangeDateFilter))
     search_fields = ('name', 'start_date', 'description')
     ordering = ('-start_date',)

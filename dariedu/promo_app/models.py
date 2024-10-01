@@ -62,15 +62,8 @@ class Promotion(models.Model):
     def volunteers_count(self):
         return self.participation_set.count()
 
-    # @admin.display
-    # def name(self):
-    #     return f'{self.name}'[:20]
-    #
-    # @admin.display
-    # def description(self):
-    #     return f'{self.description}'[:20]
-
     def display_volunteers(self):
+        verbose_name = "участник" if self.volunteers_count() == 1 else "участники"
         return "|".join([str(user) for user in self.users.all()])
 
     class Meta:
@@ -84,7 +77,7 @@ class Participation(models.Model):
     received_at = models.DateTimeField(auto_now_add=True, verbose_name='дата получения')
 
     def __str__(self):
-        return f"{self.user} - {self.promotion}"
+        return str(self.user)
 
     def save(self, *args, **kwargs):
         # Проверяем, есть ли доступные поощрения

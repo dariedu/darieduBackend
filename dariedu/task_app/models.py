@@ -47,9 +47,15 @@ class DeliveryAssignment(models.Model):
                                  verbose_name='доставка')
     volunteer = models.ManyToManyField(User, related_name='assignments', verbose_name='волонтер')
 
+    def __str__(self):
+        return str(self.volunteer)
+
     class Meta:
         verbose_name = 'доставка волонтера'
         verbose_name_plural = 'доставки волонтеров'
+
+    def display_volunteers(self):
+        return '\n'.join([str(volunteer) for volunteer in self.volunteer.all()])
 
 
 class Task(models.Model):
@@ -79,6 +85,7 @@ class Task(models.Model):
 
 class TaskCategory(models.Model):
     name = models.CharField(max_length=255, verbose_name='название')
+    icon = models.ImageField(blank=True, null=True, verbose_name='иконка', upload_to='task_category_icons/')
 
     def __str__(self):
         return self.name

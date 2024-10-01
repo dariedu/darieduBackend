@@ -21,7 +21,7 @@ class UserAdmin(BaseAdmin):
 
     list_display = (
         'tg_id',
-        'photo',
+        'tg_username',
         'name',
         'surname',
         'last_name',
@@ -33,29 +33,42 @@ class UserAdmin(BaseAdmin):
         'point',
         'is_superuser',
         'is_staff',
+        'photo',
+        'avatar',
+        'birthday',
+        'is_adult',
+        'interests',
+        'consent_to_personal_data',
     )
     list_filter = (
         'city',
         'is_superuser',
         'is_staff',
+        'is_adult',
+        'consent_to_personal_data',
+        'rating',
     )
     fieldsets = [
         (None, {"fields": [
             "tg_id",
+            "tg_username",
             "last_name",
             "name",
             "surname",
+            "birthday",
+            "is_adult",
             "photo",  # TODO: add preview
             "volunteer_hour",
             "point",
             "email",
             "phone",
-            "rating",  # TODO: add somehow
+            "rating",
             "city",
+            "interests",
         ]}),
-        ("Permissions", {"fields": ["is_staff", "is_superuser"]}),
+        ("Уровень доступа", {"fields": ["is_staff", "is_superuser"]}),
     ]
-    search_fields = ('tg_id', 'name', 'surname', 'last_name', 'city_id', 'email', 'phone', 'rating_id')
+    search_fields = ('tg_id', 'name', 'surname', 'last_name', 'city_id', 'email', 'phone')
 
 
 @admin.register(Rating)
