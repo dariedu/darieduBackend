@@ -14,6 +14,7 @@ from unfold.admin import ModelAdmin, TabularInline
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
 
+from task_app.models import Delivery
 from user_app.models import User
 from .models import Address, Beneficiar, City, Location, RouteSheet
 
@@ -38,7 +39,6 @@ class BeneficiarInline(TabularInline):
 class AddressInline(TabularInline):
     model = Address
     extra = 0
-    list_display = ('address', 'link', 'location')
     fields = ('address', 'link')
     can_delete = False
 
@@ -46,9 +46,9 @@ class AddressInline(TabularInline):
 @admin.register(Address)
 class AddressAdmin(BaseAdmin):
     # TODO add action to add address into route sheet and to location
-    list_display = ('address', 'link', 'location', 'route_sheet', 'display_beneficiar')
+    list_display = ('address', 'location', 'route_sheet', 'display_beneficiar', 'display_comment')
     fields = ('address', 'link', 'location', 'route_sheet')
-    list_filter = ('location__city', 'location')
+    list_filter = ('location__city', 'location', 'route_sheet')
     search_fields = ('address', 'location__city', 'location')
     inlines = [BeneficiarInline, ]
     readonly_fields = (BeneficiarInline, )
@@ -56,10 +56,17 @@ class AddressAdmin(BaseAdmin):
 
 @admin.register(Location)
 class LocationAdmin(BaseAdmin):
-    list_display = ('address', 'link', 'subway', 'curator', 'media_files', 'city')
+
+    @admin.display(description='описание')
+    def short_description(self, obj):
+        if obj.description:
+            return obj.description[:40] + '...' if len(obj.description) > 40 else obj.description
+        return None
+
+    list_display = ('address', 'subway', 'curator', 'media_files', 'city', 'short_description')
     list_filter = ('city', 'curator')
     search_fields = ('address', 'city', 'subway', 'curator__last_name')
-    fields = ('address', 'link', 'subway', 'curator', 'media_files', 'city')
+    fields = ('address', 'link', 'subway', 'curator', 'media_files', 'city', 'description')
     inlines = [AddressInline, ]
     readonly_fields = (AddressInline, )
 
@@ -78,7 +85,9 @@ class CityAdmin(BaseAdmin):
 
 @admin.register(RouteSheet)
 class RouteSheetAdmin(BaseAdmin):
-    list_display = ('name', 'user', 'map', 'location', 'location__curator', 'display_address')
+
+    autocomplete_fields = ('user',)
+    list_display = ('name', 'user', 'map', 'location', 'display_curator', 'display_address')
     fields = ('name', 'map', 'location', 'user')
     inlines = [AddressInline, ]
     readonly_fields = (AddressInline,)

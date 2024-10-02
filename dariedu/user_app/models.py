@@ -18,8 +18,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     point = models.PositiveIntegerField(default=0, verbose_name='баллы')
     is_superuser = models.BooleanField(default=False, verbose_name='Сотрудник')
     is_staff = models.BooleanField(default=False, verbose_name='Куратор')
-    consent_to_personal_data = models.BooleanField(default=False, verbose_name='Согласие на обработку '
-                                                                               'персональных данных')
+    consent_to_personal_data = models.BooleanField(default=False, verbose_name='Согласие',
+                                                   help_text='Согласие на обработку персональных данных')
     birthday = models.DateField(blank=True, null=True, verbose_name='дата рождения')
     is_adult = models.BooleanField(default=True, verbose_name='18+')
     rating = models.ForeignKey('Rating', on_delete=models.CASCADE, blank=True, null=True, verbose_name='рейтинг')

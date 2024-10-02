@@ -1,6 +1,6 @@
+from django.contrib import admin
 from django.db import models
-from django.core.exceptions import ValidationError
-from user_app.models import User
+from django.utils.html import format_html
 
 from address_app.models import RouteSheet, City, Location
 from user_app.models import User
@@ -31,11 +31,13 @@ class Delivery(models.Model):
         self.clean()
         super().save(*args, **kwargs)
 
-    def display_volunteers(self):
-        return '\n'.join([str(assignment.volunteer) for assignment in self.assignments.all()])
-
+    @admin.display(description="Маршрутный лист")
     def display_route_sheet(self):
-        return '\n'.join([route_sheet.name for route_sheet in self.route_sheet.all()])
+        return format_html('<br>'.join([str(route_sheet) for route_sheet in self.route_sheet.all()]))
+
+    @admin.display(description="Волонтеры")
+    def display_volunteers(self):
+        return format_html('<br>'.join([str(assignment) for assignment in self.assignments.all()]))
 
     class Meta:
         verbose_name = 'доставка'
@@ -48,21 +50,18 @@ class DeliveryAssignment(models.Model):
     volunteer = models.ManyToManyField(User, related_name='assignments', verbose_name='волонтер')
 
     def __str__(self):
-        return str(self.volunteer)
+        return format_html('<br>'.join([str(volunteer) for volunteer in self.volunteer.all()]))
 
     class Meta:
         verbose_name = 'доставка волонтера'
         verbose_name_plural = 'доставки волонтеров'
-
-    def display_volunteers(self):
-        return '\n'.join([str(volunteer) for volunteer in self.volunteer.all()])
 
 
 class Task(models.Model):
     category = models.ForeignKey('TaskCategory', on_delete=models.CASCADE,
                                  null=True, blank=True, verbose_name='категория')
     name = models.CharField(max_length=255, verbose_name='название')
-    price = models.PositiveIntegerField(verbose_name='часы')
+    price = models.PositiveIntegerField(verbose_name='часы', default=2)
     description = models.TextField(blank=True, null=True, verbose_name='описание')
     start_date = models.DateTimeField(verbose_name='дата начала')
     end_date = models.DateTimeField(verbose_name='дата конца')

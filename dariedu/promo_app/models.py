@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.html import format_html
 
 from address_app.models import City
 from user_app.models import User
@@ -62,9 +63,10 @@ class Promotion(models.Model):
     def volunteers_count(self):
         return self.participation_set.count()
 
+    @admin.display(description="участники")
     def display_volunteers(self):
         verbose_name = "участник" if self.volunteers_count() == 1 else "участники"
-        return "|".join([str(user) for user in self.users.all()])
+        return format_html("<br>".join([str(user) for user in self.users.all()]))
 
     class Meta:
         verbose_name = 'поощрение'
@@ -98,8 +100,8 @@ class Participation(models.Model):
         super().delete(*args, **kwargs)
 
     class Meta:
-        verbose_name = 'участие'
-        verbose_name_plural = 'участия'
+        verbose_name = 'участники'
+        verbose_name_plural = 'участники'
 
 
 class PromoCategory(models.Model):

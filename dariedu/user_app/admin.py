@@ -19,6 +19,19 @@ class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
 @admin.register(User)
 class UserAdmin(BaseAdmin):
 
+    @admin.display(description='интересы')
+    def short_interests(self, obj):
+        if obj.interests:
+            return obj.interests[:25] + '...' if len(obj.interests) > 25 else obj.interests
+        return None
+
+    @admin.display(description="день рождения")
+    def birthday_format(self, obj):
+        if obj.birthday:
+            return obj.birthday.strftime('%d.%m.%Y')
+        return None
+    birthday_format.admin_order_field = 'birthday'
+
     list_display = (
         'tg_id',
         'tg_username',
@@ -33,11 +46,9 @@ class UserAdmin(BaseAdmin):
         'point',
         'is_superuser',
         'is_staff',
-        'photo',
-        'avatar',
-        'birthday',
+        'birthday_format',
         'is_adult',
-        'interests',
+        'short_interests',
         'consent_to_personal_data',
     )
     list_filter = (
@@ -65,6 +76,7 @@ class UserAdmin(BaseAdmin):
             "rating",
             "city",
             "interests",
+            "consent_to_personal_data",
         ]}),
         ("Уровень доступа", {"fields": ["is_staff", "is_superuser"]}),
     ]

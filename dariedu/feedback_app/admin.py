@@ -24,14 +24,26 @@ class FeedbackAdmin(BaseAdmin):
 
 @admin.register(RequestMessage)
 class RequestMessageAdmin(BaseAdmin):
+
+    @admin.display(description="текст заявки")
+    def text_short(self, obj):
+        if obj.text:
+            return obj.text[:45] + '...' if len(obj.text) > 45 else obj.text
+        return None
+
+    @admin.display(description="дата")
+    def date_format(self, obj):
+        return obj.date.strftime("%d.%m.%y %H:%M")
+    date_format.admin_order_field = 'start_date'
     list_display = (
         "type",
-        "text",
+        "text_short",
         "user",
         'form',
+        'date_format',
     )
-    list_filter = ('type',)
-    search_fields = ('type', 'text', 'user')
+    list_filter = ('type', 'date', 'user')
+    search_fields = ('type', 'text', 'user', 'date')
 
 
 @admin.register(PhotoReport)

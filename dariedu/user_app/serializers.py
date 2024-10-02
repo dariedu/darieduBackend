@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from address_app.serializers import CitySerializer
 from .models import User, Rating
 
 
@@ -26,7 +27,21 @@ class TelegramDataSerializer(serializers.Serializer):
     tg_id = serializers.IntegerField()
 
 
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
+        fields = '__all__'
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'level': {'read_only': True},
+            'hours_needed': {'read_only': True},
+        }
+
+
 class UserSerializer(serializers.ModelSerializer):
+    rating = RatingSerializer(read_only=True)
+    city = CitySerializer(read_only=True)
+
     class Meta:
         model = User
         fields = [
@@ -81,14 +96,3 @@ class UserSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError('Поьзовательские данные не могут быть изменены')
             instance.save()
             return instance
-
-
-class RatingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Rating
-        fields = '__all__'
-        extra_kwargs = {
-            'id': {'read_only': True},
-            'level': {'read_only': True},
-            'hours_needed': {'read_only': True},
-        }

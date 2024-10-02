@@ -27,7 +27,14 @@ class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
 
 @admin.register(Stories)
 class StoriesAdmin(BaseAdmin):
-    list_display = ('title', 'link_name', 'hidden')
+
+    @admin.display(description="Текст сториса")
+    def text_short(self, obj):
+        if obj.text:
+            return obj.text[:40] + '...' if len(obj.text) > 40 else obj.text
+        return None
+
+    list_display = ('title', 'link_name', 'text_short', 'hidden')
     list_filter = ('hidden',)
     search_fields = ('title', 'link_name', 'text')
     list_editable = ('hidden',)
