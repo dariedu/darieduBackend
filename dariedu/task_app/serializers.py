@@ -1,6 +1,7 @@
 from django.db.models import F  # для метода завершения задачи куратором
 from rest_framework import serializers
-from address_app.serializers import CitySerializer
+from address_app.serializers import CitySerializer, CuratorSerializer
+from user_app.models import User
 from .models import Task, Delivery, DeliveryAssignment, TaskCategory
 
 
@@ -13,6 +14,7 @@ class TaskCategorySerializer(serializers.ModelSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     city = CitySerializer(read_only=True)
     category = TaskCategorySerializer(read_only=True)
+    curator = CuratorSerializer(read_only=True)
 
     class Meta:
         model = Task
@@ -95,6 +97,7 @@ class DeliveryAssignmentSerializer(serializers.ModelSerializer):
 
 class DeliverySerializer(serializers.ModelSerializer):
     delivery_assignments = DeliveryAssignmentSerializer(many=True, source='assignments')
+    curator = CuratorSerializer(read_only=True)
 
     class Meta:
         model = Delivery

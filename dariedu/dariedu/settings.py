@@ -45,6 +45,8 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '192.168.0.12',
     '95.163.185.57',
+    'https://dariedufront.vercel.app/',
+    'https://localhost:5173/',
 ] + [os.getenv('ALLOWED_HOSTS')]
 
 CURRENT_HOST = '127.0.0.1:8000'  # TODO change it later
