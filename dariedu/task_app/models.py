@@ -1,6 +1,6 @@
+from django.contrib import admin
 from django.db import models
-from django.core.exceptions import ValidationError
-from user_app.models import User
+from django.utils.html import format_html
 
 from address_app.models import RouteSheet, City, Location
 from user_app.models import User
@@ -31,11 +31,26 @@ class Delivery(models.Model):
         self.clean()
         super().save(*args, **kwargs)
 
+    @admin.display(description="Маршрутный лист")
+    def display_route_sheet(self):
+        return format_html('<br>'.join([str(route_sheet) for route_sheet in self.route_sheet.all()]))
+
+    @admin.display(description="Волонтеры")
+    def display_volunteers(self):
+        return format_html('<br>'.join([str(assignment) for assignment in self.assignments.all()]))
+
+    class Meta:
+        verbose_name = 'доставка'
+        verbose_name_plural = 'доставки'
+
 
 class DeliveryAssignment(models.Model):
     delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, related_name='assignments',
                                  verbose_name='доставка')
     volunteer = models.ManyToManyField(User, related_name='assignments', verbose_name='волонтер')
+
+    def __str__(self):
+        return format_html('<br>'.join([str(volunteer) for volunteer in self.volunteer.all()]))
 
     class Meta:
         verbose_name = 'доставка волонтера'
@@ -46,7 +61,7 @@ class Task(models.Model):
     category = models.ForeignKey('TaskCategory', on_delete=models.CASCADE,
                                  null=True, blank=True, verbose_name='категория')
     name = models.CharField(max_length=255, verbose_name='название')
-    price = models.PositiveIntegerField(verbose_name='часы')
+    price = models.PositiveIntegerField(verbose_name='часы', default=2)
     description = models.TextField(blank=True, null=True, verbose_name='описание')
     start_date = models.DateTimeField(verbose_name='дата начала')
     end_date = models.DateTimeField(verbose_name='дата конца')
@@ -69,6 +84,7 @@ class Task(models.Model):
 
 class TaskCategory(models.Model):
     name = models.CharField(max_length=255, verbose_name='название')
+    icon = models.ImageField(blank=True, null=True, verbose_name='иконка', upload_to='task_category_icons/')
 
     def __str__(self):
         return self.name
