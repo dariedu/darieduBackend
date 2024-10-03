@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from address_app.serializers import CitySerializer
-from .models import Promotion, PromoCategory, Participation, Feedback
+from .models import Promotion, PromoCategory, Participation
 
 
 class PromoCategorySerializer(serializers.ModelSerializer):
@@ -29,9 +29,3 @@ class PromotionSerializer(serializers.ModelSerializer):
     # Подсчет числа участников поощрений
     def get_volunteers_count(self, obj):
         return Participation.objects.filter(promotion=obj).count()
-
-
-class FeedbackSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Feedback
-        fields = ['name', 'email', 'message', 'created_at']

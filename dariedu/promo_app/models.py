@@ -1,6 +1,5 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-
 from address_app.models import City
 from user_app.models import User
 from django.utils import timezone
@@ -108,11 +107,3 @@ class PromoCategory(models.Model):
         verbose_name_plural = 'категории поощрений'
 
 
-class Feedback(models.Model):
-    name = models.CharField(max_length=100)  # Имя пользователя
-    email = models.EmailField()  # Email пользователя
-    message = models.TextField()  # Сообщение/отзыв
-    created_at = models.DateTimeField(auto_now_add=True)  # Дата и время создания отзыва
-
-    def __str__(self):
-        return f"Отзыв от {self.name}"

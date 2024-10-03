@@ -1,6 +1,5 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin
-
 from .models import Feedback, RequestMessage, PhotoReport
 
 
@@ -10,16 +9,12 @@ class BaseAdmin(ModelAdmin):
     list_filter_submit = True
     list_fullwidth = True
 
+
 @admin.register(Feedback)
-class FeedbackAdmin(BaseAdmin):
-    list_display = (
-        "type",
-        "text",
-        "user",
-        'form',
-    )
-    list_filter = ('type',)
-    search_fields = ('type', 'text', 'user')
+class FeedbackAdmin(admin.ModelAdmin):
+    list_display = ('id', 'type', 'user', 'created_at')
+    list_filter = ('type', 'user')
+    search_fields = ('text',)
 
 
 @admin.register(RequestMessage)
