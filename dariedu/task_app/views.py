@@ -12,7 +12,6 @@ from .models import Task, Delivery, DeliveryAssignment, TaskCategory
 from .permissions import IsAbleCompleteTask, IsCurator  # для метода завершения задачи куратором
 from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer, TaskVolunteerSerializer, \
     TaskCategorySerializer, DeliveryVolunteerSerializer
-from .tasks import send_message_to_telegram
 
 
 class TaskViewSet(
@@ -285,9 +284,3 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             return Response({'message': 'Delivery cancelled successfully'}, status=200)
         else:
             return Response({'error': 'You are not authorized to cancel this delivery'}, status=403)
-
-@receiver(m2m_changed, sender=Task.volunteers.through)
-def send_message_to_telegram_on_volunteer_signup(sender, instance, action, **kwargs):
-    if action == 'post_add':
-        task_id = instance.id
-        send_message_to_telegram.delay(task_id)
