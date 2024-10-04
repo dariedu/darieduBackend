@@ -113,3 +113,5 @@ class PromoCategory(models.Model):
     class Meta:
         verbose_name = 'категория поощрений'
         verbose_name_plural = 'категории поощрений'
+
+
