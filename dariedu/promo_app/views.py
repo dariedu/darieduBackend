@@ -1,7 +1,6 @@
 from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
-
 from .serializers import PromotionSerializer, PromoCategorySerializer
 from django.db import models
 from rest_framework.decorators import action
@@ -10,6 +9,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import Promotion, User, Participation, PromoCategory
 from django.core.exceptions import ValidationError
+
 
 
 class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
