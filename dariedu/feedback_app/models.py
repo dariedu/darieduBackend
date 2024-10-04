@@ -10,6 +10,7 @@ class RequestMessage(models.Model):
     type = models.CharField(max_length=255, verbose_name='тип заявки')
     text = models.TextField(verbose_name='текст', blank=True, null=True)
     form = models.URLField(max_length=500, blank=True, null=True, verbose_name='форма')
+    date = models.DateField(verbose_name='дата', auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь')
 
     def __str__(self):
