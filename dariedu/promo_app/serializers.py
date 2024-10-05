@@ -14,6 +14,7 @@ class PromotionSerializer(serializers.ModelSerializer):
     volunteers_count = serializers.SerializerMethodField()
     category = PromoCategorySerializer(read_only=True)
     city = CitySerializer(read_only=True)
+    address = serializers.CharField(max_length=255, allow_blank=True, required=False)
 
     class Meta:
         model = Promotion
