@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.urls import reverse
 from django.utils.html import format_html
 from address_app.models import City
 from user_app.models import User
@@ -58,6 +59,9 @@ class Promotion(models.Model):
         if not self.pk:  # Если поощрение создаётся впервые, синхронизируем available_quantity с quantity
             self.available_quantity = self.quantity
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('admin:promo_app_promotion_change', args=[self.pk])
 
     # Подсчет числа участников поощрений
     def volunteers_count(self):

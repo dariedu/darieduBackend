@@ -26,4 +26,8 @@ app.conf.beat_schedule = {
         'task': 'task_app.tasks.check_tasks',
         'schedule': crontab(minute='02', hour='10'),
     },
+    'send-promotion-to-telegram': {
+        'task': 'promo_app.tasks.check_promotions',
+        'schedule': crontab(minute='03', hour='17'),
+    },
 }
