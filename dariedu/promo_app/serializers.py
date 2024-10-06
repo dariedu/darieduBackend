@@ -1,14 +1,31 @@
 from rest_framework import serializers
+from address_app.serializers import CitySerializer
+from .models import Promotion, PromoCategory, Participation
 
-from .models import Promotion
+
+class PromoCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PromoCategory
+        fields = '__all__'
+        extra_kwargs = {'id': {'read_only': True}, 'name': {'read_only': True}}
 
 
 class PromotionSerializer(serializers.ModelSerializer):
-    # TODO we need here only GET and UPDATE to take the promotion
+    volunteers_count = serializers.SerializerMethodField()
+    category = PromoCategorySerializer(read_only=True)
+    city = CitySerializer(read_only=True)
+
     class Meta:
         model = Promotion
-        fields = '__all__'
+        # fields = '__all__'
+        exclude = ['users']
         extra_kwargs = {
             'id': {'read_only': True},
-            # TODO and all the others?
+            'quantity': {'read_only': True},
+            'available_quantity': {'read_only': True},
+            'volunteers_count': {'read_only': True},
         }
+
+    # Подсчет числа участников поощрений
+    def get_volunteers_count(self, obj):
+        return Participation.objects.filter(promotion=obj).count()

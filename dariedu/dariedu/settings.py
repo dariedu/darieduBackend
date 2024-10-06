@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+from datetime import timedelta
+
 from django.conf import settings
 
 from import_export.formats.base_formats import XLSX, XLS
@@ -32,6 +34,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # TODO here is the secret key because JWT can not see it from env. To fix later
 SECRET_KEY = 'django-insecure-i)0i=dqjw4esh4d20@&c(-l(4p9tj)@)08_9vxyc+#%u&33ef$'
 
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -41,7 +45,9 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '192.168.0.12',
     '95.163.185.57',
-]
+    'https://dariedufront.vercel.app/',
+    'https://localhost:5173/',
+] + [os.getenv('ALLOWED_HOSTS')]
 
 CURRENT_HOST = '127.0.0.1:8000'  # TODO change it later
 
@@ -63,7 +69,7 @@ INSTALLED_APPS = [
     'django.contrib.flatpages',
 
     # apps
-    'user_app',
+    'user_app.apps.UserAppConfig',
     'address_app',
     'task_app.apps.TaskAppConfig',
     'promo_app',
@@ -77,6 +83,8 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'import_export',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -212,7 +220,23 @@ SPECTACULAR_SETTINGS = {
 
 
 SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ALGORITHM": "HS256",
     "SIGNING_KEY": settings.SECRET_KEY,  # TODO add here another key
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": False,
 }
 
 IMPORT_EXPORT_FORMATS = [XLSX, XLS]
+
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
+CELERY_BEAT_MAX_INTERVAL = 1

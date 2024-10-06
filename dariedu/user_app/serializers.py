@@ -1,12 +1,71 @@
 from rest_framework import serializers
 
+from address_app.serializers import CitySerializer
 from .models import User, Rating
 
 
-class UserSerializer(serializers.ModelSerializer):
+class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
+        fields = (
+            'tg_id',
+            'tg_username',
+            'email',
+            'last_name',
+            'name',
+            'surname',
+            'phone',
+            'photo',
+            'birthday',
+            'is_adult',
+            'interests',
+            'consent_to_personal_data'
+        )
+
+
+class TelegramDataSerializer(serializers.Serializer):
+    tg_id = serializers.IntegerField()
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Rating
         fields = '__all__'
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'level': {'read_only': True},
+            'hours_needed': {'read_only': True},
+        }
+
+
+class UserSerializer(serializers.ModelSerializer):
+    rating = RatingSerializer(read_only=True)
+    city = CitySerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'tg_id',
+            'tg_username',
+            'email',
+            'last_name',
+            'name',
+            'surname',
+            'phone',
+            'photo',
+            'avatar',
+            'birthday',
+            'is_adult',
+            'volunteer_hour',
+            'point',
+            'rating',
+            'city',
+            'is_superuser',
+            'is_staff',
+            'interests',
+            'consent_to_personal_data'
+        ]
         extra_kwargs = {
             'id': {'read_only': True},
             'password': {'write_only': True},
@@ -17,11 +76,23 @@ class UserSerializer(serializers.ModelSerializer):
             'rating': {'read_only': True},
         }
 
+        def update(self, instance, validated_data):
+            instance.email = validated_data.get('email', instance.email)
+            instance.photo = validated_data.get('photo', instance.photo)
+            instance.city = validated_data.get('city', instance.city)
+            instance.interests = validated_data.get('interests', instance.interests)
+            instance.consent_to_personal_data = validated_data.get('consent_to_personal_data',
+                                                                   instance.consent_to_personal_data)
+            instance.avatar = validated_data.get('avatar', instance.avatar)
 
-class RatingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Rating
-        fields = '__all__'
-        extra_kwargs = {
-            'id': {'read_only': True},
-        }
+            if any([
+                instance.last_name != validated_data.get('last_name', instance.last_name),
+                instance.name != validated_data.get('name', instance.name),
+                instance.surname != validated_data.get('surname', instance.surname),
+                instance.phone != validated_data.get('phone', instance.phone),
+                instance.birthday != validated_data.get('birthday', instance.birthday),
+                instance.tg_username != validated_data.get('tg_username', instance.tg_username),
+            ]):
+                raise serializers.ValidationError('Поьзовательские данные не могут быть изменены')
+            instance.save()
+            return instance

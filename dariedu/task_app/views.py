@@ -1,18 +1,15 @@
-from django.core.exceptions import ValidationError
-from isort.literal import assignment
-from rest_framework.generics import get_object_or_404
 from django.db.models import F
 from django.utils import timezone
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from user_app.models import User
 from .exceptions import BadRequest
-from .models import Task, Delivery, DeliveryAssignment
-# from .permissions import IsAbleCompleteTask  # для метода завершения задачи куратором
-from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer
+from .models import Task, Delivery, DeliveryAssignment, TaskCategory
+from .permissions import IsAbleCompleteTask, IsCurator  # для метода завершения задачи куратором
+from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer, TaskVolunteerSerializer, \
+    TaskCategorySerializer, DeliveryVolunteerSerializer
 
 
 class TaskViewSet(
@@ -27,12 +24,14 @@ class TaskViewSet(
         my: get a user specific tasks (supports filtering)
         accept: accept an available task
         refuse: refuse a user specific active uncompleted task
+        complete: mark task as completed and add points to volunteers
+        curator_of: get list of tasks where current user is curator
     """
     queryset = Task.objects.filter(
         is_active=True,
         is_completed=False,
         end_date__gt=timezone.now(),
-        volunteers_needed__gt=F('volunteers_taken')
+        volunteers_needed__gt=F('volunteers_taken')  # TODO switch off when we will make autocomplete
     )
     serializer_class = TaskSerializer
     ordering_fields = ['start_date', 'end_date', 'price']
@@ -47,11 +46,11 @@ class TaskViewSet(
             accept: all available tasks
             refuse: user specific active uncompleted tasks
             complete: active uncompleted tasks only
+            curator_of: all tasks where current user is the curator
         """
         if self.action == 'my':
             # all tasks of current user
-            queryset = User.objects.get(pk=1).tasks.all()
-            # queryset = self.request.user.tasks.all() # TODO swap to comment
+            queryset = self.request.user.tasks.all()
 
             is_active = self.request.query_params.get('is_active', None)
             is_completed = self.request.query_params.get('is_completed', None)
@@ -74,14 +73,17 @@ class TaskViewSet(
 
         elif self.action == 'refuse':
             # the user can only abandon his active uncompleted task
-            # return self.request.user.tasks.filter(is_active=True, is_completed=False)
-            return User.objects.get(pk=1).tasks.filter(is_active=True, is_completed=False)  # TODO swap to comment
+            return self.request.user.tasks.filter(is_active=True, is_completed=False)
 
         # Вернуть по необходимости!
         # Для метода завершения задачи куратором
-        # elif self.action == 'complete':
-        #     # can complete only active and uncompleted tasks
-        #     return Task.objects.filter(is_active=True, is_completed=False)
+        elif self.action == 'complete':
+            # can complete only active and uncompleted tasks
+            return Task.objects.filter(is_active=True, is_completed=False)
+
+        elif self.action == 'curator_of':
+            # return tasks where the current user is curator
+            return self.request.user.task_curator.filter(is_active=True, is_completed=False)
 
         # all available tasks
         return super().get_queryset()
@@ -90,11 +92,18 @@ class TaskViewSet(
         if self.action == 'complete':
             pass
             # для метода завершения задачи куратором
-            # permission_classes = [IsAbleCompleteTask]
+            permission_classes = [IsAbleCompleteTask]
+        elif self.action == 'curator_of':
+            permission_classes = [IsCurator]
         else:
-            # permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready
-            permission_classes = [AllowAny]
+            permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
+
+    def get_serializer_class(self):
+        if self.request.user.is_staff:
+            return TaskSerializer
+        else:
+            return TaskVolunteerSerializer
 
     @action(detail=False, methods=['get'], url_name='my_tasks')
     def my(self, request):
@@ -122,8 +131,7 @@ class TaskViewSet(
         """
         task = self.get_object()
 
-        user = User.objects.get(pk=1)
-        if user in task.volunteers.all():  # TODO change to request.user
+        if request.user in task.volunteers.all():
             raise BadRequest("You have already taken this task!")
 
         serializer = self.get_serializer(task, data={'volunteers_taken': task.volunteers_taken + 1}, partial=True)
@@ -152,23 +160,44 @@ class TaskViewSet(
 
     # Вернуть по необходимости!
     # Метод завершения задачи куратором
-    # @action(detail=True, methods=['post'], url_name='task_complete')
-    # def complete(self, request, pk=None):
-    #     """
-    #     Complete the task.
-    #     Can only complete an active uncompleted task.
-    #
-    #     Post request body should be empty. Will be ignored anyway.
-    #
-    #     Curators only.
-    #     """
-    #     task = self.get_object()
-    #
-    #     serializer = self.get_serializer(task, data={'is_active': False, 'is_completed': True}, partial=True)
-    #     serializer.is_valid(raise_exception=True)
-    #     serializer.save()
-    #
-    #     return Response(data=serializer.data, status=status.HTTP_200_OK)
+    @action(detail=True, methods=['post'], url_name='task_complete')
+    def complete(self, request, pk=None):
+        """
+        Complete the task.
+        Can only complete an active uncompleted task.
+
+        Post request body should be empty. Will be ignored anyway.
+
+        Curators only.
+        """
+        task = self.get_object()
+
+        serializer = self.get_serializer(task, data={'is_active': False, 'is_completed': True}, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_name='task_curator_of')
+    def curator_of(self, request):
+        """
+        Get all tasks where current user is the curator of the task.
+
+        Curators only.
+        """
+        tasks = self.get_queryset()
+        serializer = self.get_serializer(tasks, many=True)
+
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=['get'], url_name='task_categories')
+    def get_categories(self, request):
+        """
+        Вывод категорий задач
+        """
+        categories = TaskCategory.objects.all()
+        serializer = TaskCategorySerializer(categories, many=True)
+        return Response(serializer.data)
 
 
 class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -184,6 +213,9 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         active = self.request.query_params.get('active', None)
         completed = self.request.query_params.get('completed', None)
 
+        if action == 'deliveries_curator' and self.request.user.is_staff:
+            return queryset.filter(is_active=True, curator=user)
+
         if free is not None and free.lower() == 'true':
             queryset = queryset.filter(is_free=True).distinct()
         if active is not None and active.lower() == 'true':
@@ -192,16 +224,24 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             queryset = queryset.filter(is_completed=True, assignments__volunteer=user).distinct()
         return queryset
 
+    def get_serializer(self, *args, **kwargs):
+        if self.request.user.is_staff:
+            serializer = DeliverySerializer
+        else:
+            serializer = DeliveryVolunteerSerializer
+        return serializer(*args, **kwargs)
+
     @action(detail=False, methods=['get'], url_path='volunteer')
     def volunteer_deliveries(self, request):
+        # serializer = DeliveryVolunteerSerializer
         free_deliveries = self.get_queryset().filter(is_free=True).exclude(
             assignments__volunteer=request.user).distinct()
         active_deliveries = self.get_queryset().filter(is_active=True, assignments__volunteer=request.user).distinct()
         completed_deliveries = self.get_queryset().filter(is_completed=True,
                                                           assignments__volunteer=request.user).distinct()
-        free_serializer = self.serializer_class(free_deliveries, many=True)
-        active_serializer = self.serializer_class(active_deliveries, many=True)
-        completed_serializer = self.serializer_class(completed_deliveries, many=True)
+        free_serializer = self.get_serializer(free_deliveries, many=True)
+        active_serializer = self.get_serializer(active_deliveries, many=True)
+        completed_serializer = self.get_serializer(completed_deliveries, many=True)
         response_data = {
             'свободные доставки': free_serializer.data,
             'мои активные доставки': active_serializer.data,
@@ -212,11 +252,11 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     @action(detail=False, methods=['get'], url_path='curator')
     def deliveries_curator(self, request):
         total_deliveries = Delivery.objects.filter(in_execution=True).count()
-        active_deliveries = Delivery.objects.filter(is_active=True).count()
+        active_deliveries_count = Delivery.objects.filter(is_active=True).count()
 
         return Response({
             'выполняются доставки': total_deliveries,
-            'количество активных доставок': active_deliveries
+            'количество активных доставок': active_deliveries_count,
         })
 
     @action(detail=True, methods=['post'], url_path='take')
