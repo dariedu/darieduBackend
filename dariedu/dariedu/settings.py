@@ -73,8 +73,9 @@ INSTALLED_APPS = [
     'address_app',
     'task_app.apps.TaskAppConfig',
     'promo_app',
-    'feedback_app',
+    'feedback_app.apps.FeedbackAppConfig',
     'stories_app',
+    'notifications_app',
 
     'django.contrib.postgres',
     'rest_framework',

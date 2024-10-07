@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.urls import reverse
 from django.utils.html import format_html
-
 from address_app.models import City
 from user_app.models import User
 from django.utils import timezone
@@ -33,6 +33,7 @@ class Promotion(models.Model):
     city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='город')
     users = models.ManyToManyField(User, through='Participation', blank=True, verbose_name='получатель')
     picture = models.ImageField(blank=True, null=True, verbose_name='картинка')  # TODO: or URL?
+    address = models.CharField(max_length=255, verbose_name='адрес', blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -58,6 +59,9 @@ class Promotion(models.Model):
         if not self.pk:  # Если поощрение создаётся впервые, синхронизируем available_quantity с quantity
             self.available_quantity = self.quantity
         super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse('admin:promo_app_promotion_change', args=[self.pk])
 
     # Подсчет числа участников поощрений
     def volunteers_count(self):
