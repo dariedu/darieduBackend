@@ -19,8 +19,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'birthday',
             'is_adult',
             'city',
-            'metier',
-            'interests',
             'consent_to_personal_data'
         )
 

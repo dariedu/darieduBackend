@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from datetime import timedelta
+import logging
 
 from django.conf import settings
 
@@ -20,6 +21,7 @@ from pathlib import Path
 from .unfold_config import UNFOLD_CONFIG
 
 load_dotenv(find_dotenv())
+logging.getLogger('django.utils.timezone').setLevel(logging.ERROR)
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -173,11 +175,11 @@ LANGUAGES = [
     ('en-us', 'english')
 ]
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)

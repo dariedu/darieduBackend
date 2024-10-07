@@ -59,6 +59,7 @@ class UserAdmin(BaseAdmin):
         'is_adult',
         'consent_to_personal_data',
         'rating',
+        'metier',
     )
     fieldsets = [
         (None, {"fields": [

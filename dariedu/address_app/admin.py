@@ -74,10 +74,10 @@ class LocationAdmin(BaseAdmin):
             return obj.description[:40] + '...' if len(obj.description) > 40 else obj.description
         return None
 
-    list_display = ('address', 'subway', 'codename', 'curator', 'media_files', 'city', 'short_description')
+    list_display = ('address', 'subway', 'curator', 'media_files', 'city', 'short_description')
     list_filter = ('city', 'curator')
     search_fields = ('address', 'city', 'subway', 'curator__last_name')
-    fields = ('address', 'link', 'subway', 'codename', 'curator', 'media_files', 'city', 'description')
+    fields = ('address', 'link', 'subway', 'curator', 'media_files', 'city', 'description')
     inlines = [AddressInline, RouteSheetInline]
     # readonly_fields = (AddressInline, )
 

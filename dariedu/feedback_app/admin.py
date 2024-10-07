@@ -12,7 +12,19 @@ class BaseAdmin(ModelAdmin):
 
 @admin.register(Feedback)
 class FeedbackAdmin(BaseAdmin):
-    list_display = ('id', 'type', 'user', 'created_at')
+
+    @admin.display(description="текст заявки")
+    def text_short(self, obj):
+        if obj.text:
+            return obj.text[:45] + '...' if len(obj.text) > 45 else obj.text
+        return None
+
+    @admin.display(description="дата")
+    def created_at_format(self, obj):
+        return obj.created_at.strftime("%d.%m.%y %H:%M")
+    created_at_format.admin_order_field = 'start_date'
+
+    list_display = ('id', 'type', 'user', 'created_at_format', 'text_short')
     list_filter = ('type', 'user')
     search_fields = ('text',)
 

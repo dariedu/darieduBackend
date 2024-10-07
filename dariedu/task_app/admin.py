@@ -140,6 +140,7 @@ class DeliveryAdmin(BaseAdmin):
     ) -> Optional[ModelChoiceField]:
         if db_field.name == 'curator':
             kwargs["queryset"] = User.objects.filter(is_staff=True)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 @admin.register(DeliveryAssignment)
