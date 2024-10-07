@@ -11,7 +11,7 @@ class BaseAdmin(ModelAdmin):
 
 
 @admin.register(Feedback)
-class FeedbackAdmin(admin.ModelAdmin):
+class FeedbackAdmin(BaseAdmin):
     list_display = ('id', 'type', 'user', 'created_at')
     list_filter = ('type', 'user')
     search_fields = ('text',)
