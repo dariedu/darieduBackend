@@ -28,6 +28,7 @@ from feedback_app.urls import router as feedback_approuter
 from address_app.urls import router as address_approuter
 from stories_app.urls import router as stories_approuter
 from user_app.views import RegistrationView, CustomTokenObtainPairView
+from notifications_app.views import CreateNotificationView
 
 router = routers.DefaultRouter()
 router.registry.extend(user_approuter.registry)
@@ -38,6 +39,8 @@ router.registry.extend(address_approuter.registry)
 router.registry.extend(stories_approuter.registry)
 
 urlpatterns = [
+    path('api/notifications/', CreateNotificationView.as_view()),
+    # path('api/', include('notifications_app.urls')),
     path('stories/<slug:slug>/', StoriesDetailView.as_view()),
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),

@@ -1,7 +1,8 @@
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 
-from .models import DeliveryAssignment
+from .models import DeliveryAssignment, Task
+from .tasks import send_message_to_telegram
 
 
 @receiver(m2m_changed, sender=DeliveryAssignment.volunteer.through)
@@ -23,3 +24,10 @@ def update_delivery_status(sender, instance, action, **kwargs):
             # delivery.in_execution = False
             delivery.is_free = True
         delivery.save()
+
+
+@receiver(m2m_changed, sender=Task.volunteers.through)
+def send_message_to_telegram_on_volunteer_signup(sender, instance, action, **kwargs):
+    if action == 'post_add':
+        task_id = instance.id
+        send_message_to_telegram.delay(task_id)
