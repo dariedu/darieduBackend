@@ -41,6 +41,7 @@ class CitySerializer(serializers.ModelSerializer):
 
 class AddressSerializer(serializers.ModelSerializer):
     beneficiar = BeneficiarSerializer(many=True, read_only=True)
+
     class Meta:
         model = Address
         fields = '__all__'
@@ -52,6 +53,7 @@ class AddressSerializer(serializers.ModelSerializer):
 class LocationSerializer(serializers.ModelSerializer):
     city = CitySerializer(read_only=True)
     curator = CuratorSerializer(read_only=True)
+
     class Meta:
         model = Location
         fields = '__all__'
@@ -64,6 +66,7 @@ class RouteSheetSerializer(serializers.ModelSerializer):
     # TODO we should promote some logic here
     location = LocationSerializer(read_only=True)
     address = AddressSerializer(many=True, read_only=True)
+
     class Meta:
         model = RouteSheet
         fields = '__all__'

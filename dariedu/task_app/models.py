@@ -8,7 +8,7 @@ from user_app.models import User
 
 class Delivery(models.Model):
     date = models.DateTimeField(verbose_name='дата доставки')
-    price = models.PositiveIntegerField('часы')
+    price = models.PositiveIntegerField('часы', default=2)
     curator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='delivery',
                                 blank=True, null=True, verbose_name='куратор',)
     location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='delivery', verbose_name='Локация')
@@ -78,17 +78,18 @@ class Task(models.Model):
         return f'{self.name}, {self.start_date}'
 
     class Meta:
-        verbose_name = 'задание'
-        verbose_name_plural = 'задания'
+        verbose_name = 'доброе дело'
+        verbose_name_plural = 'добрые дела'
 
 
 class TaskCategory(models.Model):
     name = models.CharField(max_length=255, verbose_name='название')
-    icon = models.ImageField(blank=True, null=True, verbose_name='иконка', upload_to='task_category_icons/')
+    icon = models.ImageField(blank=True, null=True, verbose_name='иконка', upload_to='task_category_icons/',
+                             help_text='размер 32x32 пикселей, форматы SVG, PNG')
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = 'категория задания'
-        verbose_name_plural = 'категории заданий'
+        verbose_name = 'категория добрых дел'
+        verbose_name_plural = 'категории добрых дел'

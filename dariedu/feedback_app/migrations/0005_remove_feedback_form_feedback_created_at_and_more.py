@@ -10,6 +10,8 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('feedback_app', '0004_requestmessage_date'),
+        ('promo_app', '0012_alter_participation_options'),
+        ('task_app', '0024_alter_delivery_price'),
         ('promo_app', '0013_promotion_address'),
         ('task_app', '0023_alter_task_price'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),

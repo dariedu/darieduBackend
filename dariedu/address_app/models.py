@@ -92,6 +92,7 @@ class Beneficiar(models.Model):
     phone = models.CharField(max_length=50, blank=True, null=True, verbose_name='телефон')
     full_name = models.CharField(max_length=255, verbose_name='ФИО')
     comment = models.TextField(blank=True, null=True, verbose_name='комментарий')
+    category = models.CharField(max_length=255, blank=True, null=True, verbose_name='категория')
 
     address = models.ForeignKey(Address, on_delete=models.CASCADE,
                                 related_name='beneficiar', verbose_name='адрес')
