@@ -12,6 +12,7 @@ from unfold.contrib.filters.admin import RangeDateFilter
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
 
+from address_app.models import RouteSheet
 from user_app.models import User
 from .models import Delivery, Task, DeliveryAssignment, TaskCategory
 
@@ -28,7 +29,7 @@ class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
 @admin.register(Task)
 class TaskAdmin(BaseAdmin):
 
-    @admin.display(description="описание задания")
+    @admin.display(description="описание доброго дела")
     def description_short(self, obj):
         if obj.description:
             return obj.description[:40] + '...' if len(obj.description) > 40 else obj.description
@@ -139,7 +140,6 @@ class DeliveryAdmin(BaseAdmin):
     ) -> Optional[ModelChoiceField]:
         if db_field.name == 'curator':
             kwargs["queryset"] = User.objects.filter(is_staff=True)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 @admin.register(DeliveryAssignment)

@@ -2,9 +2,10 @@ from typing import Optional
 
 from django import forms
 from django.contrib import admin
+from django.contrib.admin.widgets import RelatedFieldWidgetWrapper, ForeignKeyRawIdWidget
 from django.db import models
 from django.db.models import ForeignKey
-from django.forms import ModelChoiceField
+from django.forms import ModelChoiceField, Select, Widget
 from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.html import format_html
@@ -13,6 +14,7 @@ from import_export.admin import ImportExportModelAdmin
 from unfold.admin import ModelAdmin, TabularInline
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
+from unfold.widgets import UnfoldAdminSelectWidget, UnfoldForeignKeyRawIdWidget, UnfoldRelatedFieldWidgetWrapper
 
 from task_app.models import Delivery
 from user_app.models import User
@@ -23,7 +25,7 @@ class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
     import_form_class = ImportForm
     export_form_class = SelectableFieldsExportForm  # ExportForm
     compressed_fields = True  # Default: False
-    list_select_related = True  # Default: False
+    # list_select_related = True  # Default: False
     list_filter_submit = True
     list_fullwidth = True
 
@@ -43,10 +45,19 @@ class AddressInline(TabularInline):
     can_delete = False
 
 
+class RouteSheetInline(TabularInline):
+    model = RouteSheet
+    extra = 0
+    fields = ('name', )
+    can_delete = False
+    # readonly_fields = ('name', )
+
+
 @admin.register(Address)
 class AddressAdmin(BaseAdmin):
+
     # TODO add action to add address into route sheet and to location
-    list_display = ('address', 'location', 'route_sheet', 'display_beneficiar', 'display_comment')
+    list_display = ('route_sheet', 'location', 'address', 'display_beneficiar', 'display_comment')
     fields = ('address', 'link', 'location', 'route_sheet')
     list_filter = ('location__city', 'location', 'route_sheet')
     search_fields = ('address', 'location__city', 'location')
@@ -63,12 +74,12 @@ class LocationAdmin(BaseAdmin):
             return obj.description[:40] + '...' if len(obj.description) > 40 else obj.description
         return None
 
-    list_display = ('address', 'subway', 'curator', 'media_files', 'city', 'short_description')
+    list_display = ('address', 'subway', 'codename', 'curator', 'media_files', 'city', 'short_description')
     list_filter = ('city', 'curator')
     search_fields = ('address', 'city', 'subway', 'curator__last_name')
-    fields = ('address', 'link', 'subway', 'curator', 'media_files', 'city', 'description')
-    inlines = [AddressInline, ]
-    readonly_fields = (AddressInline, )
+    fields = ('address', 'link', 'subway', 'codename', 'curator', 'media_files', 'city', 'description')
+    inlines = [AddressInline, RouteSheetInline]
+    # readonly_fields = (AddressInline, )
 
     def formfield_for_foreignkey(
         self, db_field: ForeignKey, request: HttpRequest, **kwargs
@@ -91,11 +102,12 @@ class RouteSheetAdmin(BaseAdmin):
     fields = ('name', 'map', 'location', 'user')
     inlines = [AddressInline, ]
     readonly_fields = (AddressInline,)
+    list_filter = ('location',)
 
 
 @admin.register(Beneficiar)
 class BeneficiarAdmin(BaseAdmin):
-    list_display = ('full_name', 'phone', 'address', 'comment')
+    list_display = ('full_name', 'phone', 'address', 'category', 'comment')
     search_fields = ('full_name', 'phone', 'address')
     list_filter = ('address',)
 
