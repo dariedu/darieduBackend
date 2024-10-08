@@ -53,6 +53,8 @@ ALLOWED_HOSTS = [
 
 CURRENT_HOST = '127.0.0.1:8000'  # TODO change it later
 
+SECURE_SSL_REDIRECT = True
+
 
 SITE_ID = 1
 # Application definition
