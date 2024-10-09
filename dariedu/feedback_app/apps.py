@@ -7,3 +7,4 @@ class FeedbackAppConfig(AppConfig):
 
     def ready(self):
         import feedback_app.schema
+        import feedback_app.signals

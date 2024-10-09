@@ -5,6 +5,15 @@ from .managers import UserManager
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+
+    METIERS = (
+        ('schoolchild', 'Школьник'),
+        ('student', 'Студент'),
+        ('work_on_himself', 'Работаю на себя'),
+        ('work_for_hire', 'Работаю по найму'),
+        ('pensioner', 'Пенсионер'),
+        ('other', 'Другое'),
+    )
     tg_id = models.PositiveBigIntegerField(unique=True, db_index=True, verbose_name='телеграм ID')
     tg_username = models.CharField(max_length=255, blank=True, null=True, verbose_name='никнэйм')
     email = models.EmailField(unique=True, blank=True, null=True, verbose_name='email')
@@ -19,7 +28,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_superuser = models.BooleanField(default=False, verbose_name='Сотрудник')
     is_staff = models.BooleanField(default=False, verbose_name='Куратор')
     consent_to_personal_data = models.BooleanField(default=False, verbose_name='Согласие',
-                                                   help_text='Согласие на обработку персональных данных')
+                                                   help_text='Принятие условий договора-оферты')
     birthday = models.DateField(blank=True, null=True, verbose_name='дата рождения')
     is_adult = models.BooleanField(default=True, verbose_name='18+')
     rating = models.ForeignKey('Rating', on_delete=models.CASCADE, blank=True, null=True, verbose_name='рейтинг')
@@ -27,6 +36,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     city = models.ForeignKey('address_app.City', on_delete=models.CASCADE, blank=True, null=True,
                              related_name='users', verbose_name='город')
     interests = models.TextField(blank=True, null=True, verbose_name='интересы')
+    metier = models.CharField(choices=METIERS, max_length=50, blank=True, null=True, verbose_name='род деятельности',
+                              default=None)
 
     USERNAME_FIELD = 'tg_id'
     REQUIRED_FIELDS = []
@@ -47,6 +58,22 @@ class User(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = 'пользователь'
         verbose_name_plural = 'пользователи'
+
+
+###### PROXIES FOR ADMIN PANEL ######
+class Volunteer(User):
+    class Meta:
+        proxy = True
+
+
+class Curator(User):
+    class Meta:
+        proxy = True
+
+
+class Employee(User):
+    class Meta:
+        proxy = True
 
 
 class Rating(models.Model):

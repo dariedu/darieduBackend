@@ -5,7 +5,7 @@ from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
 
 from .google_export import export_to_gs
-from .models import Rating, User
+from user_app.models import User, Rating, Volunteer, Employee, Curator
 
 
 class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
@@ -51,6 +51,7 @@ class UserAdmin(BaseAdmin):
         'birthday_format',
         'is_adult',
         'short_interests',
+        'metier',
         'consent_to_personal_data',
     )
     list_filter = (
@@ -60,6 +61,7 @@ class UserAdmin(BaseAdmin):
         'is_adult',
         'consent_to_personal_data',
         'rating',
+        'metier',
     )
     fieldsets = [
         (None, {"fields": [
@@ -77,12 +79,31 @@ class UserAdmin(BaseAdmin):
             "phone",
             "rating",
             "city",
+            "metier",
             "interests",
             "consent_to_personal_data",
         ]}),
         ("Уровень доступа", {"fields": ["is_staff", "is_superuser"]}),
     ]
     search_fields = ('tg_id', 'name', 'surname', 'last_name', 'city_id', 'email', 'phone')
+
+
+@admin.register(Volunteer)
+class VolunteerAdmin(UserAdmin):
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(is_staff=False, is_superuser=False)
+
+
+@admin.register(Curator)
+class CuratorAdmin(UserAdmin):
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(is_staff=True, is_superuser=False)
+
+
+@admin.register(Employee)
+class EmployeeAdmin(UserAdmin):
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(is_superuser=True)
 
 
 @admin.register(Rating)

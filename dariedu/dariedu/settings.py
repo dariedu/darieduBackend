@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
 from datetime import timedelta
+import logging
 
 from django.conf import settings
 
@@ -20,6 +21,7 @@ from pathlib import Path
 from .unfold_config import UNFOLD_CONFIG
 
 load_dotenv(find_dotenv())
+logging.getLogger('django.utils.timezone').setLevel(logging.ERROR)
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -51,6 +53,8 @@ ALLOWED_HOSTS = [
 
 CURRENT_HOST = '127.0.0.1:8000'  # TODO change it later
 
+# SECURE_SSL_REDIRECT = True
+# SECURE_PROXY_SSL_HEADER = ("https", CURRENT_HOST)
 
 SITE_ID = 1
 # Application definition
@@ -73,8 +77,9 @@ INSTALLED_APPS = [
     'address_app',
     'task_app.apps.TaskAppConfig',
     'promo_app',
-    'feedback_app',
+    'feedback_app.apps.FeedbackAppConfig',
     'stories_app',
+    'notifications_app',
 
     'django.contrib.postgres',
     'rest_framework',
@@ -102,10 +107,35 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'dariedu.urls'
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    'https://skillfactory.dariedu.site',
+    'http://skillfactory.dariedu.site',
+    'https://dariedufront.vercel.app',
+    'https://localhost:5173',
+    'http://localhost:5173',
+    'https://localhost:8000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:5173',
+    'https://127.0.0.1:5173',
+]
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = ["*"]
 CORS_ALLOW_HEADERS = ["*"]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://skillfactory.dariedu.site',
+    'http://skillfactory.dariedu.site',
+    'https://dariedufront.vercel.app',
+    'https://localhost:5173',
+    'http://localhost:5173',
+    'https://localhost:8000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:5173',
+    'https://127.0.0.1:5173',
+]
 
 TEMPLATES = [
     {
@@ -173,11 +203,11 @@ LANGUAGES = [
     ('en-us', 'english')
 ]
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)

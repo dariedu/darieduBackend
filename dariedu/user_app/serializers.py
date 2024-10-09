@@ -18,7 +18,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'photo',
             'birthday',
             'is_adult',
-            'interests',
+            'city',
             'consent_to_personal_data'
         )
 
@@ -63,6 +63,7 @@ class UserSerializer(serializers.ModelSerializer):
             'city',
             'is_superuser',
             'is_staff',
+            'metier',
             'interests',
             'consent_to_personal_data'
         ]
