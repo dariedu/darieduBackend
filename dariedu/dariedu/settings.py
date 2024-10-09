@@ -112,17 +112,16 @@ CORS_ALLOWED_ORIGINS = [
     'http://skillfactory.dariedu.site',
     'https://dariedufront.vercel.app',
     'https://localhost:5173',
+    'http://localhost:5173',
     'https://localhost:8000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:5173',
+    'https://127.0.0.1:5173',
 ]
+
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_METHODS = [
-    "DELETE",
-    "GET",
-    "OPTIONS",
-    "PATCH",
-    "POST",
-    "PUT",
-]
+CORS_ALLOW_METHODS = ["*"]
 CORS_ALLOW_HEADERS = ["*"]
 
 TEMPLATES = [
