@@ -1,24 +1,25 @@
 from typing import Optional
+import logging
 
 from django import forms
-from django.contrib import admin
-from django.contrib.admin.widgets import RelatedFieldWidgetWrapper, ForeignKeyRawIdWidget
-from django.db import models
+from django.contrib import admin, messages
+from django.contrib.admin.actions import action
+from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.db.models import ForeignKey
-from django.forms import ModelChoiceField, Select, Widget
-from django.http import HttpRequest
+from django.forms import ModelChoiceField
+from django.http import HttpRequest, HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse
-from django.utils.html import format_html
-from django.utils.http import urlencode
 from import_export.admin import ImportExportModelAdmin
 from unfold.admin import ModelAdmin, TabularInline
-from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
-                                                SelectableFieldsExportForm)
-from unfold.widgets import UnfoldAdminSelectWidget, UnfoldForeignKeyRawIdWidget, UnfoldRelatedFieldWidgetWrapper
+from unfold.contrib.import_export.forms import ImportForm, SelectableFieldsExportForm
 
-from task_app.models import Delivery
 from user_app.models import User
+from .forms import AddToRouteSheetForm
 from .models import Address, Beneficiar, City, Location, RouteSheet
+
+
+logging.basicConfig(level=logging.INFO)
 
 
 class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
@@ -63,6 +64,46 @@ class AddressAdmin(BaseAdmin):
     search_fields = ('address', 'location__city', 'location')
     inlines = [BeneficiarInline, ]
     readonly_fields = (BeneficiarInline, )
+
+    @action(description='Добавить в маршрутный лист')
+    def add_addresses_to_route_sheet(self, request, queryset):
+        # form = AddToRouteSheetForm(initial={'_selected_action': request.POST.getlist(ACTION_CHECKBOX_NAME)})
+        logging.info("QUERYSET: %s", queryset)
+        logging.info("REQUEST: %s", request.POST)
+        if 'apply' in request.POST:
+            logging.info("APPLY: %s", request.POST)
+            form = AddToRouteSheetForm(request.POST)
+            if form.is_valid():
+                route_sheet_id = form.cleaned_data['route_sheet']
+                for address in queryset:
+                    address.route_sheet = route_sheet_id
+                    address.save()
+                self.message_user(request, f"Адреса добавлены в маршрутный лист {route_sheet_id.name}")
+                return HttpResponseRedirect(reverse('admin:address_app_address_changelist'))
+
+            else:
+                logging.info(form.errors)
+
+        else:
+            logging.info("NOT APPLY: %s", request.POST)
+            form = AddToRouteSheetForm(initial={'_selected_action': request.POST.getlist(ACTION_CHECKBOX_NAME)})
+
+        return render(request, 'admin/select_route_sheet.html',
+                      {'addresses': queryset,
+                       'form': form,
+                       'title': 'Добавить в маршрутный лист'})
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        actions['add_addresses_to_route_sheet'] = (self.add_addresses_to_route_sheet.__func__,
+                                                   'add_addresses_to_route_sheet',
+                                                   'Добавить в маршрутный лист')
+        return actions
+
+    def change_view(self, request, object_id, form_url='add_route_sheet', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['route_sheets'] = RouteSheet.objects.all()
+        return super().change_view(request, object_id, form_url, extra_context=extra_context)
 
 
 @admin.register(Location)
