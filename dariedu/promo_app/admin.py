@@ -79,11 +79,11 @@ class PromotionAdmin(BaseAdmin):
         'picture',
     )
     inlines = [UsersInline, ]
-    readonly_fields = (UsersInline, )
     list_filter = ('is_active', 'city', 'category', 'for_curators_only', 'available_quantity', ('start_date', RangeDateFilter))
     search_fields = ('name', 'start_date', 'description')
     ordering = ('-start_date',)
     list_editable = ('price', 'is_active', 'quantity', 'for_curators_only')
+    list_display_links = ('name', 'category')
 
 
 @admin.register(PromoCategory)

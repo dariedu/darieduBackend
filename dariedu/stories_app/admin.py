@@ -1,15 +1,6 @@
 from django.contrib import admin
-from typing import Optional
-
-from django import forms
-from django.contrib import admin
-from django.db import models
-from django.db.models import ForeignKey
-from django.forms import ModelChoiceField
-from django.http import HttpRequest
 from import_export.admin import ImportExportModelAdmin
 from unfold.admin import ModelAdmin
-from unfold.contrib.filters.admin import RangeDateFilter
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
 
@@ -38,3 +29,4 @@ class StoriesAdmin(BaseAdmin):
     list_filter = ('hidden',)
     search_fields = ('title', 'link_name', 'text')
     list_editable = ('hidden',)
+    list_display_links = ('title', 'link_name')
