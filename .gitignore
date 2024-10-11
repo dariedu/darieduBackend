@@ -7,3 +7,5 @@ __pycache__/
 # Google drive
 client_secrets.json
 secret_token.json
+photo_report
+settings.yaml
