@@ -57,7 +57,7 @@ class RequestMessageAdmin(BaseAdmin):
 class PhotoReportAdmin(BaseAdmin):
     list_display = (
         "address",
-        "photo",
+        "photo_view",
         "date",
         "user",
         'comment',
