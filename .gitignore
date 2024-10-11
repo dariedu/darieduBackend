@@ -3,3 +3,7 @@
 .idea/
 __pycache__/
 /credentials.json
+
+# Google drive
+client_secrets.json
+secret_token.json
