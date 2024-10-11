@@ -73,6 +73,7 @@ class PhotoReportAdmin(BaseAdmin):
 
     list_display = (
         "address",
+        "photo_view",
         "display_beneficiar",
         "date_format",
         "user",
