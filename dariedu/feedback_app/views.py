@@ -1,3 +1,5 @@
+import os
+
 from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets, mixins, status
 from rest_framework.permissions import IsAuthenticated
@@ -7,6 +9,8 @@ from rest_framework.decorators import action
 from address_app.models import Address
 from .models import Feedback, RequestMessage, PhotoReport
 from .serializers import FeedbackSerializer, RequestMessageSerializer, PhotoReportSerializer
+
+from .google_drive.upload_file import get_google_links
 
 
 class FeedbackViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -103,12 +107,36 @@ class PhotoReportViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
         except Address.DoesNotExist:
             return Response({'detail': 'Address not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+        try:
+            file = self.save_image_to_server()
+            links = get_google_links(file)
+            self.delete_file(file)
+        except Exception as e:
+            return Response(data={'detail': f'Google drive or image - {e}'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         photo_report = PhotoReport.objects.create(
             user=request.user,
             address=address,
-            # photo=request.data.get('photo'),  # TODO add URL from cloud storage
+            photo_view=links.get('view'),
+            photo_download=links.get('download'),
             comment=request.data.get('comment')
         )
 
         photo_report.save()
         return Response(status=status.HTTP_201_CREATED)
+
+    def save_image_to_server(self):
+        """Сохранение фотографии на сервере"""
+        file = self.request.FILES.get('photo')
+
+        with open(f'report_photo/{file.name}', 'wb+') as photo:
+            for chunk in file.chunks():
+                photo.write(chunk)
+
+        return file
+
+    @staticmethod
+    def delete_file(file):
+        """Удаление фотографии из сервера"""
+        os.remove(f'report_photo/{file}')
