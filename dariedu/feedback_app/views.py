@@ -128,9 +128,9 @@ class PhotoReportViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
 
     def save_image_to_server(self):
         """Сохранение фотографии на сервере"""
-        file = self.request.FILES.get('photo')
+        file = self.request.FILES['photo']
 
-        with open(f'report_photo/{file.name}', 'wb+') as photo:
+        with open(f'photo_report/{file.name}', 'wb+') as photo:
             for chunk in file.chunks():
                 photo.write(chunk)
 
@@ -139,4 +139,4 @@ class PhotoReportViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
     @staticmethod
     def delete_file(file):
         """Удаление фотографии из сервера"""
-        os.remove(f'report_photo/{file}')
+        os.remove(f'photo_report/{file}')

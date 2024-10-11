@@ -7,7 +7,7 @@ from django.core.files import File
 def authenticate() -> GoogleAuth:
     """Не интерактивная авторизация в Google"""
     google_auth = GoogleAuth()
-    google_auth.LoadCredentialsFile('secret_token.json')
+    google_auth.LoadCredentialsFile('token.json')
 
     return google_auth
 
@@ -18,7 +18,7 @@ def upload_file_to_google_drive(file: File) -> Any:
         drive = GoogleDrive(authenticate())
 
         file_drive = drive.CreateFile({'title': f'{file.name}'})
-        file_drive.SetContentFile(f'report_photo/{file}')
+        file_drive.SetContentFile(f'photo_report/{file}')
         file_drive.Upload()
         file_drive.InsertPermission({
             'type': 'anyone',

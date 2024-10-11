@@ -16,7 +16,7 @@ def create_token():
 
     change_dir()
 
-    google_auth.SaveCredentialsFile('secret_token.json')
+    google_auth.SaveCredentialsFile('token.json')
 
 
 if __name__ == '__main__':
