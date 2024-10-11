@@ -71,5 +71,6 @@ class PhotoReport(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь')
     comment = models.TextField(verbose_name='комментарий', blank=True, null=True)
 
+    @admin.display(description='благополучатели')
     def display_beneficiar(self):
         return format_html('<br>'.join([beneficiar.full_name for beneficiar in self.address.beneficiar.all()]))
