@@ -12,7 +12,6 @@ from unfold.contrib.filters.admin import RangeDateFilter
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
 
-from address_app.models import RouteSheet
 from user_app.models import User
 from .models import Delivery, Task, DeliveryAssignment, TaskCategory
 
@@ -44,10 +43,10 @@ class TaskAdmin(BaseAdmin):
         return obj.end_date.strftime("%d.%m.%y %H:%M")
 
     list_display = (
-        'name',
-        'description_short',
         'start_date_format',
         'end_date_format',
+        'name',
+        'description_short',
         'category',
         'price',
         'volunteers_needed',
@@ -57,6 +56,7 @@ class TaskAdmin(BaseAdmin):
         'curator',
         'city',
     )
+    list_display_links = ('start_date_format', 'end_date_format', 'name', 'description_short')
     list_editable = ('price', 'volunteers_needed', 'is_active', 'is_completed')
     list_filter = ['is_active', 'category', ('start_date', RangeDateFilter)]
     readonly_fields = ('volunteers', )  # TODO maybe we should have opportunity to edit volunteers
@@ -98,6 +98,7 @@ class DeliveryAdmin(BaseAdmin):
 
     list_display = (
         'location',
+        'display_route_sheet',
         'date_format',
         'price',
         'is_active',
@@ -107,10 +108,9 @@ class DeliveryAdmin(BaseAdmin):
         'curator',
         'volunteers_needed',
         'volunteers_taken',
-        'display_route_sheet',
         'display_volunteers',
     )
-
+    list_display_links = ('date_format', 'location', 'display_route_sheet')
     list_filter = ['is_active', 'is_free', 'is_completed', 'in_execution',
                    ('date', RangeDateFilter)]
 
@@ -129,11 +129,10 @@ class DeliveryAdmin(BaseAdmin):
         'volunteers_needed',
         'volunteers_taken',
         'route_sheet',
-    )  # TODO add volunteers somehow
+    )
     list_editable = ('is_active', 'is_completed', 'in_execution', 'is_free', 'volunteers_needed')
 
     inlines = [VolunteerInline, ]
-    readonly_fields = (VolunteerInline, )
 
     def formfield_for_foreignkey(
         self, db_field: ForeignKey, request: HttpRequest, **kwargs

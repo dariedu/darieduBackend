@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils.html import format_html
+
 from user_app.models import User
 from promo_app.models import Promotion
 from task_app.models import *
@@ -8,7 +10,6 @@ from django.core.exceptions import ValidationError
 class RequestMessage(models.Model):
     type = models.CharField(max_length=255, verbose_name='тип заявки')
     text = models.TextField(verbose_name='текст', blank=True, null=True)
-    form = models.URLField(max_length=500, blank=True, null=True, verbose_name='форма')
     date = models.DateField(verbose_name='дата', auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь')
 
@@ -69,3 +70,6 @@ class PhotoReport(models.Model):
     date = models.DateField(verbose_name='дата', auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь')
     comment = models.TextField(verbose_name='комментарий', blank=True, null=True)
+
+    def display_beneficiar(self):
+        return format_html('<br>'.join([beneficiar.full_name for beneficiar in self.address.beneficiar.all()]))

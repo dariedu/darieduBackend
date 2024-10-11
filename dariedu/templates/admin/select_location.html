@@ -1,0 +1,37 @@
+{% extends 'admin/base.html' %}
+
+{% block content %}
+    <h2>Добавить адреса к локации</h2>
+<br><br>
+    <form action="" method="post">{% csrf_token %}
+
+
+        <fieldset class="module aligned">
+        <h2>{{ title }}</h2>
+        {% for field in form %}
+            <div class="form-row">
+                {{ field.errors }}
+                {{ field.label_tag }} {{ field }}
+                {% if field.field.help_text %}
+                <p class="help">{{ field.field.help_text|safe }}</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+        </fieldset>
+
+        <div>
+        <input type="hidden" name="action" value="add_addresses_to_location" />
+            <br>
+        <input type="submit" style="border-color: #f5f5f5; border-radius: 3px; width: 20%" name="apply" value="Применить" />
+        </div>
+<br><br>
+        {% if addresses %}
+        <h3>Выбранные адреса:</h3>
+        <ul>
+        {% for address in addresses %}
+            <li>{{ address }}</li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+    </form>
+{% endblock %}
