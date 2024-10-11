@@ -62,4 +62,5 @@ get_refresh_token: True
 
 oauth_scope:
   - https://www.googleapis.com/auth/drive
-  - https://www.googleapis.com/auth/drive.file```
+  - https://www.googleapis.com/auth/drive.file
+```
