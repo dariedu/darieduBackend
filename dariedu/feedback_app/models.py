@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils.html import format_html
-
 from user_app.models import User
 from promo_app.models import Promotion
 from task_app.models import *
