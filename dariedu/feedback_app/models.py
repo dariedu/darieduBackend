@@ -1,7 +1,7 @@
 from django.db import models
 from user_app.models import User
 from promo_app.models import Promotion
-from task_app.models import Delivery
+from task_app.models import *
 from django.core.exceptions import ValidationError
 
 
@@ -22,8 +22,12 @@ class RequestMessage(models.Model):
 
 class Feedback(models.Model):
     TYPE_CHOICES = [
-        ('delivery', 'Доставка'),
-        ('promotion', 'Поощрение'),
+        ('completed_delivery', 'Завершенная доставка'),
+        ('canceled_delivery', 'Отмененная доставка'),
+        ('completed_promotion', 'Завершенное поощрение'),
+        ('canceled_promotion', 'Отмененное поощрение'),
+        ('completed_task', 'Завершенное доброе дело'),
+        ('canceled_task', 'Отмененное доброе дело'),
     ]
 
     id = models.AutoField(primary_key=True, verbose_name="ID")
@@ -34,6 +38,8 @@ class Feedback(models.Model):
                                  verbose_name="Доставка", related_name="feedbacks")
     promotion = models.ForeignKey(Promotion, on_delete=models.CASCADE, null=True, blank=True,
                                   verbose_name="Поощрение", related_name="feedbacks")
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Доброе дело",
+                             related_name="feedbacks")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
     def clean(self):
