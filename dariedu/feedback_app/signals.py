@@ -22,11 +22,10 @@ def create_feedback(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=Feedback)
-def send_feedback_notification(sender, instance, created, **kwargs):
-    if created:
-        subject = f"Новый отзыв от пользователя {instance.user}"
+def send_suggestion_email(sender, instance, created, **kwargs):
+    if created and instance.type == 'suggestion':
+        subject = f"Новые вопросы и предложения от пользователя {instance.user}"
         message = (
-            f"Тип отзыва: {instance.get_type_display()}\n"
             f"Текст: {instance.text}\n"
             f"Дата создания: {instance.created_at}\n"
             f"Пользователь: {instance.user.name}"
