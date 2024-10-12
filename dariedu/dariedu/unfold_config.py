@@ -219,7 +219,7 @@ UNFOLD_CONFIG = {
                             "permission": lambda request: request.user.is_superuser,
                         },
                         {
-                            "title": _("Заявки"),
+                            "title": _("Заявки на кураторство"),
                             "icon": "request_quote",
                             "link": reverse_lazy("admin:feedback_app_requestmessage_changelist"),
                             # "badge": "main admin",

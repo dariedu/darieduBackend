@@ -50,6 +50,7 @@ class PromotionAdmin(BaseAdmin):
     list_display = (
         'name',
         'category',
+        'address',
         'price',
         'is_active',
         'start_date_format',
@@ -65,6 +66,7 @@ class PromotionAdmin(BaseAdmin):
     fields = (
         'name',
         'category',
+        'address',
         'price',
         'is_active',
         'start_date',
@@ -79,7 +81,7 @@ class PromotionAdmin(BaseAdmin):
         'picture',
     )
     inlines = [UsersInline, ]
-    list_filter = ('is_active', 'city', 'category', 'for_curators_only', 'available_quantity', ('start_date', RangeDateFilter))
+    list_filter = ('is_active', 'city', 'category', 'for_curators_only', 'available_quantity', 'start_date')
     search_fields = ('name', 'start_date', 'description')
     ordering = ('-start_date',)
     list_editable = ('price', 'is_active', 'quantity', 'for_curators_only')

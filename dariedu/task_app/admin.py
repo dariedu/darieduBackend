@@ -58,7 +58,7 @@ class TaskAdmin(BaseAdmin):
     )
     list_display_links = ('start_date_format', 'end_date_format', 'name', 'description_short')
     list_editable = ('price', 'volunteers_needed', 'is_active', 'is_completed')
-    list_filter = ['is_active', 'category', ('start_date', RangeDateFilter)]
+    list_filter = ['is_active', 'category', 'start_date']
     readonly_fields = ('volunteers', )  # TODO maybe we should have opportunity to edit volunteers
     search_fields = ('name', 'start_date', 'description')
     ordering = ('-start_date',)

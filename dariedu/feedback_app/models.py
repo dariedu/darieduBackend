@@ -8,13 +8,17 @@ from django.core.exceptions import ValidationError
 
 
 class RequestMessage(models.Model):
-    type = models.CharField(max_length=255, verbose_name='тип заявки')
-    text = models.TextField(verbose_name='текст', blank=True, null=True)
+    about_location = models.CharField(max_length=255, verbose_name='на какой локации', blank=True, null=True,
+                                      help_text='На какой локации вы бы хотели стать куратором и почему?')
+    about_presence = models.CharField(max_length=255, verbose_name='присутствие', blank=True, null=True,
+                                      help_text='Готовы ли вы присутствовать на локациии во время доставок?')
+    about_worktime = models.CharField(max_length=255, verbose_name='график работы', blank=True, null=True,
+                                      help_text='Какой у вас график работы/учебы?')
     date = models.DateField(verbose_name='дата', auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь')
 
     def __str__(self):
-        return self.type
+        return str(self.user)
 
     class Meta:
         verbose_name = 'заявка'
@@ -33,7 +37,7 @@ class Feedback(models.Model):
 
     id = models.AutoField(primary_key=True, verbose_name="ID")
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, verbose_name="Тип обратной связи")
-    text = models.TextField(verbose_name="Текст обратной связи")
+    text = models.TextField(verbose_name="Текст обратной связи", max_length=500)
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
     delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, null=True, blank=True,
                                  verbose_name="Доставка", related_name="feedbacks")
@@ -70,7 +74,7 @@ class PhotoReport(models.Model):
     photo_download = models.URLField(max_length=500, verbose_name='загрузка фотографии', blank=True, null=True)
     date = models.DateField(verbose_name='дата', auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь')
-    comment = models.TextField(verbose_name='комментарий', blank=True, null=True)
+    comment = models.TextField(verbose_name='комментарий', blank=True, null=True, max_length=255)
 
     @admin.display(description='благополучатели')
     def display_beneficiar(self):
