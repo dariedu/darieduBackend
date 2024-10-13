@@ -99,7 +99,18 @@ class PhotoReportViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        """Create new photo report"""
+        """
+        Создание записи в базе данных и обработка данных
+        На выход получаем следующие поля:
+        address: ID адреса
+        user: Авторизованный пользователь
+        photo: Фотография прикрепляемого к отчёту
+        comment: Комментарий
+        На выходе status code:
+        404 - если адрес не найден в БД
+        400 - что-то случилось с фотографией, начиная от приёма и обработки фотографии, заканчивая загрузкой в google
+        201 - если данные сохранены в бд
+        """
         address_id = request.data.get('address')
 
         try:
