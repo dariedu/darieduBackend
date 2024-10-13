@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from address_app.models import Address
+from address_app.models import Address, Beneficiar
 from .models import Feedback, RequestMessage, PhotoReport
 from .serializers import FeedbackSerializer, RequestMessageSerializer, PhotoReportSerializer
 
@@ -107,8 +107,10 @@ class PhotoReportViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
         except Address.DoesNotExist:
             return Response({'detail': 'Address not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+        beneficiary = Beneficiar.objects.filter(address_id=address_id).values_list('full_name')
+
         try:
-            file = self.save_image_to_server()
+            file = self.save_image_to_server(beneficiary)
             links = get_google_links(file)
             self.delete_file(file)
         except Exception as e:
@@ -126,9 +128,18 @@ class PhotoReportViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
         photo_report.save()
         return Response(status=status.HTTP_201_CREATED)
 
-    def save_image_to_server(self):
+    def save_image_to_server(self, beneficiary):
         """Сохранение фотографии на сервере"""
+        import re
+
         file = self.request.FILES['photo']
+
+        regex = re.compile(r'\.\w*')
+        prefix = regex.search(file.name).group()
+
+        list_beneficiary = lambda x: [i[0] for i in x]
+
+        file.name = ' и '.join(list_beneficiary(beneficiary)) + prefix
 
         with open(f'photo_report/{file.name}', 'wb+') as photo:
             for chunk in file.chunks():
