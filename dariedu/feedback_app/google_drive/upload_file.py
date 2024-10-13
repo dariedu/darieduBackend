@@ -1,4 +1,7 @@
+import datetime
+
 from typing import Any
+
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from django.core.files import File
@@ -17,7 +20,23 @@ def upload_file_to_google_drive(file: File) -> Any:
     try:
         drive = GoogleDrive(authenticate())
 
-        file_drive = drive.CreateFile({'title': f'{file.name}'})
+        today = str(datetime.date.today())
+
+        query = f'title="{today}" and mimeType="application/vnd.google-apps.folder" and trashed=false'
+        lists_folder = drive.ListFile({'q': query}).GetList()
+
+        if not lists_folder:
+            folder_metadata = {
+                'title': f'{today}',
+                'mimeType': 'application/vnd.google-apps.folder'
+            }
+            folder = drive.CreateFile(folder_metadata)
+            folder.Upload()
+            lists_folder.append(folder)
+
+        folder_id = lists_folder[0]['id']
+
+        file_drive = drive.CreateFile({'title': f'{file.name}', 'parents': [{'id': folder_id}]})
         file_drive.SetContentFile(f'photo_report/{file}')
         file_drive.Upload()
         file_drive.InsertPermission({
