@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils.html import format_html
-
 from user_app.models import User
 from promo_app.models import Promotion
 from task_app.models import *
@@ -29,6 +28,7 @@ class Feedback(models.Model):
         ('canceled_promotion', 'Отмененное поощрение'),
         ('completed_task', 'Завершенное доброе дело'),
         ('canceled_task', 'Отмененное доброе дело'),
+        ('suggestion', 'Вопросы и предложения'),
     ]
 
     id = models.AutoField(primary_key=True, verbose_name="ID")
