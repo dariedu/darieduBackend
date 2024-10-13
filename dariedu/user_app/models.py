@@ -23,7 +23,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(max_length=50, blank=True, null=True, verbose_name='телефон')
     photo = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name='фото')
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name='аватарка')
-    volunteer_hour = models.PositiveIntegerField(default=0, verbose_name='волонтерские часы')
+    volunteer_hour = models.PositiveIntegerField(default=0, verbose_name='волонтёрские часы')
     point = models.PositiveIntegerField(default=0, verbose_name='баллы')
     is_superuser = models.BooleanField(default=False, verbose_name='Сотрудник')
     is_staff = models.BooleanField(default=False, verbose_name='Куратор')

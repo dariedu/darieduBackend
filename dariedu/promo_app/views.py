@@ -42,7 +42,7 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
         if promotion.available_quantity <= 0:
             return Response({'error': 'Это поощрение недоступно'}, status=400)
 
-        # Проверка достаточности баллов у волонтера
+        # Проверка достаточности баллов у волонтёра
         if user.point < promotion.price:
             return Response({'error': 'Недостаточно баллов для приобретения'}, status=400)
 
@@ -52,7 +52,7 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
 
         serializer = PromotionSerializer(instance=promotion, context={'view': self, 'request': request})
 
-        # Присвоение поощрения волонтеру через создание записи в Participation
+        # Присвоение поощрения волонтёру через создание записи в Participation
         try:
             Participation.objects.create(user=user, promotion=promotion)
 
@@ -78,7 +78,7 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
         if not participation:
             return Response({'error': 'У вас нет этого поощрения'}, status=400)
 
-        # Возврат баллов волонтеру
+        # Возврат баллов волонтёру
         user.point += promotion.price
         user.save()
 

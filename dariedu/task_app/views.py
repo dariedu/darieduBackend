@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from .exceptions import BadRequest
 from .models import Task, Delivery, DeliveryAssignment, TaskCategory
-from .permissions import IsAbleCompleteTask, IsCurator  # для метода завершения задачи куратором
+from .permissions import IsAbleCompleteTask, IsCurator
 from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer, TaskVolunteerSerializer, \
     TaskCategorySerializer, DeliveryVolunteerSerializer
 
@@ -34,7 +34,7 @@ class TaskViewSet(
         volunteers_needed__gt=F('volunteers_taken')  # TODO switch off when we will make autocomplete
     )
     serializer_class = TaskSerializer
-    ordering_fields = ['start_date', 'end_date', 'price']
+    ordering_fields = ['start_date', 'end_date']
 
     def get_queryset(self):
         """
@@ -75,7 +75,6 @@ class TaskViewSet(
             # the user can only abandon his active uncompleted task
             return self.request.user.tasks.filter(is_active=True, is_completed=False)
 
-        # Вернуть по необходимости!
         # Для метода завершения задачи куратором
         elif self.action == 'complete':
             # can complete only active and uncompleted tasks
@@ -158,8 +157,7 @@ class TaskViewSet(
 
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
-    # Вернуть по необходимости!
-    # Метод завершения задачи куратором
+    #  Метод завершения задачи куратором
     @action(detail=True, methods=['post'], url_name='task_complete')
     def complete(self, request, pk=None):
         """
@@ -282,3 +280,23 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             return Response({'message': 'Delivery cancelled successfully'}, status=200)
         else:
             return Response({'error': 'You are not authorized to cancel this delivery'}, status=403)
+
+    @action(detail=True, methods=['post'], url_path='complete')
+    def complete_delivery(self, request, pk):
+        delivery = self.get_object()
+        if self.request.user != delivery.curator:
+            return Response({'error': 'You are not authorized to complete this delivery'}, status=403)
+        else:
+            if delivery.is_completed:
+                return Response({'error': 'Delivery is already completed'}, status=400)
+            else:
+                delivery.is_completed = True
+                delivery.in_execution = False
+                delivery.is_active = False
+                delivery.is_free = False
+                delivery.curator.update(volunteer_hour=F('volunteer_hour') + 4,
+                                        point=F('point') + 4)
+                delivery.assignments.volunteer.update(volunteer_hour=F('volunteer_hour') + delivery.price,
+                                                      point=F('point') + delivery.price)
+                delivery.save()
+                return Response({'message': 'Delivery completed successfully'}, status=200)

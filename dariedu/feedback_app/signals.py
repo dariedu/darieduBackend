@@ -13,8 +13,8 @@ def create_feedback(sender, instance, created, **kwargs):
     if created:
         notification = Notification.objects.create(
             title=instance.type,
-            text=f'Пользователь {instance.user.tg_username} оставил заявку "{instance.text}"',
-            form=instance.form,
+            text=f'Пользователь {instance.user.tg_username} оставил заявку "{instance.about_location}"',
+            # form=instance.form,
             created=timezone.now()
         )
         notification.save()

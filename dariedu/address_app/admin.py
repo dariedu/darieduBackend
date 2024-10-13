@@ -165,7 +165,7 @@ class RouteSheetAdmin(BaseAdmin):
 
 @admin.register(Beneficiar)
 class BeneficiarAdmin(BaseAdmin):
-    list_display = ('full_name', 'address', 'phone', 'presence', 'category', 'comment')
+    list_display = ('full_name', 'address', 'phone', 'photo_link', 'presence', 'category', 'comment')
     search_fields = ('full_name', 'phone', 'address', 'comment')
     list_filter = ('address', 'category', 'presence')
     list_display_links = ('full_name', 'phone', 'address')

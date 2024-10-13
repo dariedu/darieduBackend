@@ -16,8 +16,8 @@ class Delivery(models.Model):
     is_active = models.BooleanField(default=True, verbose_name='активная')
     is_completed = models.BooleanField(default=False, verbose_name='завершена')
     in_execution = models.BooleanField(default=False, verbose_name='выполняется')
-    volunteers_needed = models.PositiveIntegerField(verbose_name='требуется волонтеров', default=1)
-    volunteers_taken = models.PositiveIntegerField(verbose_name='волонтеров взяли', default=0)
+    volunteers_needed = models.PositiveIntegerField(verbose_name='требуется волонтёров', default=1)
+    volunteers_taken = models.PositiveIntegerField(verbose_name='волонтёров взяли', default=0)
 
     route_sheet = models.ManyToManyField(RouteSheet, related_name='delivery', verbose_name='маршрутный лист')
 
@@ -35,7 +35,7 @@ class Delivery(models.Model):
     def display_route_sheet(self):
         return format_html('<br>'.join([str(route_sheet) for route_sheet in self.route_sheet.all()]))
 
-    @admin.display(description="Волонтеры")
+    @admin.display(description="Волонтёры")
     def display_volunteers(self):
         return format_html('<br>'.join([str(assignment) for assignment in self.assignments.all()]))
 
@@ -47,32 +47,33 @@ class Delivery(models.Model):
 class DeliveryAssignment(models.Model):
     delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, related_name='assignments',
                                  verbose_name='доставка')
-    volunteer = models.ManyToManyField(User, related_name='assignments', verbose_name='волонтер')
+    volunteer = models.ManyToManyField(User, related_name='assignments', verbose_name='волонтёр')
 
     def __str__(self):
         return format_html('<br>'.join([str(volunteer) for volunteer in self.volunteer.all()]))
 
     class Meta:
-        verbose_name = 'доставка волонтера'
-        verbose_name_plural = 'доставки волонтеров'
+        verbose_name = 'доставка волонтёра'
+        verbose_name_plural = 'доставки волонтёров'
 
 
 class Task(models.Model):
     category = models.ForeignKey('TaskCategory', on_delete=models.CASCADE,
                                  null=True, blank=True, verbose_name='категория')
     name = models.CharField(max_length=255, verbose_name='название')
-    price = models.PositiveIntegerField(verbose_name='часы', default=2)
+    volunteer_price = models.PositiveIntegerField(verbose_name='волонтёрские часы', default=2)
+    curator_price = models.PositiveIntegerField(verbose_name='кураторские часы', default=2)
     description = models.TextField(blank=True, null=True, verbose_name='описание')
     start_date = models.DateTimeField(verbose_name='дата начала')
     end_date = models.DateTimeField(verbose_name='дата конца')
-    volunteers_needed = models.PositiveIntegerField(verbose_name='требуется волонтеров', default=1)
-    volunteers_taken = models.PositiveIntegerField(verbose_name='волонтеров взяли', default=0)
+    volunteers_needed = models.PositiveIntegerField(verbose_name='требуется волонтёров', default=1)
+    volunteers_taken = models.PositiveIntegerField(verbose_name='волонтёров взяли', default=0)
     is_active = models.BooleanField(default=True, verbose_name='активная')
     is_completed = models.BooleanField(default=False, verbose_name='завершена')
 
     city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='город')
     curator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_curator', verbose_name='куратор')
-    volunteers = models.ManyToManyField(User, blank=True, related_name='tasks', verbose_name='волонтеры')
+    volunteers = models.ManyToManyField(User, blank=True, related_name='tasks', verbose_name='волонтёры')
 
     def __str__(self):
         return f'{self.name}, {self.start_date}'

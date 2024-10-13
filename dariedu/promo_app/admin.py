@@ -40,7 +40,7 @@ class PromotionAdmin(BaseAdmin):
         return obj.start_date.strftime("%d.%m.%y %H:%M")
     start_date_format.admin_order_field = 'start_date'
 
-    @admin.display(description="дата конца")
+    @admin.display(description="дата окончания")
     def end_date_format(self, obj):
         if obj.end_date:
             return obj.end_date.strftime("%d.%m.%y %H:%M")
@@ -50,6 +50,7 @@ class PromotionAdmin(BaseAdmin):
     list_display = (
         'name',
         'category',
+        'address',
         'price',
         'is_active',
         'start_date_format',
@@ -65,6 +66,7 @@ class PromotionAdmin(BaseAdmin):
     fields = (
         'name',
         'category',
+        'address',
         'price',
         'is_active',
         'start_date',
@@ -75,11 +77,12 @@ class PromotionAdmin(BaseAdmin):
         'for_curators_only',
         'description',
         'city',
-        'file',
+        'ticket_file',
+        'about_tickets',
         'picture',
     )
     inlines = [UsersInline, ]
-    list_filter = ('is_active', 'city', 'category', 'for_curators_only', 'available_quantity', ('start_date', RangeDateFilter))
+    list_filter = ('is_active', 'city', 'category', 'for_curators_only', 'available_quantity', 'start_date')
     search_fields = ('name', 'start_date', 'description')
     ordering = ('-start_date',)
     list_editable = ('price', 'is_active', 'quantity', 'for_curators_only')
