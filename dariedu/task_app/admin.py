@@ -48,7 +48,8 @@ class TaskAdmin(BaseAdmin):
         'name',
         'description_short',
         'category',
-        'price',
+        'volunteer_price',
+        'curator_price',
         'volunteers_needed',
         'volunteers_taken',
         'is_active',
@@ -57,7 +58,7 @@ class TaskAdmin(BaseAdmin):
         'city',
     )
     list_display_links = ('start_date_format', 'end_date_format', 'name', 'description_short')
-    list_editable = ('price', 'volunteers_needed', 'is_active', 'is_completed')
+    list_editable = ('volunteer_price', 'curator_price', 'volunteers_needed', 'is_active', 'is_completed')
     list_filter = ['is_active', 'category', 'start_date']
     readonly_fields = ('volunteers', )  # TODO maybe we should have opportunity to edit volunteers
     search_fields = ('name', 'start_date', 'description')
