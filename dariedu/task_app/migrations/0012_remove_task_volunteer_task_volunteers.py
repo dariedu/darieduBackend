@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='task',
             name='volunteers',
-            field=models.ManyToManyField(blank=True, related_name='task_volunteers', to=settings.AUTH_USER_MODEL, verbose_name='волонтеры'),
+            field=models.ManyToManyField(blank=True, related_name='task_volunteers', to=settings.AUTH_USER_MODEL, verbose_name='волонтёры'),
         ),
     ]

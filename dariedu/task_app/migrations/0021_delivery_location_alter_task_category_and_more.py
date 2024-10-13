@@ -32,6 +32,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='task',
             name='volunteers_needed',
-            field=models.PositiveIntegerField(default=1, verbose_name='требуется волонтеров'),
+            field=models.PositiveIntegerField(default=1, verbose_name='требуется волонтёров'),
         ),
     ]

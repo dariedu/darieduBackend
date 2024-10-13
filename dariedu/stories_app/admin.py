@@ -25,8 +25,8 @@ class StoriesAdmin(BaseAdmin):
             return obj.text[:40] + '...' if len(obj.text) > 40 else obj.text
         return None
 
-    list_display = ('title', 'link_name', 'text_short', 'hidden')
-    list_filter = ('hidden',)
-    search_fields = ('title', 'link_name', 'text')
+    list_display = ('title', 'subtitle', 'text_short', 'date', 'hidden')
+    list_filter = ('hidden', 'date')
+    search_fields = ('title', 'subtitle', 'link_name', 'text')
     list_editable = ('hidden',)
-    list_display_links = ('title', 'link_name')
+    list_display_links = ('title', 'subtitle')

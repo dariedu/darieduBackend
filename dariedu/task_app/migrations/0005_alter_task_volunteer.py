@@ -16,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='task',
             name='volunteer',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='task_volunteer', to=settings.AUTH_USER_MODEL, verbose_name='волонтер'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='task_volunteer', to=settings.AUTH_USER_MODEL, verbose_name='волонтёр'),
         ),
     ]

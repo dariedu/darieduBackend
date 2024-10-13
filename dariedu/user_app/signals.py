@@ -7,7 +7,7 @@ from user_app.models import User
 
 
 @receiver(post_save, sender=User)
-def create_feedback(sender, instance, created, **kwargs):
+def create_user(sender, instance, created, **kwargs):
     if created:
         notification = Notification.objects.create(
             title='Новый пользователь',

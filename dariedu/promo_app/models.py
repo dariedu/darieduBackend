@@ -46,7 +46,7 @@ class Promotion(models.Model):
             # Куратор видит все активные поощрения
             promotions = Promotion.objects.filter(is_active=True)
         else:
-            #  Волонтер видит только поощрения, не предназначенные только для кураторов
+            #  волонтёр видит только поощрения, не предназначенные только для кураторов
             promotions = Promotion.objects.filter(is_active=True, for_curators_only=False)
         return promotions
 
@@ -81,7 +81,7 @@ class Promotion(models.Model):
 
 
 class Participation(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='волонтер')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='волонтёр')
     promotion = models.ForeignKey(Promotion, on_delete=models.CASCADE, verbose_name='поощрение')
     received_at = models.DateTimeField(auto_now_add=True, verbose_name='дата получения')
 

@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('received_at', models.DateTimeField(auto_now_add=True, verbose_name='дата получения')),
                 ('promotion', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='promo_app.promotion', verbose_name='поощрение')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='волонтер')),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='волонтёр')),
             ],
             options={
                 'verbose_name': 'участие',

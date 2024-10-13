@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='delivery',
             name='volunteer',
-            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='волонтер'),
+            field=models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='волонтёр'),
         ),
         migrations.AlterField(
             model_name='task',
@@ -92,11 +92,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='task',
             name='quantity',
-            field=models.PositiveIntegerField(verbose_name='количество волонтеров'),
+            field=models.PositiveIntegerField(verbose_name='количество волонтёров'),
         ),
         migrations.AlterField(
             model_name='task',
             name='volunteer',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='task_volunteer', to=settings.AUTH_USER_MODEL, verbose_name='волонтер'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='task_volunteer', to=settings.AUTH_USER_MODEL, verbose_name='волонтёр'),
         ),
     ]

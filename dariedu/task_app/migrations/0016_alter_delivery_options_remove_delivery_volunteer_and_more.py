@@ -25,12 +25,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='delivery',
             name='volunteers_needed',
-            field=models.PositiveIntegerField(default=1, verbose_name='требуется волонтеров'),
+            field=models.PositiveIntegerField(default=1, verbose_name='требуется волонтёров'),
         ),
         migrations.AddField(
             model_name='delivery',
             name='volunteers_taken',
-            field=models.PositiveIntegerField(default=0, verbose_name='волонтеров взяли'),
+            field=models.PositiveIntegerField(default=0, verbose_name='волонтёров взяли'),
         ),
         migrations.RemoveField(
             model_name='delivery',
@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('delivery', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='assignments', to='task_app.delivery', verbose_name='доставка')),
-                ('volunteer', models.ManyToManyField(related_name='assignments', to=settings.AUTH_USER_MODEL, verbose_name='волонтер')),
+                ('volunteer', models.ManyToManyField(related_name='assignments', to=settings.AUTH_USER_MODEL, verbose_name='волонтёр')),
             ],
         ),
         migrations.AddField(
