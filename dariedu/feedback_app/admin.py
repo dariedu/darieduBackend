@@ -63,15 +63,16 @@ class RequestMessageAdmin(BaseAdmin):
         return obj.date.strftime("%d.%m.%y %H:%M")
     date_format.admin_order_field = 'date'
     list_display = (
+        "type",
         "about_location_short",
         "about_presence_short",
         "about_worktime_short",
         "user",
         'date_format',
     )
-    list_filter = ('date', 'user')
+    list_filter = ('type', 'date', 'user')
     search_fields = ('about_location', 'about_presence', 'about_worktime', 'user')
-    list_display_links = ('about_location_short', 'about_presence_short', 'about_worktime_short')
+    list_display_links = ('type', 'about_location_short', 'about_presence_short', 'about_worktime_short')
     autocomplete_fields = ('user', )
 
     # readonly_fields = ('type', 'user', 'text', 'date')  # for prod

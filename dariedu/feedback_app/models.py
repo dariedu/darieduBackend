@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 
 
 class RequestMessage(models.Model):
+    type = models.CharField(max_length=255, verbose_name='тип', default='стать куратором')
     about_location = models.CharField(max_length=255, verbose_name='на какой локации', blank=True, null=True,
                                       help_text='На какой локации вы бы хотели стать куратором и почему?')
     about_presence = models.CharField(max_length=255, verbose_name='присутствие', blank=True, null=True,

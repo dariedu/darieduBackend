@@ -6,6 +6,7 @@ import requests
 from celery import shared_task
 from django.conf import settings
 from celery.utils.log import get_task_logger
+from django.db.models import F
 from django.utils import timezone
 
 from .keyboard import keyboard_task, keyboard_delivery
@@ -114,3 +115,38 @@ def check_deliveries():
         eta = delivery.date - timedelta(hours=3)
         if timezone.now() <= eta:
             send_delivery_to_telegram.apply_async(args=[delivery.id], eta=eta)
+
+
+@shared_task
+def complete_task():
+    tasks = Task.objects.filter(end_date__gte=timezone.now() - timedelta(hours=1))
+    for task in tasks:
+        if task.is_completed:
+            task.is_active = False
+            task.save()
+        else:
+            task.is_active = False
+            task.is_completed = True
+            task.volunteers.update(volunteer_hours=F('volunteer_hours') + task.volunteer_price)
+            task.curator.volunteer_hours += task.curator_price
+            task.save()
+
+
+@shared_task
+def complete_delivery():
+    deliveries = Delivery.objects.filter(date__gte=timezone.now() - timedelta(hours=3))
+    for delivery in deliveries:
+        if delivery.is_completed:
+            delivery.is_active = False
+            delivery.is_free = False
+            delivery.in_execution = False
+            delivery.is_active = False
+            delivery.save()
+        else:
+            delivery.is_active = False
+            delivery.is_completed = True
+            delivery.in_execution = False
+            delivery.is_free = False
+            delivery.volunteers.update(volunteer_hours=F('volunteer_hours') + delivery.price)
+            delivery.curator.volunteer_hours += 4
+            delivery.save()
