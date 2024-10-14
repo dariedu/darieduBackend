@@ -24,6 +24,32 @@ services:
     networks:
       - mynetwork
 
+  celery-worker:
+    build: ./dariedu
+    command: celery -A dariedu worker -l info
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./dariedu:/app
+    networks:
+      - mynetwork
+
+  celery-beat:
+    build: ./dariedu
+    command: celery -A dariedu beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./dariedu:/app
+    networks:
+      - mynetwork
+
   db:
     image: postgres:13
     environment:
@@ -43,6 +69,13 @@ services:
       start_period: 10s
       timeout: 10s
 
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - mynetwork
+
 volumes:
   pg_data:
     driver: local
@@ -51,4 +84,3 @@ volumes:
 networks:
   mynetwork:
     external: true
-
