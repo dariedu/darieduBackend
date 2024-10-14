@@ -14,13 +14,15 @@ class Promotion(models.Model):
     name = models.CharField(max_length=255, verbose_name='название')
     price = models.PositiveIntegerField(verbose_name='стоимость')
     description = models.TextField(blank=True, null=True, verbose_name='описание')
-    start_date = models.DateTimeField(default=timezone.now, verbose_name='дата начала поощрения')
-    quantity = models.PositiveIntegerField(verbose_name='количество')  # общее количество поощрений
-    available_quantity = models.PositiveIntegerField(verbose_name='доступное количество',
-                                                     default=0)  # показ доступного количества поощрений
+    start_date = models.DateTimeField(default=timezone.now, verbose_name='дата начала')
+    quantity = models.PositiveIntegerField(verbose_name='Общее количество', default=1)
+    available_quantity = models.PositiveIntegerField(verbose_name='доступное количество', default=1,
+                                                     help_text='Изначально должно быть равно количеству. '
+                                                               'Будет меняться автоматически')
     for_curators_only = models.BooleanField(default=False, verbose_name='только для кураторов')
     is_active = models.BooleanField(default=True, verbose_name='активная')
-    file = models.URLField(blank=True, null=True, verbose_name='файл')  # TODO: upload to where ?
+    ticket_file = models.URLField(blank=True, null=True, verbose_name='файл')  # TODO: upload to where ?
+    about_tickets = models.TextField(blank=True, null=True, verbose_name='информация о билетах', max_length=255)
 
     # Срок действия поощрения.
     # Если поощрение бессрочное, устанавливается `is_permanent = True`, а поле `end_date`
@@ -28,11 +30,12 @@ class Promotion(models.Model):
     # Если у поощрения есть конкретный срок действия, поле `is_permanent` будет `False`, и
     # нужно указать дату в `end_date`.
     is_permanent = models.BooleanField(default=False, verbose_name='бессрочное поощрение')
-    end_date = models.DateTimeField(blank=True, null=True, verbose_name='срок действия')  # Дата окончания действия
+    end_date = models.DateTimeField(blank=True, null=True, verbose_name='дата окончания',
+                                    help_text='Только если поощрение не бессрочное')
 
     city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='город')
     users = models.ManyToManyField(User, through='Participation', blank=True, verbose_name='получатель')
-    picture = models.ImageField(blank=True, null=True, verbose_name='картинка')  # TODO: or URL?
+    picture = models.ImageField(blank=True, null=True, verbose_name='картинка', help_text='Ширина 328px, высота 205px')
     address = models.CharField(max_length=255, verbose_name='адрес', blank=True, null=True)
 
     def __str__(self):
@@ -43,7 +46,7 @@ class Promotion(models.Model):
             # Куратор видит все активные поощрения
             promotions = Promotion.objects.filter(is_active=True)
         else:
-            #  Волонтер видит только поощрения, не предназначенные только для кураторов
+            #  волонтёр видит только поощрения, не предназначенные только для кураторов
             promotions = Promotion.objects.filter(is_active=True, for_curators_only=False)
         return promotions
 
@@ -78,7 +81,7 @@ class Promotion(models.Model):
 
 
 class Participation(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='волонтер')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='волонтёр')
     promotion = models.ForeignKey(Promotion, on_delete=models.CASCADE, verbose_name='поощрение')
     received_at = models.DateTimeField(auto_now_add=True, verbose_name='дата получения')
 

@@ -70,6 +70,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='user',
             name='volunteer_hour',
-            field=models.PositiveIntegerField(default=0, verbose_name='волонтерские часы'),
+            field=models.PositiveIntegerField(default=0, verbose_name='волонтёрские часы'),
         ),
     ]

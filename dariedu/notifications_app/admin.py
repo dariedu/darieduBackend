@@ -22,8 +22,14 @@ class NotificationAdmin(BaseAdmin):
         return obj.created.strftime("%d.%m.%y %H:%M")
     created_format.admin_order_field = 'created'
 
-    list_display = ('title', 'text', 'created_format')
+    @admin.display(description="описание")
+    def text_short(self, obj):
+        if obj.text:
+            return obj.text[:45] + '...' if len(obj.text) > 45 else obj.text
+        return None
+
+    list_display = ('title', 'text_short', 'created_format')
     list_filter = ('created',)
     readonly_fields = ('title', 'text', 'created')
     search_fields = ('title', 'text', 'created')
-    list_display_links = ('title', 'text')
+    list_display_links = ('title', 'text_short')

@@ -63,6 +63,21 @@ UNFOLD_CONFIG = {
             "show_all_applications": True,
             "navigation": [
                 {
+                    # "title": _("Уведомления"),
+                    "separator": True,
+                    # "collapsible": True,
+                    "items": [
+                        {
+                            "title": _("Уведомления"),
+                            "icon": "request_quote",
+                            "link": reverse_lazy("admin:notifications_app_notification_changelist"),
+                            # "badge": "main admin",
+                            "permission": lambda request: request.user.is_superuser,
+                        },
+                    ],
+                },
+                {
+
                     "title": _("Доставки и добрые дела"),
                     "separator": True,
                     "collapsible": True,
@@ -141,7 +156,7 @@ UNFOLD_CONFIG = {
                             "permission": lambda request: request.user.is_superuser,
                         },
 {
-                            "title": _("Волонтеры"),
+                            "title": _("Волонтёры"),
                             "icon": "manage_accounts",
                             "link": reverse_lazy("admin:user_app_volunteer_changelist"),
                             # "badge": 'admin',
@@ -219,7 +234,7 @@ UNFOLD_CONFIG = {
                             "permission": lambda request: request.user.is_superuser,
                         },
                         {
-                            "title": _("Заявки"),
+                            "title": _("Заявки на кураторство"),
                             "icon": "request_quote",
                             "link": reverse_lazy("admin:feedback_app_requestmessage_changelist"),
                             # "badge": "main admin",
@@ -233,20 +248,6 @@ UNFOLD_CONFIG = {
                             "permission": lambda request: request.user.is_superuser,
                         },
 
-                    ],
-                },
-                {
-                    # "title": _("Уведомления"),
-                    "separator": True,
-                    # "collapsible": True,
-                    "items": [
-                        {
-                            "title": _("Уведомления"),
-                            "icon": "request_quote",
-                            "link": reverse_lazy("admin:notifications_app_notification_changelist"),
-                            # "badge": "main admin",
-                            "permission": lambda request: request.user.is_superuser,
-                        },
                     ],
                 },
             ],

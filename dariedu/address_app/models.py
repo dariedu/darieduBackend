@@ -40,7 +40,7 @@ class RouteSheet(models.Model):
     map = models.URLField(max_length=500, blank=True, null=True, verbose_name='карта')
     location = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, blank=True,
                                  related_name='route_sheets', verbose_name='локация')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='route_sheets', verbose_name='волонтер',
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='route_sheets', verbose_name='волонтёр',
                              blank=True, null=True)
 
     def __str__(self):
@@ -101,9 +101,9 @@ class Beneficiar(models.Model):
     comment = models.TextField(blank=True, null=True, verbose_name='комментарий')
     category = models.CharField(max_length=255, blank=True, null=True, verbose_name='категория')
     presence = models.CharField(choices=CHOICES, max_length=15, default='да', verbose_name='присутствие')
-
     address = models.ForeignKey(Address, on_delete=models.CASCADE,
                                 related_name='beneficiar', verbose_name='адрес')
+    photo_link = models.URLField(max_length=500, verbose_name='просмотр фото', blank=True, null=True)
 
     def __str__(self):
         return f'{self.full_name}, {self.phone}\n{self.comment}'

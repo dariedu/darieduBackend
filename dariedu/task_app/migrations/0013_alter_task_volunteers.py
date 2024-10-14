@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='task',
             name='volunteers',
-            field=models.ManyToManyField(blank=True, related_name='tasks', to=settings.AUTH_USER_MODEL, verbose_name='волонтеры'),
+            field=models.ManyToManyField(blank=True, related_name='tasks', to=settings.AUTH_USER_MODEL, verbose_name='волонтёры'),
         ),
     ]
