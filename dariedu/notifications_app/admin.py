@@ -28,8 +28,8 @@ class NotificationAdmin(BaseAdmin):
             return obj.text[:45] + '...' if len(obj.text) > 45 else obj.text
         return None
 
-    list_display = ('title', 'text_short', 'created_format')
+    list_display = ('title', 'text_short', 'obj_link', 'created_format')
     list_filter = ('created',)
-    readonly_fields = ('title', 'text', 'created')
+    readonly_fields = ('title', 'text', 'obj_link', 'created')
     search_fields = ('title', 'text', 'created')
     list_display_links = ('title', 'text_short')

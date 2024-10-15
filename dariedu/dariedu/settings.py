@@ -51,10 +51,9 @@ ALLOWED_HOSTS = [
     'https://localhost:5173/',
 ] + [os.getenv('ALLOWED_HOSTS')]
 
-CURRENT_HOST = '127.0.0.1:8000'  # TODO change it later
+CURRENT_HOST = 'https://skillfactory.dariedu.site'
+# CURRENT_HOST = '127.0.0.1:8000'
 
-# SECURE_SSL_REDIRECT = True
-# SECURE_PROXY_SSL_HEADER = ("https", CURRENT_HOST)
 
 SITE_ID = 1
 # Application definition
@@ -207,7 +206,7 @@ TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
-USE_TZ = False
+USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)

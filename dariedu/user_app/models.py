@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+
+from dariedu.settings import CURRENT_HOST
 from .managers import UserManager
 
 
@@ -55,6 +57,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f'{self.name} {self.last_name}, ' + (f' {self.tg_username}' if self.tg_username else f'{self.tg_id}')
+
+    def get_absolute_url(self):
+        return f'{CURRENT_HOST}/admin/user_app/user/{self.pk}/change/'
 
     class Meta:
         verbose_name = 'пользователь'

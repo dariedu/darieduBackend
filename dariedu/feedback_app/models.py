@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils.html import format_html
+
+from dariedu.settings import CURRENT_HOST
 from user_app.models import User
 from promo_app.models import Promotion
 from task_app.models import *
@@ -19,6 +21,9 @@ class RequestMessage(models.Model):
 
     def __str__(self):
         return str(self.user)
+
+    def get_absolute_url(self):
+        return f'{CURRENT_HOST}/admin/feedback_app/requestmessage/{self.id}/change/'
 
     class Meta:
         verbose_name = 'заявка'
@@ -63,6 +68,9 @@ class Feedback(models.Model):
         elif self.type == 'promotion':
             return f"Обратная связь о поощрении {self.promotion} от {self.user.name} {self.user.last_name}"
         return f"Отзыв от {self.user.name} {self.user.last_name}"
+
+    def get_absolute_url(self):
+        return f'{CURRENT_HOST}/admin/feedback_app/feedback/{self.id}/change/'
 
     class Meta:
         verbose_name = 'обратная связь'
