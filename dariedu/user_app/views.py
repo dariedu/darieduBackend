@@ -7,6 +7,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User, Rating
 from .serializers import UserSerializer, RatingSerializer, RegistrationSerializer, TelegramDataSerializer
+from .google_drive.upload_file import get_link_view
 
 
 class RegistrationView(generics.CreateAPIView):
@@ -14,7 +15,26 @@ class RegistrationView(generics.CreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = RegistrationSerializer
 
-    
+    def perform_create(self, serializer):
+        """Расширенный функционал метода create - добавление фотографии на google drive"""
+        import re
+
+        request = serializer.validated_data  # Данные из сериализатора, не путать с self.request
+        file_name = request['photo']
+        full_name = request['last_name'] + request['name'] + request['surname']
+        telegram_id = request['tg_id']
+
+        regex = re.compile(r'\.\w*')
+        prefix = regex.search(file_name.name).group()
+
+        request['photo'].name = f'{full_name}_{telegram_id}{prefix}'
+        data = serializer.save()
+
+        view_link = get_link_view(data.photo)
+        data.photo_view = view_link
+        data.save()
+
+
 class CustomTokenObtainPairView(APIView):
     serializer_class = TelegramDataSerializer
 

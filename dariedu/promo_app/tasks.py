@@ -58,3 +58,11 @@ def check_promotions():
         pprint(eta)
         if eta >= timezone.now():
             send_promotion_to_telegram.apply_async(args=[promotion.id], eta=eta)
+
+
+@shared_task
+def complete_promotion():
+    promotions = Promotion.objects.filter(is_permanent=False).filter(end_date__gte=timezone.now() - timedelta(hours=2))
+    for promotion in promotions:
+        promotion.is_active = False
+        promotion.save()

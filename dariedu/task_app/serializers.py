@@ -22,7 +22,7 @@ class TaskSerializer(serializers.ModelSerializer):
         model = Task
         fields = '__all__'
         read_only_fields = [
-            'id', 'category', 'name', 'price', 'description', 'start_date', 'end_date', 'volunteers_needed',
+            'id', 'category', 'name', 'volunteer_price', 'curator_price', 'description', 'start_date', 'end_date', 'volunteers_needed',
             'volunteers_taken', 'is_active', 'is_completed', 'curator', 'volunteers'
         ]
 
@@ -41,7 +41,6 @@ class TaskSerializer(serializers.ModelSerializer):
         # get data to update with or the old value if it was not passed
         volunteers_taken = validated_data.get('volunteers_taken', instance.volunteers_taken)
 
-        # Вернуть по необходимости!
         # Для метода завершения задачи куратором
         is_active = validated_data.get('is_active', instance.is_active)
         is_completed = validated_data.get('is_completed', instance.is_completed)
@@ -49,7 +48,6 @@ class TaskSerializer(serializers.ModelSerializer):
         # update instance fields
         instance.volunteers_taken = volunteers_taken
 
-        # Вернуть по необходимости!
         # Для метода завершения задачи куратором
         instance.is_active = is_active
         instance.is_completed = is_completed
@@ -65,15 +63,15 @@ class TaskSerializer(serializers.ModelSerializer):
             # task refuse logic
             instance.volunteers.remove(request.user)
 
-        # Вернуть по необходимости!
         # Для метода завершения задачи куратором
         elif path == view.reverse_action('task_complete', args=[instance.pk]):
             # task complete logic
             instance.volunteers.update(
-                volunteer_hour=F('volunteer_hour') + instance.price,
-                point=F('point') + instance.price
+                volunteer_hour=F('volunteer_hour') + instance.volunteer_price,
+                point=F('point') + instance.volunteer_price
             )
-            instance.curator.update(curator_hour=F('curator_hour') + instance.price)
+            instance.curator.update(volunteer_hour=F('volunteer_hour') + instance.curator_price,
+                                    point=F('point') + instance.curator_price)
 
         return instance
 
@@ -86,7 +84,7 @@ class TaskVolunteerSerializer(serializers.ModelSerializer):
         model = Task
         extends = ['volunteers']
         read_only_fields = [
-            'id', 'category', 'name', 'price', 'description', 'start_date', 'end_date', 'volunteers_needed',
+            'id', 'category', 'name', 'volunteer_price', 'curator_price', 'description', 'start_date', 'end_date', 'volunteers_needed',
             'volunteers_taken', 'is_active', 'is_completed', 'curator', 'volunteers'
         ]
 

@@ -86,6 +86,7 @@ class UserAdmin(BaseAdmin):
         ("Уровень доступа", {"fields": ["is_staff", "is_superuser"]}),
     ]
     search_fields = ('tg_id', 'name', 'surname', 'last_name', 'city_id', 'email', 'phone')
+    list_display_links = ('tg_id', 'tg_username', 'last_name', 'name', 'surname')
 
 
 @admin.register(Volunteer)

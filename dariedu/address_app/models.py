@@ -40,7 +40,7 @@ class RouteSheet(models.Model):
     map = models.URLField(max_length=500, blank=True, null=True, verbose_name='карта')
     location = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, blank=True,
                                  related_name='route_sheets', verbose_name='локация')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='route_sheets', verbose_name='волонтер',
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='route_sheets', verbose_name='волонтёр',
                              blank=True, null=True)
 
     def __str__(self):
@@ -69,7 +69,7 @@ class Address(models.Model):
                                     verbose_name='маршрутный лист', blank=True, null=True)
 
     def __str__(self):
-        return f'{self.address}\n{self.link}'
+        return f'{self.address}'
 
     @admin.display(description='маршрутный лист')
     def display_route_sheet(self):
@@ -89,13 +89,21 @@ class Address(models.Model):
 
 
 class Beneficiar(models.Model):
+
+    CHOICES = (
+        ('да', 'да'),
+        ('в отъезде', 'в отъезде'),
+        ('архив', 'архив')
+    )
+
     phone = models.CharField(max_length=50, blank=True, null=True, verbose_name='телефон')
     full_name = models.CharField(max_length=255, verbose_name='ФИО')
     comment = models.TextField(blank=True, null=True, verbose_name='комментарий')
     category = models.CharField(max_length=255, blank=True, null=True, verbose_name='категория')
-
+    presence = models.CharField(choices=CHOICES, max_length=15, default='да', verbose_name='присутствие')
     address = models.ForeignKey(Address, on_delete=models.CASCADE,
                                 related_name='beneficiar', verbose_name='адрес')
+    photo_link = models.URLField(max_length=500, verbose_name='просмотр фото', blank=True, null=True)
 
     def __str__(self):
         return f'{self.full_name}, {self.phone}\n{self.comment}'

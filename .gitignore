@@ -3,3 +3,12 @@
 .idea/
 __pycache__/
 /credentials.json
+
+# Google drive
+client_secrets.json
+token.json
+photo_report
+settings.yaml
+
+# User photo
+avatars

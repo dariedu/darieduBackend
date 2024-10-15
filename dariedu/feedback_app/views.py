@@ -1,12 +1,16 @@
+import os
+
 from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets, mixins, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from address_app.models import Address
+from address_app.models import Address, Beneficiar
 from .models import Feedback, RequestMessage, PhotoReport
 from .serializers import FeedbackSerializer, RequestMessageSerializer, PhotoReportSerializer
+
+from .google_drive.upload_file import get_google_links
 
 
 class FeedbackViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -95,7 +99,18 @@ class PhotoReportViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        """Create new photo report"""
+        """
+        Создание записи в базе данных и обработка данных
+        На выход получаем следующие поля:
+        address: ID адреса
+        user: Авторизованный пользователь
+        photo: Фотография прикрепляемого к отчёту
+        comment: Комментарий
+        На выходе status code:
+        404 - если адрес не найден в БД
+        400 - что-то случилось с фотографией, начиная от приёма и обработки фотографии, заканчивая загрузкой в google
+        201 - если данные сохранены в бд
+        """
         address_id = request.data.get('address')
 
         try:
@@ -103,12 +118,47 @@ class PhotoReportViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
         except Address.DoesNotExist:
             return Response({'detail': 'Address not found.'}, status=status.HTTP_404_NOT_FOUND)
 
+        beneficiary = Beneficiar.objects.filter(address_id=address_id).values_list('full_name')
+
+        try:
+            file = self.save_image_to_server(beneficiary)
+            links = get_google_links(file)
+            self.delete_file(file)
+        except Exception as e:
+            return Response(data={'detail': f'Google drive or image - {e}'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
         photo_report = PhotoReport.objects.create(
             user=request.user,
             address=address,
-            # photo=request.data.get('photo'),  # TODO add URL from cloud storage
+            photo_view=links.get('view'),
+            photo_download=links.get('download'),
             comment=request.data.get('comment')
         )
 
         photo_report.save()
         return Response(status=status.HTTP_201_CREATED)
+
+    def save_image_to_server(self, beneficiary):
+        """Сохранение фотографии на сервере"""
+        import re
+
+        file = self.request.FILES['photo']
+
+        regex = re.compile(r'\.\w*')
+        prefix = regex.search(file.name).group()
+
+        list_beneficiary = lambda x: [i[0] for i in x]
+
+        file.name = ' и '.join(list_beneficiary(beneficiary)) + prefix
+
+        with open(f'photo_report/{file.name}', 'wb+') as photo:
+            for chunk in file.chunks():
+                photo.write(chunk)
+
+        return file
+
+    @staticmethod
+    def delete_file(file):
+        """Удаление фотографии из сервера"""
+        os.remove(f'photo_report/{file}')

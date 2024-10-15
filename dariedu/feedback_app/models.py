@@ -1,19 +1,24 @@
 from django.db import models
+from django.utils.html import format_html
 from user_app.models import User
 from promo_app.models import Promotion
-from task_app.models import Delivery
+from task_app.models import *
 from django.core.exceptions import ValidationError
 
 
 class RequestMessage(models.Model):
-    type = models.CharField(max_length=255, verbose_name='тип заявки')
-    text = models.TextField(verbose_name='текст', blank=True, null=True)
-    form = models.URLField(max_length=500, blank=True, null=True, verbose_name='форма')
+    type = models.CharField(max_length=255, verbose_name='тип', default='стать куратором')
+    about_location = models.CharField(max_length=255, verbose_name='на какой локации', blank=True, null=True,
+                                      help_text='На какой локации вы бы хотели стать куратором и почему?')
+    about_presence = models.CharField(max_length=255, verbose_name='присутствие', blank=True, null=True,
+                                      help_text='Готовы ли вы присутствовать на локациии во время доставок?')
+    about_worktime = models.CharField(max_length=255, verbose_name='график работы', blank=True, null=True,
+                                      help_text='Какой у вас график работы/учебы?')
     date = models.DateField(verbose_name='дата', auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь')
 
     def __str__(self):
-        return self.type
+        return str(self.user)
 
     class Meta:
         verbose_name = 'заявка'
@@ -22,18 +27,25 @@ class RequestMessage(models.Model):
 
 class Feedback(models.Model):
     TYPE_CHOICES = [
-        ('delivery', 'Доставка'),
-        ('promotion', 'Поощрение'),
+        ('completed_delivery', 'Завершенная доставка'),
+        ('canceled_delivery', 'Отмененная доставка'),
+        ('completed_promotion', 'Завершенное поощрение'),
+        ('canceled_promotion', 'Отмененное поощрение'),
+        ('completed_task', 'Завершенное доброе дело'),
+        ('canceled_task', 'Отмененное доброе дело'),
+        ('suggestion', 'Вопросы и предложения'),
     ]
 
     id = models.AutoField(primary_key=True, verbose_name="ID")
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, verbose_name="Тип обратной связи")
-    text = models.TextField(verbose_name="Текст обратной связи")
+    text = models.TextField(verbose_name="Текст обратной связи", max_length=500)
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
     delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, null=True, blank=True,
                                  verbose_name="Доставка", related_name="feedbacks")
     promotion = models.ForeignKey(Promotion, on_delete=models.CASCADE, null=True, blank=True,
                                   verbose_name="Поощрение", related_name="feedbacks")
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Доброе дело",
+                             related_name="feedbacks")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
     def clean(self):
@@ -59,7 +71,12 @@ class Feedback(models.Model):
 
 class PhotoReport(models.Model):
     address = models.ForeignKey('address_app.Address', on_delete=models.CASCADE, verbose_name='адрес')
-    photo = models.URLField(max_length=500, verbose_name='фото', blank=True, null=True)
+    photo_view = models.URLField(max_length=500, verbose_name='показ фотографии', blank=True, null=True)
+    photo_download = models.URLField(max_length=500, verbose_name='загрузка фотографии', blank=True, null=True)
     date = models.DateField(verbose_name='дата', auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь')
-    comment = models.TextField(verbose_name='комментарий', blank=True, null=True)
+    comment = models.TextField(verbose_name='комментарий', blank=True, null=True, max_length=255)
+
+    @admin.display(description='благополучатели')
+    def display_beneficiar(self):
+        return format_html('<br>'.join([beneficiar.full_name for beneficiar in self.address.beneficiar.all()]))

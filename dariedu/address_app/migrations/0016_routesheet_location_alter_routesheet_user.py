@@ -21,6 +21,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='routesheet',
             name='user',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='route_sheets', to=settings.AUTH_USER_MODEL, verbose_name='волонтер'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='route_sheets', to=settings.AUTH_USER_MODEL, verbose_name='волонтёр'),
         ),
     ]

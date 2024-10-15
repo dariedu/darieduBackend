@@ -63,7 +63,7 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
         if self.request.user.is_staff:
             routesheet = self.get_object()
             volunteer_id = self.request.data.get('volunteer_id', None)
-            # все волонтеры, записанные на эту доставку:
+            # все волонтёры, записанные на эту доставку:
             volunteers = routesheet.delivery.filter(is_active=True).assignment.volunteer.all()
             try:
                 user = User.get(id=volunteer_id)

@@ -30,4 +30,16 @@ app.conf.beat_schedule = {
         'task': 'promo_app.tasks.check_promotions',
         'schedule': crontab(minute='03', hour='17'),
     },
+    'complete-task': {
+        'task': 'task_app.tasks.complete_task',
+        'schedule': crontab(minute='00', hour='19'),
+    },
+    'complete-delivery': {
+        'task': 'promo_app.tasks.complete_delivery',
+        'schedule': crontab(minute='00', hour='19'),
+    },
+    'complete-promotion': {
+        'task': 'promo_app.tasks.complete_promotion',
+        'schedule': crontab(minute='00', hour='19'),
+    },
 }

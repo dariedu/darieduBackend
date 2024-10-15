@@ -17,12 +17,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='task',
             name='volunteers_needed',
-            field=models.PositiveIntegerField(default=2, verbose_name='требуется волонтеров'),
+            field=models.PositiveIntegerField(default=2, verbose_name='требуется волонтёров'),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='task',
             name='volunteers_taken',
-            field=models.PositiveIntegerField(default=0, verbose_name='волонтеров взяли'),
+            field=models.PositiveIntegerField(default=0, verbose_name='волонтёров взяли'),
         ),
     ]

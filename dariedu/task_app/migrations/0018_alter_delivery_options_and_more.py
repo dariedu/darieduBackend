@@ -16,6 +16,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterModelOptions(
             name='deliveryassignment',
-            options={'verbose_name': 'доставка волонтера', 'verbose_name_plural': 'доставки волонтеров'},
+            options={'verbose_name': 'доставка волонтёра', 'verbose_name_plural': 'доставки волонтёров'},
         ),
     ]
