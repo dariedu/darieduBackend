@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets, mixins, generics
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -42,6 +43,18 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready
     filterset_fields = ['is_superuser', 'is_staff', 'city', 'rating']
+
+    @action(methods=['get'], detail=False, url_path='get-user-tg-id/(?P<tg_id>\d+)')
+    def get_user_tg_id(self, request, tg_id):
+        """
+        Get user by tg_id
+        """
+        user = User.objects.filter(tg_id=tg_id).first()
+        if user:
+            serializer = UserSerializer(user)
+            return Response(serializer.data)
+        else:
+            return Response({'error': 'User not found'}, status=404)
 
 
 class RatingViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
