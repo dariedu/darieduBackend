@@ -23,6 +23,11 @@ ENV DJANGO_SETTINGS_MODULE=dariedu.settings
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
 
+RUN useradd -ms /bin/bash celeryuser
+RUN chown -R celeryuser:celeryuser /usr/src/app
+
+USER celeryuser
+
 RUN python manage.py collectstatic --noinput
 
 
