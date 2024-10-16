@@ -64,12 +64,15 @@ def check_tasks():
     tasks = Task.objects.filter(start_date__date=today)
     for task in tasks:
         if task.end_date.date() == today.date():
-            if task.end_date >= timezone.now():
-                eta = task.end_date - timedelta(hours=3)
+            if task.start_date >= timezone.now():
+                eta = task.start_date - timedelta(hours=3)
             else:
                 eta = timezone.now()
+            if eta < timezone.now().replace(hour=9, minute=0, second=0, microsecond=0):
+                eta = timezone.now().replace(hour=9, minute=5, second=0, microsecond=0)
         else:
-            eta = task.start_date + (task.end_date - task.start_date) // 2
+            date = task.start_date__date + (task.end_date__date - task.start_date__date) // 2
+            eta = timezone.make_aware(datetime.combine(date, datetime.time(10)))
         if eta >= timezone.now():
             send_task_to_telegram.apply_async(args=[task.id], eta=eta)
 
@@ -110,43 +113,75 @@ def send_delivery_to_telegram(delivery_id):
 
 @shared_task
 def check_deliveries():
-    deliveries = Delivery.objects.filter(date__gte=timezone.now())
+    deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()), date__gte=timezone.now())
     for delivery in deliveries:
         eta = delivery.date - timedelta(hours=3)
+        if eta <= timezone.now().replace(hour=9, minute=0, second=0, microsecond=0):
+            eta = timezone.now().replace(hour=9, minute=5, second=0, microsecond=0)
         if timezone.now() <= eta:
             send_delivery_to_telegram.apply_async(args=[delivery.id], eta=eta)
 
 
 @shared_task
-def complete_task():
-    tasks = Task.objects.filter(end_date__gte=timezone.now() - timedelta(hours=1))
-    for task in tasks:
-        if task.is_completed:
-            task.is_active = False
-            task.save()
-        else:
-            task.is_active = False
-            task.is_completed = True
-            task.volunteers.update(volunteer_hours=F('volunteer_hours') + task.volunteer_price)
-            task.curator.volunteer_hours += task.curator_price
-            task.save()
+def complete_task(task_id):
+    task = Task.objects.get(id=task_id)
+    if task.is_completed:
+        task.is_active = False
+        task.save()
+    else:
+        task.is_active = False
+        task.is_completed = True
+        task.volunteers.update(volunteer_hours=F('volunteer_hours') + task.volunteer_price)
+        task.curator.volunteer_hours += task.curator_price
+        task.save()
 
 
 @shared_task
-def complete_delivery():
-    deliveries = Delivery.objects.filter(date__gte=timezone.now() - timedelta(hours=3))
+def check_complete_task():
+    tasks = Task.objects.filter(end_date__date=timezone.make_aware(datetime.today()))
+    for task in tasks:
+        eta = task.end_date + timedelta(hours=1)
+        complete_task.apply_async(args=[task.id], eta=eta)
+
+
+@shared_task
+def complete_delivery(delivery_id):
+    delivery = Delivery.objects.get(id=delivery_id)
+    if delivery.is_completed:
+        delivery.is_active = False
+        delivery.is_free = False
+        delivery.in_execution = False
+        delivery.is_active = False
+        delivery.save()
+    else:
+        delivery.is_active = False
+        delivery.is_completed = True
+        delivery.in_execution = False
+        delivery.is_free = False
+        delivery.volunteers.update(volunteer_hours=F('volunteer_hours') + delivery.price)
+        delivery.curator.volunteer_hours += 4
+        delivery.save()
+
+
+@shared_task
+def check_complete_delivery():
+    deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()))
     for delivery in deliveries:
-        if delivery.is_completed:
-            delivery.is_active = False
-            delivery.is_free = False
-            delivery.in_execution = False
-            delivery.is_active = False
-            delivery.save()
-        else:
-            delivery.is_active = False
-            delivery.is_completed = True
-            delivery.in_execution = False
-            delivery.is_free = False
-            delivery.volunteers.update(volunteer_hours=F('volunteer_hours') + delivery.price)
-            delivery.curator.volunteer_hours += 4
-            delivery.save()
+        eta = delivery.date + timedelta(hours=3)
+        complete_delivery.apply_async(args=[delivery.id], eta=eta)
+
+
+@shared_task
+def activate_delivery(delivery_id):
+    delivery = Delivery.objects.get(id=delivery_id)
+    if delivery.is_active:
+        delivery.in_execution = True
+        delivery.save()
+
+
+@shared_task
+def check_activate_delivery():
+    deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()))
+    for delivery in deliveries:
+        eta = delivery.date - timedelta(hours=0, minutes=30)
+        activate_delivery.apply_async(args=[delivery.id], eta=eta)

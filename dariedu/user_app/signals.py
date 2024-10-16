@@ -16,3 +16,6 @@ def create_user(sender, instance, created, **kwargs):
             created=timezone.now()
         )
         notification.save()
+    else:
+        instance.update_rating()
+

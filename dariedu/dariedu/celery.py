@@ -22,13 +22,9 @@ app.autodiscover_tasks()
 
 app.conf.timezone = 'Europe/Moscow'
 app.conf.beat_schedule = {
-    # 'debug-task-every-3-minutes': {
-    #     'task': 'dariedu.celery.debug_task',
-    #     'schedule': 3.0,
-    # },
     'check_deliveries_and_send_notifications': {
         'task': 'task_app.tasks.check_deliveries',
-        'schedule': crontab(minute='00', hour='10'),
+        'schedule': crontab(minute='00', hour='09'),
     },
     'send-check-tasks-to-telegram': {
         'task': 'task_app.tasks.check_tasks',
@@ -39,15 +35,19 @@ app.conf.beat_schedule = {
         'schedule': crontab(minute='00', hour='08'),
     },
     'complete-task': {
-        'task': 'task_app.tasks.complete_task',
+        'task': 'task_app.tasks.check_complete_task',
         'schedule': crontab(minute='00', hour='12'),
     },
     'complete-delivery': {
-        'task': 'promo_app.tasks.complete_delivery',
+        'task': 'promo_app.tasks.check_complete_delivery',
         'schedule': crontab(minute='00', hour='12'),
     },
     'complete-promotion': {
-        'task': 'promo_app.tasks.complete_promotion',
+        'task': 'promo_app.tasks.check_complete_promotion',
         'schedule': crontab(minute='00', hour='12'),
+    },
+    'activate-delivery': {
+        'task': 'promo_app.tasks.check_activate_delivery',
+        'schedule': crontab(minute='00', hour='10'),
     },
 }
