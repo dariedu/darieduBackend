@@ -17,7 +17,7 @@ class UserShortSerializer(serializers.ModelSerializer):
             'surname',
             'phone',
             'photo',
-            'avatar',
+            'photo_view',
         ]
 
 

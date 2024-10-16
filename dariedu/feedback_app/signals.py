@@ -14,16 +14,22 @@ def create_feedback(sender, instance, created, **kwargs):
         notification = Notification.objects.create(
             title=instance.type,
             text=f'Пользователь {instance.user.tg_username} оставил заявку "{instance.about_location}"',
-            # form=instance.form,
-            created=timezone.now()
+            obj_link=instance.get_absolute_url(),
+            # created=timezone.now()
         )
         notification.save()
-
 
 
 @receiver(post_save, sender=Feedback)
 def send_suggestion_email(sender, instance, created, **kwargs):
     if created and instance.type == 'suggestion':
+        notification = Notification.objects.create(
+            title=instance.type,
+            text=f"Новые вопросы и предложения от пользователя {instance.user}",
+            obj_link=instance.get_absolute_url(),
+            # created=timezone.now()
+        )
+        notification.save()
         subject = f"Новые вопросы и предложения от пользователя {instance.user}"
         message = (
             f"Текст: {instance.text}\n"

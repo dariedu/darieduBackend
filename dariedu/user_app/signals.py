@@ -12,7 +12,10 @@ def create_user(sender, instance, created, **kwargs):
         notification = Notification.objects.create(
             title='Новый пользователь',
             text=f'Зарегистрировался новый пользователь {instance}',
-            # form=instance.form,
+            obj_link=instance.get_absolute_url(),
             created=timezone.now()
         )
         notification.save()
+    else:
+        instance.update_rating()
+
