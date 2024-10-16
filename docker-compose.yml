@@ -33,6 +33,8 @@ services:
     depends_on:
       - db
       - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
     volumes:
       - ./dariedu:/app
     networks:
@@ -47,6 +49,8 @@ services:
     depends_on:
       - db
       - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
     volumes:
       - ./dariedu:/app
     networks:
@@ -74,7 +78,7 @@ services:
   redis:
     image: redis:alpine
     ports:
-      - "6380:6379"
+      - "6379:6379"
     networks:
       - mynetwork
 
