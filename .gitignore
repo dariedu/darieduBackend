@@ -9,3 +9,6 @@ client_secrets.json
 token.json
 photo_report
 settings.yaml
+
+# User photo
+avatars
