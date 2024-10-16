@@ -54,7 +54,7 @@ class UserSerializer(serializers.ModelSerializer):
             'surname',
             'phone',
             'photo',
-            'avatar',
+            'photo_view',
             'birthday',
             'is_adult',
             'volunteer_hour',
@@ -84,7 +84,6 @@ class UserSerializer(serializers.ModelSerializer):
             instance.interests = validated_data.get('interests', instance.interests)
             instance.consent_to_personal_data = validated_data.get('consent_to_personal_data',
                                                                    instance.consent_to_personal_data)
-            instance.avatar = validated_data.get('avatar', instance.avatar)
 
             if any([
                 instance.last_name != validated_data.get('last_name', instance.last_name),

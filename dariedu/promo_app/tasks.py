@@ -37,6 +37,7 @@ def send_promotion_to_telegram(promotion_id):
         response = requests.post(url, json=payload)
         pprint(response.json())
 
+
 def keyboard_promotion(data):
     inline_keyboard = {
         "inline_keyboard": [
@@ -48,21 +49,32 @@ def keyboard_promotion(data):
     }
     return inline_keyboard
 
+
 @shared_task
 def check_promotions():
     today = timezone.make_aware(datetime.today())
     promotions = Promotion.objects.filter(start_date__date=today)
-    pprint(promotions)
+    # pprint(promotions)
     for promotion in promotions:
         eta = promotion.start_date - timedelta(hours=3)
-        pprint(eta)
+        if eta < timezone.now().replace(hour=9, minute=0, second=0, microsecond=0):
+            eta = timezone.now().replace(hour=9, minute=5, second=0, microsecond=0)
+        # pprint(eta)
         if eta >= timezone.now():
             send_promotion_to_telegram.apply_async(args=[promotion.id], eta=eta)
 
 
 @shared_task
-def complete_promotion():
-    promotions = Promotion.objects.filter(is_permanent=False).filter(end_date__gte=timezone.now() - timedelta(hours=2))
+def complete_promotion(promotion_id):
+    promotion = Promotion.objects.get(id=promotion_id)
+    promotion.is_active = False
+    promotion.save()
+
+
+@shared_task
+def check_complete_promotion():
+    promotions = Promotion.objects.filter(is_permanent=False).filter(end_date__date=
+                                                                     timezone.make_aware(datetime.today()))
     for promotion in promotions:
-        promotion.is_active = False
-        promotion.save()
+        eta = promotion.end_date + timedelta(hours=2)
+        complete_promotion.apply_async(args=[promotion.id], eta=eta)
