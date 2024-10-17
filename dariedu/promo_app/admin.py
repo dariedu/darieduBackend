@@ -1,12 +1,14 @@
 from django.contrib import admin
+from import_export.admin import ExportActionMixin, ImportExportModelAdmin
 from unfold.admin import ModelAdmin
 from unfold.contrib.filters.admin import RangeDateFilter
 from unfold.contrib.import_export.forms import ImportForm, SelectableFieldsExportForm
 
+from .export_prom import CombineResourcePromo
 from .models import Promotion, PromoCategory
 
 
-class BaseAdmin(ModelAdmin):
+class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
     import_form_class = ImportForm
     export_form_class = SelectableFieldsExportForm  # ExportForm
     compressed_fields = True  # Default: False
@@ -27,7 +29,9 @@ class UsersInline(admin.TabularInline):
 
 
 @admin.register(Promotion)
-class PromotionAdmin(BaseAdmin):
+class PromotionAdmin(BaseAdmin, ExportActionMixin):
+    resource_class = CombineResourcePromo
+    actions = ['export']
 
     @admin.display(description="описание поощрения")
     def description_short(self, obj):
