@@ -233,6 +233,12 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+        'rest_framework.parsers.FileUploadParser',
+    ],
 }
 
 SPECTACULAR_SETTINGS = {
@@ -261,8 +267,8 @@ SIMPLE_JWT = {
 
 IMPORT_EXPORT_FORMATS = [XLSX, XLS]
 
-CELERY_BROKER_URL = 'redis://redis:6379/3'
-CELERY_RESULT_BACKEND = 'redis://redis:6379/3'
+CELERY_BROKER_URL = 'redis://redis:6379'
+CELERY_RESULT_BACKEND = 'redis://redis:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
