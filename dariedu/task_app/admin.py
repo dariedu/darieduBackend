@@ -16,7 +16,7 @@ from import_export.admin import ExportActionMixin
 
 from user_app.models import User
 
-from .export_XLSX import CombinedResource
+from .export_XLSX import CombinedResource, CombinedResourceDelivery
 from .models import Delivery, Task, DeliveryAssignment, TaskCategory
 
 
@@ -97,7 +97,9 @@ class VolunteerInline(admin.TabularInline):
 
 
 @admin.register(Delivery)
-class DeliveryAdmin(BaseAdmin):
+class DeliveryAdmin(BaseAdmin, ExportActionMixin):
+    resource_class = CombinedResourceDelivery
+    actions = ['export_as_xlsx']
 
     @admin.display(description="дата начала")
     def date_format(self, obj):
