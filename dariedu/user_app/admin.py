@@ -1,11 +1,13 @@
 from django.contrib import admin
-from import_export.admin import ImportExportModelAdmin
+from import_export.admin import ImportExportModelAdmin, ExportActionMixin
 from unfold.admin import ModelAdmin
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
 
 from .google_export import export_to_gs
 from user_app.models import User, Rating, Volunteer, Employee, Curator
+
+from .export import CombineResource
 
 
 class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
@@ -19,7 +21,9 @@ class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
 
 
 @admin.register(User)
-class UserAdmin(BaseAdmin):
+class UserAdmin(BaseAdmin, ExportActionMixin):
+    resource_class = CombineResource
+    actions = ['export']
 
     @admin.display(description='интересы')
     def short_interests(self, obj):
