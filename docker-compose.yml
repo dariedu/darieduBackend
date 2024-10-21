@@ -16,10 +16,13 @@ services:
     volumes:
       - static_volume:/home/app/web/staticfiles
       - ./dariedu:/app
+      - ./credentials.json:/app/credentials.json
+      - ./static:/static
+      - ./media:/media
     ports:
       - "8000:8000"
     environment:
-#      - DATABASE_URL=postgresql://postgres:Staff2110.@db:5433/dariedu
+
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${BACKEND_DB_PORT}/${DB_NAME}
     networks:
       - mynetwork
@@ -35,6 +38,7 @@ services:
       - redis
     volumes:
       - ./dariedu:/app
+      - ./credentials.json:/app/credentials.json
     networks:
       - mynetwork
 
@@ -49,6 +53,7 @@ services:
       - redis
     volumes:
       - ./dariedu:/app
+      - ./credentials.json:/app/credentials.json
     networks:
       - mynetwork
 

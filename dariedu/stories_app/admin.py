@@ -27,6 +27,6 @@ class StoriesAdmin(BaseAdmin):
 
     list_display = ('title', 'subtitle', 'text_short', 'date', 'hidden')
     list_filter = ('hidden', 'date')
-    search_fields = ('title', 'subtitle', 'link_name', 'text')
+    search_fields = ('title', 'subtitle', 'text')
     list_editable = ('hidden',)
     list_display_links = ('title', 'subtitle')

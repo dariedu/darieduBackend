@@ -58,7 +58,7 @@ class AddressAdmin(BaseAdmin):
     list_display = ('route_sheet', 'location', 'address', 'display_beneficiar', 'display_comment')
     fields = ('address', 'link', 'location', 'route_sheet')
     list_filter = ('location__city', 'location', 'route_sheet')
-    search_fields = ('address', 'location__city', 'location')
+    search_fields = ('address', )
     inlines = [BeneficiarInline, ]
     list_display_links = ('address', 'route_sheet', 'location')
     autocomplete_fields = ['location', 'route_sheet']
@@ -133,7 +133,7 @@ class LocationAdmin(BaseAdmin):
 
     list_display = ('address', 'subway', 'curator', 'media_files', 'city', 'short_description')
     list_filter = ('city', 'curator')
-    search_fields = ('address', 'city', 'subway', 'curator__last_name')
+    search_fields = ('address', 'subway')
     fields = ('address', 'link', 'subway', 'curator', 'media_files', 'city', 'description')
     inlines = [AddressInline, RouteSheetInline]
     list_display_links = ('address', 'subway', 'curator')
@@ -166,7 +166,7 @@ class RouteSheetAdmin(BaseAdmin):
 @admin.register(Beneficiar)
 class BeneficiarAdmin(BaseAdmin):
     list_display = ('full_name', 'address', 'phone', 'photo_link', 'presence', 'category', 'comment')
-    search_fields = ('full_name', 'phone', 'address', 'comment')
+    search_fields = ('full_name', 'phone', 'comment')
     list_filter = ('address', 'category', 'presence')
     list_display_links = ('full_name', 'phone', 'address')
     autocomplete_fields = ['address']
