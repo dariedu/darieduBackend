@@ -19,21 +19,23 @@ class RegistrationView(generics.CreateAPIView):
         """Расширенный функционал метода create - добавление фотографии на google drive"""
         import re
 
-        request = serializer.validated_data  # Данные из сериализатора, не путать с self.request
-        file_name = request['photo']
-        full_name = request['last_name'] + request['name'] + request['surname']
-        telegram_id = request['tg_id']
+        try:
+            request = serializer.validated_data  # Данные из сериализатора, не путать с self.request
+            file_name = request['photo']
+            full_name = request['last_name'] + request['name'] + request['surname']
+            telegram_id = request['tg_id']
 
-        regex = re.compile(r'\.\w*')
-        prefix = regex.search(file_name.name).group()
+            regex = re.compile(r'\.\w*')
+            prefix = regex.search(file_name.name).group()
 
-        request['photo'].name = f'{full_name}_{telegram_id}{prefix}'
-        data = serializer.save()
+            request['photo'].name = f'{full_name}_{telegram_id}{prefix}'
+            data = serializer.save()
 
-        view_link = get_link_view(data.photo)
-        data.photo_view = view_link
-        data.save()
-
+            view_link = get_link_view(data.photo)
+            data.photo_view = view_link
+            data.save()
+        except:
+            pass
 
 class CustomTokenObtainPairView(APIView):
     serializer_class = TelegramDataSerializer

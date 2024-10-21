@@ -26,6 +26,7 @@ services:
 
   celery-worker:
     build: ./dariedu
+    user: celeryuser
     command: celery -A dariedu worker -l info
     env_file:
       - .env
@@ -39,6 +40,7 @@ services:
 
   celery-beat:
     build: ./dariedu
+    user: celeryuser
     command: celery -A dariedu beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     env_file:
       - .env
@@ -71,8 +73,8 @@ services:
 
   redis:
     image: redis:alpine
-    ports:
-      - "6379:6379"
+#    ports:
+#      - "6379:6379"
     networks:
       - mynetwork
 
