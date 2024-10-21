@@ -1,6 +1,9 @@
+import logging
 import os
 from celery import Celery
 from celery.schedules import crontab
+
+logging.basicConfig(level=logging.INFO)
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dariedu.settings')
 
@@ -9,7 +12,6 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 app.conf.broker_connection_retry_on_startup = True
 app.autodiscover_tasks()
-
 
 app.conf.timezone = 'Europe/Moscow'
 app.conf.beat_schedule = {
