@@ -4,6 +4,7 @@ from unfold.admin import ModelAdmin
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
 
+from .google_export import export_to_gs
 from user_app.models import User, Rating, Volunteer, Employee, Curator
 
 
@@ -14,6 +15,7 @@ class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
     list_select_related = True  # Default: False
     list_filter_submit = True
     list_fullwidth = True
+    actions = [export_to_gs]
 
 
 @admin.register(User)
