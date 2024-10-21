@@ -123,7 +123,6 @@ class DeliveryAdmin(BaseAdmin, ExportActionMixin):
     list_filter = ['is_active', 'is_free', 'is_completed', 'in_execution',
                    ('date', RangeDateFilter)]
 
-    search_fields = ('date', 'route_sheet')
     ordering = ('-date',)
     date_format.admin_order_field = 'date'
     fields = (

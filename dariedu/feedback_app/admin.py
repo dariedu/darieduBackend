@@ -71,7 +71,7 @@ class RequestMessageAdmin(BaseAdmin):
         'date_format',
     )
     list_filter = ('type', 'date', 'user')
-    search_fields = ('about_location', 'about_presence', 'about_worktime', 'user')
+    search_fields = ('about_location', 'about_presence', 'about_worktime')
     list_display_links = ('type', 'about_location_short', 'about_presence_short', 'about_worktime_short')
     autocomplete_fields = ('user', )
 
@@ -94,7 +94,7 @@ class PhotoReportAdmin(BaseAdmin):
         'comment',
     )
     list_filter = ('date', 'user', 'address')
-    search_fields = ('address', 'user', 'comment')
+    search_fields = ('comment',)
     list_display_links = ('address', 'display_beneficiar')
     autocomplete_fields = ('user', )
 

@@ -3,6 +3,7 @@ FROM python:3.10.5
 WORKDIR /usr/src/app
 
 COPY requirements.txt ./
+COPY credentials.json ./
 RUN pip install --upgrade pip
 RUN apt-get update && apt-get install -y \
     build-essential \

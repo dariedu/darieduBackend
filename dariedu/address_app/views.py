@@ -3,6 +3,7 @@ import logging
 from django.shortcuts import render
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from user_app.models import User
@@ -23,7 +24,7 @@ class LocationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """For curator to see his locations"""
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
-    # permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready
+    permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready
 
     def get_queryset(self):
         """Curator can see only his locations"""
@@ -34,13 +35,13 @@ class LocationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 class CityViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = City.objects.all()
     serializer_class = CitySerializer
-    # permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready
+    # permission_classes = [IsAutheticated]  # TODO swap to comment when authentication is ready
 
 
 class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = RouteSheet.objects.all()
     serializer_class = RouteSheetSerializer
-    # permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready
+    permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready
 
     def get_queryset(self):
         """Curator can see only his routesheets, volunter can see only his routesheets in execution"""
