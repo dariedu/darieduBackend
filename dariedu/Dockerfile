@@ -4,6 +4,7 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt ./
 COPY credentials.json ./
+COPY .env ./
 RUN pip install --upgrade pip
 RUN apt-get update && apt-get install -y \
     build-essential \
