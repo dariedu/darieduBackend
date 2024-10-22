@@ -117,6 +117,7 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://127.0.0.1:5173',
     'https://127.0.0.1:5173',
+    'https://v30ckdx0-5173.euw.devtunnels.ms',
 ]
 
 CORS_ALLOW_CREDENTIALS = True
