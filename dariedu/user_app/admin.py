@@ -17,13 +17,13 @@ class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
     list_select_related = True  # Default: False
     list_filter_submit = True
     list_fullwidth = True
-    actions = [export_to_gs]
+    # actions = [export_to_gs]
 
 
 @admin.register(User)
 class UserAdmin(BaseAdmin, ExportActionMixin):
     resource_class = CombineResource
-    actions = ['export']
+    actions = ['export', export_to_gs]
 
     @admin.display(description='интересы')
     def short_interests(self, obj):
