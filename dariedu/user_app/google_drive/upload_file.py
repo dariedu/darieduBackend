@@ -20,7 +20,7 @@ def upload_file(file):
     folder_id = get_folder_id(drive)
 
     file_drive = drive.CreateFile({'title': f'{file.name[8:]}', 'parents': [{'id': f'{folder_id}'}]})
-    file_drive.SetContentFile(f'{file}')
+    file_drive.SetContentFile(f'media/{file}')
     file_drive.Upload()
     file_drive.InsertPermission({
         'type': 'anyone',
