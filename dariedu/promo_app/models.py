@@ -84,6 +84,7 @@ class Participation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='волонтёр')
     promotion = models.ForeignKey(Promotion, on_delete=models.CASCADE, verbose_name='поощрение')
     received_at = models.DateTimeField(auto_now_add=True, verbose_name='дата получения')
+    is_active = models.BooleanField(default=False, verbose_name='подтверждение')
 
     def __str__(self):
         return str(self.user)

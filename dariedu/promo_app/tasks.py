@@ -78,3 +78,18 @@ def check_complete_promotion():
     for promotion in promotions:
         eta = promotion.end_date + timedelta(hours=2)
         complete_promotion.apply_async(args=[promotion.id], eta=eta)
+
+
+@shared_task
+def event_start_promotion(promotion_pk):
+    from .show_tickets import show_tickets
+
+    promotion = Promotion.objects.get(pk=promotion_pk)
+    participants = promotion.users.all()
+    links = show_tickets()
+    for participant, link in zip(participants, links):
+        payload = {
+            'chat_id': participant.tg_id,
+            'text': f'Ваша билет: {link}'
+        }
+        response = requests.post(url, json=payload)

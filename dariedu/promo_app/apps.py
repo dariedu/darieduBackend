@@ -6,3 +6,4 @@ class PromoAppConfig(AppConfig):
 
     def ready(self):
         import promo_app.schema
+        import promo_app.signal
