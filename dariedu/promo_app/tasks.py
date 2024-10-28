@@ -85,7 +85,7 @@ def event_start_promotion(promotion_pk):
     from .show_tickets import show_tickets
 
     promotion = Promotion.objects.get(pk=promotion_pk)
-    participants = promotion.users.all()
+    participants = promotion.users.all()  # заменить на promotion.users.filter(is_active=True)
     links = show_tickets()
     for participant, link in zip(participants, links):
         payload = {
