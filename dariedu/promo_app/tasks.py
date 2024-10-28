@@ -86,7 +86,7 @@ def event_start_promotion(promotion_pk):
 
     promotion = Promotion.objects.get(pk=promotion_pk)
     participants = promotion.users.all()  # заменить на promotion.users.filter(is_active=True)
-    links = show_tickets()
+    links = show_tickets()  # Если будет ссылка, заменить на show_tickets(link=promotion.ticket_file)
     for participant, link in zip(participants, links):
         payload = {
             'chat_id': participant.tg_id,
