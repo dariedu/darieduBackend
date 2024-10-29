@@ -11,7 +11,6 @@ from .models import Promotion, User, Participation, PromoCategory
 from django.core.exceptions import ValidationError
 
 
-
 class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     """Curators can see all available promotions, users can see only his"""
     queryset = Promotion.objects.all()
