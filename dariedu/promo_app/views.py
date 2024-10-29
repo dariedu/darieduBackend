@@ -11,7 +11,6 @@ from .models import Promotion, User, Participation, PromoCategory
 from django.core.exceptions import ValidationError
 
 
-
 class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     """Curators can see all available promotions, users can see only his"""
     queryset = Promotion.objects.all()
@@ -104,8 +103,14 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
         serializer = PromoCategorySerializer(categories, many=True)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['get'], url_path='my_promo')
+    def get_my_promotions(self, request):
+        """
+        Вывод взятых активных поощрений
+        """
+        user = request.user
+        participations = Participation.objects.filter(user=user)
+        promotions = [participation.promotion for participation in participations]
 
-# class PromoCategoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-#     queryset = PromoCategory.objects.all()
-#     serializer_class = PromoCategorySerializer
-#     permission_classes = [IsAuthenticated]
+        serializer = self.get_serializer(promotions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
