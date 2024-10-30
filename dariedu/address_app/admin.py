@@ -2,7 +2,7 @@ from typing import Optional
 import logging
 
 from django.contrib import admin
-from django.contrib.admin.actions import action
+
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.db.models import ForeignKey
 from django.forms import ModelChoiceField
@@ -12,6 +12,7 @@ from django.urls import reverse
 from import_export.admin import ImportExportModelAdmin
 from unfold.admin import ModelAdmin, TabularInline
 from unfold.contrib.import_export.forms import ImportForm, SelectableFieldsExportForm
+from unfold.decorators import action
 
 from user_app.models import User
 from .forms import AddToRouteSheetForm, AddToLocationForm
