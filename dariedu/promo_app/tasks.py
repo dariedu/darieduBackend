@@ -42,7 +42,7 @@ def keyboard_promotion(data):
     inline_keyboard = {
         "inline_keyboard": [
             [
-                {"text": "Подтвердить использование", "callback_data": "accept_promotion"},
+                {"text": "Подтвердить использование", "callback_data": f"accept_promotion:{json.dumps(data)}"},
                 {"text": "Отказаться", "callback_data": f'refuse_promotion:{json.dumps(data)}'}
             ]
         ]
@@ -73,8 +73,9 @@ def complete_promotion(promotion_id):
 
 @shared_task
 def check_complete_promotion():
-    promotions = Promotion.objects.filter(is_permanent=False).filter(end_date__date=
-                                                                     timezone.make_aware(datetime.today()))
+    promotions = (Promotion.objects.filter(is_permanent=False).filter
+                  (end_date__date=timezone.make_aware(datetime.today())))
+
     for promotion in promotions:
         eta = promotion.end_date + timedelta(hours=2)
         complete_promotion.apply_async(args=[promotion.id], eta=eta)
@@ -85,7 +86,7 @@ def event_start_promotion(promotion_pk):
     from .show_tickets import show_tickets
 
     promotion = Promotion.objects.get(pk=promotion_pk)
-    participants = promotion.users.all()  # заменить на promotion.users.filter(is_active=True)
+    participants = promotion.users.filter(is_active=True)  # заменить на promotion.users.filter(is_active=True)
     links = show_tickets()  # Если будет ссылка, заменить на show_tickets(link=promotion.ticket_file)
     for participant, link in zip(participants, links):
         payload = {

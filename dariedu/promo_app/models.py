@@ -100,6 +100,9 @@ class Participation(models.Model):
 
         super().save(*args, **kwargs)
 
+    def save_without_reward_check(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
     def delete(self, *args, **kwargs):
         # Возвращаем поощрение в доступное количество
         self.promotion.available_quantity += 1
