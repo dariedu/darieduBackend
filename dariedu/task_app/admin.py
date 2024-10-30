@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 
 from django import forms
@@ -13,6 +14,7 @@ from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
 
 from import_export.admin import ExportActionMixin
+from unfold.decorators import action
 
 from user_app.models import User
 
@@ -71,6 +73,36 @@ class TaskAdmin(BaseAdmin, ExportActionMixin):
     ordering = ('-start_date',)
     start_date_format.admin_order_field = 'start_date'
     end_date_format.admin_order_field = 'end_date'
+
+    @action(description="Копировать")
+    def copy(self, request, queryset, *args):
+        """Copy creates for next week, not active"""
+        for obj in queryset:
+            new_obj = Task.objects.create(
+                name=obj.name,
+                description=obj.description,
+                category=obj.category,
+                start_date=obj.start_date + datetime.timedelta(days=7),
+                end_date=obj.end_date + datetime.timedelta(days=7),
+                volunteer_price=obj.volunteer_price,
+                curator_price=obj.curator_price,
+                is_active=False,
+                city=obj.city,
+                volunteers_needed=obj.volunteers_needed,
+                volunteers_taken=obj.volunteers_taken,
+                curator=obj.curator,
+                is_completed=False,
+            )
+            new_obj.save()
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        actions['copy'] = (
+            self.copy.__func__,
+            'copy',
+            'Копировать'
+        )
+        return actions
 
     def formfield_for_foreignkey(
         self, db_field: ForeignKey, request: HttpRequest, **kwargs
@@ -141,6 +173,34 @@ class DeliveryAdmin(BaseAdmin, ExportActionMixin):
     list_editable = ('is_active', 'is_completed', 'in_execution', 'is_free', 'volunteers_needed')
 
     inlines = [VolunteerInline, ]
+
+    @action(description="Копировать")
+    def copy(self, request, queryset, *args):
+        """Copy creates for next week, not active"""
+        for obj in queryset:
+            new_obj = Delivery.objects.create(
+                date=obj.date + datetime.timedelta(days=7),
+                price=obj.price,
+                curator=obj.curator,
+                location=obj.location,
+                is_free=True,
+                is_active=False,
+                is_completed=False,
+                in_execution=False,
+                volunteers_needed=obj.volunteers_needed,
+                volunteers_taken=obj.volunteers_taken,
+            )
+            new_obj.route_sheet.add(*obj.route_sheet.all())
+            new_obj.save()
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        actions['copy'] = (
+            self.copy.__func__,
+            'copy',
+            'Копировать'
+        )
+        return actions
 
     def formfield_for_foreignkey(
         self, db_field: ForeignKey, request: HttpRequest, **kwargs

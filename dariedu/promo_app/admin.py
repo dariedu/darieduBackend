@@ -1,8 +1,14 @@
+import datetime
+from typing import Optional, Dict
+
 from django.contrib import admin
+from django.http import HttpRequest
+from django.template.response import TemplateResponse
 from import_export.admin import ExportActionMixin, ImportExportModelAdmin
 from unfold.admin import ModelAdmin
 from unfold.contrib.filters.admin import RangeDateFilter
 from unfold.contrib.import_export.forms import ImportForm, SelectableFieldsExportForm
+from unfold.decorators import action
 
 from .export_prom import CombineResourcePromo
 from .models import Promotion, PromoCategory
@@ -91,6 +97,50 @@ class PromotionAdmin(BaseAdmin, ExportActionMixin):
     ordering = ('-start_date',)
     list_editable = ('price', 'is_active', 'quantity', 'for_curators_only')
     list_display_links = ('name', 'category')
+
+    @action(description="Копировать")
+    def copy(self, request, queryset, *args):
+        """Copy creates for next week, not active"""
+        for obj in queryset:
+            new_obj = Promotion.objects.create(
+                name=obj.name,
+                category=obj.category,
+                address=obj.address,
+                price=obj.price,
+                is_active=False,
+                start_date=obj.start_date + datetime.timedelta(days=7),
+                is_permanent=obj.is_permanent,
+                end_date=obj.end_date + datetime.timedelta(days=7) if obj.end_date else None,
+                available_quantity=obj.quantity,
+                quantity=obj.quantity,
+                for_curators_only=obj.for_curators_only,
+                description=obj.description,
+                city=obj.city,
+                about_tickets=obj.about_tickets,
+            )
+
+            if obj.ticket_file:
+                new_obj.ticket_file.save(
+                    obj.ticket_file.name,
+                    obj.ticket_file,
+                    save=True
+                )
+
+            if obj.picture:
+                new_obj.picture.save(
+                    obj.picture.name,
+                    obj.picture,
+                    save=True
+                )
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        actions['copy'] = (
+            self.copy.__func__,
+            'copy',
+            'Копировать'
+        )
+        return actions
 
 
 @admin.register(PromoCategory)
