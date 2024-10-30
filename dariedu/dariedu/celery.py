@@ -43,4 +43,8 @@ app.conf.beat_schedule = {
         'task': 'promo_app.tasks.check_activate_delivery',
         'schedule': crontab(minute='00', hour='10'),
     },
+    'duplicate-tasks-every-friday': {
+        'task': 'your_app.tasks.duplicate_tasks_for_next_week',
+        'schedule': crontab(hour=0, minute=0, day_of_week='fri'),
+    },
 }

@@ -185,3 +185,26 @@ def check_activate_delivery():
     for delivery in deliveries:
         eta = delivery.date - timedelta(hours=0, minutes=30)
         activate_delivery.apply_async(args=[delivery.id], eta=eta)
+
+
+@shared_task
+def duplicate_tasks_for_next_week():
+    # Текущая дата для фильтрации задач на этой неделе
+    today = timezone.now().date()
+    end_of_week = today + timedelta(days=(6 - today.weekday()))
+
+    # Задачи текущей недели
+    tasks_to_duplicate = Task.objects.filter(
+        start_date__range=(today, end_of_week),
+        is_active=True,
+        is_completed=False
+    )
+
+    # Копии задач на следующую неделю
+    for task in tasks_to_duplicate:
+        task.pk = None  # сброс первичного ключа для создания новой записи
+        task.start_date += timedelta(weeks=1)  # обновление даты на следующую неделю
+        task.end_date += timedelta(weeks=1)
+        task.is_active = False  # неактивные по умолчанию
+        task.volunteers.clear()  # удаление волонтёров
+        task.save()
