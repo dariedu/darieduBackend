@@ -10,8 +10,14 @@ from unfold.contrib.filters.admin import RangeDateFilter
 from unfold.contrib.import_export.forms import ImportForm, SelectableFieldsExportForm
 from unfold.decorators import action
 
+from dariedu.settings import TIME_ZONE
+import zoneinfo
+
 from .export_prom import CombineResourcePromo
 from .models import Promotion, PromoCategory
+
+
+ZONE = zoneinfo.ZoneInfo(TIME_ZONE)
 
 
 class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
@@ -47,13 +53,13 @@ class PromotionAdmin(BaseAdmin, ExportActionMixin):
 
     @admin.display(description="дата начала")
     def start_date_format(self, obj):
-        return obj.start_date.strftime("%d.%m.%y %H:%M")
+        return obj.start_date.astimezone(ZONE).strftime("%d.%m.%y %H:%M")
     start_date_format.admin_order_field = 'start_date'
 
     @admin.display(description="дата окончания")
     def end_date_format(self, obj):
         if obj.end_date:
-            return obj.end_date.strftime("%d.%m.%y %H:%M")
+            return obj.end_date.astimezone(ZONE).strftime("%d.%m.%y %H:%M")
         return None
     end_date_format.admin_order_field = 'end_date'
 

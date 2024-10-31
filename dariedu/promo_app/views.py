@@ -22,12 +22,15 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
         """Curator can see all active promotions, user can see only his"""
         if self.action == 'list':
             now = timezone.now()
-            if self.request.user.is_staff:
+            user = self.request.user
+            participations = Participation.objects.filter(user=user)
+            promotions = [participation.promotion.pk for participation in participations]
+            if user.is_staff:
                 return Promotion.objects.filter(is_active=True).filter(
-                    models.Q(is_permanent=True) | models.Q(end_date__gte=now))
+                    models.Q(is_permanent=True) | models.Q(end_date__gte=now)).exclude(pk__in=promotions)
             else:
                 return Promotion.objects.filter(is_active=True, for_curators_only=False).filter(
-                    models.Q(is_permanent=True) | models.Q(end_date__gte=now))
+                    models.Q(is_permanent=True) | models.Q(end_date__gte=now)).exclude(pk__in=promotions)
 
     @action(detail=True, methods=['post'], url_path='redeem')
     def redeem_promotion(self, request, pk):
@@ -44,6 +47,10 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
         # Проверка достаточности баллов у волонтёра
         if user.point < promotion.price:
             return Response({'error': 'Недостаточно баллов для приобретения'}, status=400)
+
+        # Проверяем, что волонтер еще не приобрел этот поощрение
+        if Participation.objects.filter(user=user, promotion=promotion).exists():
+            return Response({'error': 'Вы уже приобрели этот поощрение'}, status=400)
 
         # Уменьшение количества баллов на стоимость поощрения
         user.point -= promotion.price

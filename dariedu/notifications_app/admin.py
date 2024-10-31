@@ -2,7 +2,13 @@ from unfold.admin import ModelAdmin
 from django.contrib import admin
 from unfold.contrib.import_export.forms import ImportForm, SelectableFieldsExportForm
 
+from dariedu.settings import TIME_ZONE
+import zoneinfo
+
 from .models import Notification
+
+
+ZONE = zoneinfo.ZoneInfo(TIME_ZONE)
 
 
 class BaseAdmin(ModelAdmin):
@@ -19,7 +25,7 @@ class NotificationAdmin(BaseAdmin):
 
     @admin.display(description="дата")
     def created_format(self, obj):
-        return obj.created.strftime("%d.%m.%y %H:%M")
+        return obj.created.astimezone(ZONE).strftime("%d.%m.%y %H:%M")
     created_format.admin_order_field = 'created'
 
     @admin.display(description="описание")

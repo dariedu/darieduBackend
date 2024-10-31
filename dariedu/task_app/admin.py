@@ -16,10 +16,16 @@ from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
 from import_export.admin import ExportActionMixin
 from unfold.decorators import action
 
+from dariedu.settings import TIME_ZONE
+import zoneinfo
+
 from user_app.models import User
 
 from .export_XLSX import CombinedResource, CombinedResourceDelivery
 from .models import Delivery, Task, DeliveryAssignment, TaskCategory
+
+
+ZONE = zoneinfo.ZoneInfo(TIME_ZONE)
 
 
 class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
@@ -44,11 +50,11 @@ class TaskAdmin(BaseAdmin, ExportActionMixin):
 
     @admin.display(description="дата начала")
     def start_date_format(self, obj):
-        return obj.start_date.strftime("%d.%m.%y %H:%M")
+        return obj.start_date.astimezone(ZONE).strftime("%d.%m.%y %H:%M")
 
     @admin.display(description="дата конца")
     def end_date_format(self, obj):
-        return obj.end_date.strftime("%d.%m.%y %H:%M")
+        return obj.end_date.astimezone(ZONE).strftime("%d.%m.%y %H:%M")
 
     list_display = (
         'start_date_format',
@@ -135,7 +141,7 @@ class DeliveryAdmin(BaseAdmin, ExportActionMixin):
 
     @admin.display(description="дата начала")
     def date_format(self, obj):
-        return obj.date.strftime("%d.%m.%y %H:%M")
+        return obj.date.astimezone(ZONE).strftime("%d.%m.%y %H:%M")
 
     list_display = (
         'location',
