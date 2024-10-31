@@ -1,9 +1,11 @@
 from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
-from .serializers import PromotionSerializer, PromoCategorySerializer
+from rest_framework.views import APIView
+
+from .serializers import PromotionSerializer, PromoCategorySerializer, ParticipationSerializer
 from django.db import models
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework import status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -114,3 +116,19 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
 
         serializer = self.get_serializer(promotions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ParticipationView(APIView):
+    """
+    Подтверждение участия в поощрении
+    """
+    def post(self, request):
+        promotion_id = request.data.get('promotion_id')
+        tg_id = request.data.get('tg_id')
+        participation = Participation.objects.filter(promotion_id=promotion_id, user__tg_id=tg_id).first()
+        if participation:
+            participation.is_active = True
+            participation.save_without_reward_check()
+            return Response({'message': 'Участие обновлено'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Участие не найдено'}, status=status.HTTP_404_NOT_FOUND)

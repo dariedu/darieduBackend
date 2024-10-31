@@ -84,6 +84,7 @@ class Participation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='волонтёр')
     promotion = models.ForeignKey(Promotion, on_delete=models.CASCADE, verbose_name='поощрение')
     received_at = models.DateTimeField(auto_now_add=True, verbose_name='дата получения')
+    is_active = models.BooleanField(default=False, verbose_name='подтверждение')
 
     def __str__(self):
         return str(self.user)
@@ -97,6 +98,9 @@ class Participation(models.Model):
         self.promotion.available_quantity -= 1
         self.promotion.save()
 
+        super().save(*args, **kwargs)
+
+    def save_without_reward_check(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):

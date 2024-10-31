@@ -41,19 +41,22 @@ def create_folder(drive: GoogleDrive) -> list:
     return folder
 
 
-def get_folder_id(drive: GoogleDrive) -> str:
+def get_folder_id(drive: GoogleDrive, link: str = None) -> str:
     """Получение id папки"""
-    query = {'q': f'title="{FOLDER_NAME}" and trashed=false'}  # Формирование запроса к Google Drive
+    if not link:
+        query = {'q': f'title="{FOLDER_NAME}" and trashed=false'}  # Формирование запроса к Google Drive
 
-    folder = drive.ListFile(query).GetList()  # Получаем список папок, соответствующих названию FOLDER_NAME
+        folder = drive.ListFile(query).GetList()  # Получаем список папок, соответствующих названию FOLDER_NAME
 
-    if not folder:  # В случае, если папка не найдена, создаётся эта папка с названием по умолчанию
-        folder = create_folder(drive)
+        if not folder:  # В случае, если папка не найдена, создаётся эта папка с названием по умолчанию
+            folder = create_folder(drive)
 
-    folder_id = folder[0].get('id')  # Получаем id папки
+        folder_id = folder[0].get('id')  # Получаем id папки
 
-    if not folder_id:  # Если папки по какой бы то ни было причины нет, возбуждаем исключение
-        raise 'Folder does not found'
+        if not folder_id:  # Если папки по какой бы то ни было причины нет, возбуждаем исключение
+            raise 'Folder does not found'
+    else:
+        folder_id = link.split('/')[-1]
 
     return folder_id
 
@@ -70,12 +73,12 @@ def get_links(folder_id: str, drive: GoogleDrive) -> list:
     return links
 
 
-def show_tickets():
+def show_tickets(link: str = None):
     """Получение списка ссылок"""
     try:  # В случае возбуждения какого-либо исключения обрабатываем и возвращаем строку для дальнейшей обработки
         google_auth = authenticate()  # Авторизация в Google
         drive = google_drive(google_auth)  # Подключение к сервису Google Drive
-        folder_id = get_folder_id(drive)  # Получение id папки
+        folder_id = get_folder_id(drive, link)  # Получение id папки
         links = get_links(folder_id, drive)  # Получение списка ссылок
     except Exception as e:  # Обрабатываем исключение с соответствующих комментарием
         return f'Exception with folders (tickets) - {e}'

@@ -1,6 +1,8 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from address_app.serializers import CitySerializer
 from .models import Promotion, PromoCategory, Participation
+from user_app.models import User
 
 
 class PromoCategorySerializer(serializers.ModelSerializer):
@@ -30,3 +32,12 @@ class PromotionSerializer(serializers.ModelSerializer):
     # Подсчет числа участников поощрений
     def get_volunteers_count(self, obj):
         return Participation.objects.filter(promotion=obj).count()
+
+
+class ParticipationSerializer(serializers.ModelSerializer):
+    promotion_id = serializers.IntegerField()
+    tg_id = serializers.IntegerField()
+
+    class Meta:
+        model = Participation
+        fields = ['promotion_id', 'tg_id']

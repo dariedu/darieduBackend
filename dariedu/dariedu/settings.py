@@ -75,7 +75,7 @@ INSTALLED_APPS = [
     'user_app.apps.UserAppConfig',
     'address_app',
     'task_app.apps.TaskAppConfig',
-    'promo_app',
+    'promo_app.apps.PromoAppConfig',
     'feedback_app.apps.FeedbackAppConfig',
     'stories_app',
     'notifications_app',
