@@ -10,7 +10,7 @@ from address_app.models import Address, Beneficiar
 from .models import Feedback, RequestMessage, PhotoReport
 from .serializers import FeedbackSerializer, RequestMessageSerializer, PhotoReportSerializer
 
-from .google_drive.upload_file import get_google_links
+from google_drive import GoogleFeedback
 
 
 class FeedbackViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
@@ -122,7 +122,8 @@ class PhotoReportViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
 
         try:
             file = self.save_image_to_server(beneficiary)
-            links = get_google_links(file)
+            google_feedback = GoogleFeedback()
+            links = google_feedback.feedback_links(file)
             self.delete_file(file)
         except Exception as e:
             return Response(data={'detail': f'Google drive or image - {e}'},

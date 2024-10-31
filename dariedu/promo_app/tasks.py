@@ -8,6 +8,7 @@ import requests
 from celery import shared_task
 
 from .models import Promotion
+from google_drive import GooglePromotion
 
 
 url = f'https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage'
@@ -83,11 +84,11 @@ def check_complete_promotion():
 
 @shared_task
 def event_start_promotion(promotion_pk):
-    from .show_tickets import show_tickets
 
     promotion = Promotion.objects.get(pk=promotion_pk)
-    participants = promotion.users.filter(is_active=True)  # заменить на promotion.users.filter(is_active=True)
-    links = show_tickets()  # Если будет ссылка, заменить на show_tickets(link=promotion.ticket_file)
+    participants = promotion.users.filter(is_active=True)
+    google_promotion = GooglePromotion()
+    links = google_promotion.get_links()  # Если будет ссылка, заменить на show_tickets(link=promotion.ticket_file)
     for participant, link in zip(participants, links):
         payload = {
             'chat_id': participant.tg_id,

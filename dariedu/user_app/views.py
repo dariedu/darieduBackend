@@ -2,12 +2,13 @@ from django.shortcuts import render
 from rest_framework import viewsets, mixins, generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User, Rating
 from .serializers import UserSerializer, RatingSerializer, RegistrationSerializer, TelegramDataSerializer
-from .google_drive.upload_file import get_link_view
+from google_drive import GoogleUser
 
 
 class RegistrationView(generics.CreateAPIView):
@@ -15,15 +16,24 @@ class RegistrationView(generics.CreateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = RegistrationSerializer
 
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except Exception as e:
+            return Response(
+                data={'error': f'{e}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
     def perform_create(self, serializer):
         """Расширенный функционал метода create - добавление фотографии на google drive"""
         import re
 
         try:
             request = serializer.validated_data  # Данные из сериализатора, не путать с self.request
-            file_name = request['photo']
-            full_name = request['last_name'] + request['name'] + request['surname']
-            telegram_id = request['tg_id']
+            file_name = request.get('photo')
+            full_name = request.get('last_name') + request.get('name') + request.get('surname')
+            telegram_id = request.get('tg_id')
 
             regex = re.compile(r'\.\w*')
             prefix = regex.search(file_name.name).group()
@@ -31,11 +41,13 @@ class RegistrationView(generics.CreateAPIView):
             request['photo'].name = f'{full_name}_{telegram_id}{prefix}'
             data = serializer.save()
 
-            view_link = get_link_view(data.photo)
+            drive_user = GoogleUser()
+            view_link = drive_user.get_link_view(data.photo)
             data.photo_view = view_link
             data.save()
         except:
-            pass
+            raise Exception('Error with registration')
+
 
 class CustomTokenObtainPairView(APIView):
     serializer_class = TelegramDataSerializer

@@ -46,21 +46,3 @@ docker-compose exec -ti dariedu-server python manage.py createsuperuser
 Сервер с API запустится по адресу http://127.0.0.1:8000/api  
 swagger: http://127.0.0.1:8000/api/swagger  
 админ-панель: http://127.0.0.1:8000/admin здесь нужно ввести данные админа (суперпользователя).
----
-Содержимое файла settings.yaml:
-```yaml
-client_config_backend: settings
-client_config:
-  client_id: '<token_client_id>'
-  client_secret: '<token_client_secret>'
-
-save_credentials: True
-save_credentials_backend: file
-save_credentials_file: token.json
-
-get_refresh_token: True
-
-oauth_scope:
-  - https://www.googleapis.com/auth/drive
-  - https://www.googleapis.com/auth/drive.file
-```
