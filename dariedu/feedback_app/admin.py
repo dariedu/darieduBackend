@@ -3,7 +3,13 @@ from import_export.forms import ImportForm
 from unfold.admin import ModelAdmin
 from unfold.contrib.import_export.forms import SelectableFieldsExportForm
 
+from dariedu.settings import TIME_ZONE
+import zoneinfo
+
 from .models import Feedback, RequestMessage, PhotoReport
+
+
+ZONE = zoneinfo.ZoneInfo(TIME_ZONE)
 
 
 class BaseAdmin(ModelAdmin):
@@ -26,7 +32,7 @@ class FeedbackAdmin(BaseAdmin):
 
     @admin.display(description="дата")
     def created_at_format(self, obj):
-        return obj.created_at.strftime("%d.%m.%y %H:%M")
+        return obj.created_at.astimezone(ZONE).strftime("%d.%m.%y %H:%M")
     created_at_format.admin_order_field = 'created_at'
 
     list_display = ('type', 'user', 'text_short', 'created_at_format')
@@ -60,7 +66,7 @@ class RequestMessageAdmin(BaseAdmin):
 
     @admin.display(description="дата")
     def date_format(self, obj):
-        return obj.date.strftime("%d.%m.%y %H:%M")
+        return obj.date.strftime("%d.%m.%y")
     date_format.admin_order_field = 'date'
     list_display = (
         "type",
@@ -82,7 +88,7 @@ class RequestMessageAdmin(BaseAdmin):
 class PhotoReportAdmin(BaseAdmin):
     @admin.display(description="дата")
     def date_format(self, obj):
-        return obj.date.strftime("%d.%m.%y %H:%M")
+        return obj.date.strftime("%d.%m.%y")
     date_format.admin_order_field = 'date'
 
     list_display = (

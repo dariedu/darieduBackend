@@ -2,6 +2,7 @@ from django.db.models import F
 from django.utils import timezone
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -14,6 +15,7 @@ from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentS
 
 class TaskViewSet(
     mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
     viewsets.GenericViewSet
 ):
     """
@@ -31,9 +33,10 @@ class TaskViewSet(
         is_active=True,
         is_completed=False,
         end_date__gt=timezone.now(),
-        volunteers_needed__gt=F('volunteers_taken')  # TODO switch off when we will make autocomplete
+        volunteers_needed__gt=F('volunteers_taken')
     )
     serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated]
     ordering_fields = ['start_date', 'end_date']
 
     def get_queryset(self):
@@ -48,26 +51,19 @@ class TaskViewSet(
             complete: active uncompleted tasks only
             curator_of: all tasks where current user is the curator
         """
+
+        if self.action == 'list':
+            # all available tasks
+            user_tasks = self.request.user.tasks.values_list('id', flat=True)
+            return Task.objects.filter(
+                is_active=True,
+                is_completed=False,
+                end_date__gt=timezone.now(),
+                volunteers_needed__gt=F('volunteers_taken')
+            ).exclude(id__in=user_tasks)
         if self.action == 'my':
             # all tasks of current user
             queryset = self.request.user.tasks.all()
-
-            is_active = self.request.query_params.get('is_active', None)
-            is_completed = self.request.query_params.get('is_completed', None)
-
-            if is_active is not None:
-                if is_active == '0' or is_active == '1':
-                    bool_is_active = bool(int(is_active))
-                    queryset = queryset.filter(is_active=bool_is_active)
-                else:
-                    raise BadRequest(f"Incorrect 'is_active' value: {is_active}! Must be either 0 or 1.")
-
-            if is_completed is not None:
-                if is_completed == '0' or is_completed == '1':
-                    bool_is_completed = bool(int(is_completed))
-                    queryset = queryset.filter(is_completed=bool_is_completed)
-                else:
-                    raise BadRequest(f"Incorrect 'is_completed' value: {is_completed}! Must be either 0 or 1.")
 
             return queryset
 
@@ -109,9 +105,6 @@ class TaskViewSet(
         """
         Get current user's tasks.
         Returns all user's tasks by default.
-
-        Filtering by is_active and/or is_completed is supported.
-
         Authenticated only.
         """
         tasks = self.get_queryset()
@@ -133,11 +126,15 @@ class TaskViewSet(
         if request.user in task.volunteers.all():
             raise BadRequest("You have already taken this task!")
 
-        serializer = self.get_serializer(task, data={'volunteers_taken': task.volunteers_taken + 1}, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        if task.volunteers_taken >= task.volunteers_needed:
+            raise BadRequest("This task already has enough volunteers!")
 
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+        Task.objects.filter(pk=task.pk).update(volunteers_taken=F('volunteers_taken') + 1)
+        task.volunteers.add(request.user)
+
+        task.refresh_from_db()
+        serializer = self.get_serializer(task)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], url_name='task_refuse')
     def refuse(self, request, pk=None):
@@ -151,13 +148,16 @@ class TaskViewSet(
         """
         task = self.get_object()
 
-        serializer = self.get_serializer(task, data={'volunteers_taken': task.volunteers_taken - 1}, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        if request.user not in task.volunteers.all():
+            raise BadRequest("You haven't taken this task!")
+        Task.objects.filter(pk=task.pk).update(volunteers_taken=F('volunteers_taken') - 1)
 
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+        task.volunteers.remove(request.user)
 
-    #  Метод завершения задачи куратором
+        task.refresh_from_db()
+        serializer = self.get_serializer(task)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['post'], url_name='task_complete')
     def complete(self, request, pk=None):
         """
@@ -170,11 +170,48 @@ class TaskViewSet(
         """
         task = self.get_object()
 
-        serializer = self.get_serializer(task, data={'is_active': False, 'is_completed': True}, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        if request.user not in task.volunteers.all():
+            raise BadRequest("You haven't taken this task!")
 
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+        # Атомарное обновление количества волонтеров
+        Task.objects.filter(pk=task.pk).update(
+            volunteers_taken=F('volunteers_taken') - 1
+        )
+        # Удаление волонтера
+        task.volunteers.remove(request.user)
+
+        # Обновляем объект из БД
+        task.refresh_from_db()
+        serializer = self.get_serializer(task)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_name='task_complete')
+    def complete(self, request, pk=None):
+        task = self.get_object()
+
+        if not request.user.is_curator or request.user != task.curator:
+            raise PermissionDenied("Only the task curator can complete the task")
+
+        if task.is_completed:
+            raise BadRequest("Task is already completed")
+
+        task.is_completed = True
+        task.is_active = False
+        task.save()
+
+        task.volunteers.all().update(
+            volunteer_hour=F('volunteer_hour') + task.volunteer_price,
+            point=F('point') + task.volunteer_price
+        )
+
+        task.curator.update(
+            volunteer_hour=F('volunteer_hour') + task.curator_price,
+            point=F('point') + task.curator_price
+        )
+
+        task.refresh_from_db()
+        serializer = self.get_serializer(task)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_name='task_curator_of')
     def curator_of(self, request):

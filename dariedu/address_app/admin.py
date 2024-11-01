@@ -97,7 +97,7 @@ class AddressAdmin(BaseAdmin):
         )
         return actions
 
-    def change_view(self, request, object_id, form_url='add_route_sheet', extra_context=None):
+    def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
         extra_context['route_sheets'] = RouteSheet.objects.all()
         extra_context['locations'] = Location.objects.all()
