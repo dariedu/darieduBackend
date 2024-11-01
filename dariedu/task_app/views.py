@@ -9,7 +9,7 @@ from .exceptions import BadRequest
 from .models import Task, Delivery, DeliveryAssignment, TaskCategory
 from .permissions import IsAbleCompleteTask, IsCurator
 from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer, TaskVolunteerSerializer, \
-    TaskCategorySerializer, DeliveryVolunteerSerializer
+    TaskCategorySerializer  #DeliveryVolunteerSerializer
 
 
 class TaskViewSet(
@@ -222,12 +222,12 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             queryset = queryset.filter(is_completed=True, assignments__volunteer=user).distinct()
         return queryset
 
-    def get_serializer(self, *args, **kwargs):
-        if self.request.user.is_staff:
-            serializer = DeliverySerializer
-        else:
-            serializer = DeliveryVolunteerSerializer
-        return serializer(*args, **kwargs)
+    # def get_serializer(self, *args, **kwargs):
+    #     if self.request.user.is_staff:
+    #         serializer = DeliverySerializer
+    #     else:
+    #         serializer = DeliverySerializer
+    #     return serializer(*args, **kwargs)
 
     @action(detail=False, methods=['get'], url_path='volunteer')
     def volunteer_deliveries(self, request):
@@ -249,12 +249,14 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     @action(detail=False, methods=['get'], url_path='curator')
     def deliveries_curator(self, request):
-        total_deliveries = Delivery.objects.filter(in_execution=True).count()
-        active_deliveries_count = Delivery.objects.filter(is_active=True).count()
+        total_deliveries = Delivery.objects.filter(in_execution=True)
+        id_deliveries = total_deliveries.values_list('id', flat=True)
+        active_deliveries = Delivery.objects.filter(is_active=True)
+        id_active_deliveries = active_deliveries.values_list('id', flat=True)
 
         return Response({
-            'выполняются доставки': total_deliveries,
-            'количество активных доставок': active_deliveries_count,
+            'выполняются доставки (id)': id_deliveries,
+            'количество активных доставок (id)': id_active_deliveries,
         })
 
     @action(detail=True, methods=['post'], url_path='take')

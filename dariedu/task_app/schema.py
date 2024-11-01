@@ -96,10 +96,10 @@ class Fix2(OpenApiViewExtension):
                 examples=[
                     OpenApiExample(
                         "Post example",
-                        description="Example of obtaining a count of deliveries",
+                        description="Example of obtaining a id of deliveries",
                         value={
-                            'выполняются доставки': 2,
-                            'количество активных доставок': 5
+                            'выполняются доставки (id)': [1, 6, 25],
+                            'количество активных доставок (id)': [5, 32, 56, 78],
                         },
                         status_codes=[str(status.HTTP_200_OK)],
                     ),
