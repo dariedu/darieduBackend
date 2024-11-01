@@ -53,19 +53,19 @@ class LocationShortSerializer(serializers.ModelSerializer):
 
 
 class DeliverySerializer(serializers.ModelSerializer):
-    delivery_assignments = DeliveryAssignmentSerializer(many=True, source='assignments')
+    # delivery_assignments = DeliveryAssignmentSerializer(many=True, source='assignments')
     curator = CuratorSerializer(read_only=True)
     location = LocationShortSerializer(read_only=True)
 
     class Meta:
         model = Delivery
         fields = ['id', 'date', 'curator', 'price', 'is_free', 'is_active', 'location',
-                  'is_completed', 'in_execution', 'volunteers_needed', 'volunteers_taken', 'delivery_assignments']
-
-
-class DeliveryVolunteerSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Delivery
-        fields = ['id', 'date', 'curator', 'price', 'is_free', 'is_active',
                   'is_completed', 'in_execution', 'volunteers_needed', 'volunteers_taken']
+
+
+# class DeliveryVolunteerSerializer(serializers.ModelSerializer):
+#
+#     class Meta:
+#         model = Delivery
+#         fields = ['id', 'date', 'curator', 'price', 'is_free', 'is_active',
+#                   'is_completed', 'in_execution', 'volunteers_needed', 'volunteers_taken']
