@@ -21,12 +21,13 @@ def send_promotion_to_telegram(promotion_id):
     promotion = Promotion.objects.get(id=promotion_id)
     volunteer_tg_ids = [user.tg_id for user in promotion.users.all()]
     timedate = promotion.start_date
-    timedate = timedate.strftime('%d.%m.%Y %H:%M')
+    date_str = timedate.strftime('%d.%m.%Y')
+    time_str = timedate.strftime('%H:%M')
     promotion_name = promotion.name
     data = {
         'promotion_id': promotion_id,
     }
-    messages = f'Подтвердите использование поощрения {promotion_name}, сегодня в {timedate}!'
+    messages = f'Подтвердите вашу запись на "{promotion_name}" {date_str} в {time_str}!'
     keyboard = keyboard_promotion(data)
     reply_markup = json.dumps(keyboard)
     for volunteer_tg_id in volunteer_tg_ids:
