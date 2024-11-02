@@ -52,6 +52,7 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
         'point',
         'is_superuser',
         'is_staff',
+        'is_confirmed',  # confirmed вывод пользователя
         'birthday_format',
         'is_adult',
         'short_interests',
@@ -63,6 +64,7 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
         'is_superuser',
         'is_staff',
         'is_adult',
+        'is_confirmed',  # confirmed фильтрация по этому полю
         'consent_to_personal_data',
         'rating',
         'metier',
@@ -76,6 +78,7 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
             "surname",
             "birthday",
             "is_adult",
+            'is_confirmed',  # confirmed редактирование поля
             "photo",  # TODO: add preview
             "volunteer_hour",
             "point",

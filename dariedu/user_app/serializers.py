@@ -57,6 +57,7 @@ class UserSerializer(serializers.ModelSerializer):
             'photo_view',
             'birthday',
             'is_adult',
+            'is_confirmed',  # confirmed
             'volunteer_hour',
             'point',
             'rating',
@@ -75,6 +76,7 @@ class UserSerializer(serializers.ModelSerializer):
             'is_staff': {'read_only': True},
             'volunteer_hour': {'read_only': True},
             'rating': {'read_only': True},
+            'is_confirmed': {'read_only': True}  # Только для чтения
         }
 
         def update(self, instance, validated_data):

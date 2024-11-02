@@ -18,5 +18,6 @@ class UserManager(BaseUserManager):
     def create_superuser(self, tg_id, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_confirmed', True)  # Во время создания админа, полный доступ
 
         return self.create_user(tg_id, password, **extra_fields)
