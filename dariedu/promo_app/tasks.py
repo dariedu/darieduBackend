@@ -14,6 +14,23 @@ from google_drive import GooglePromotion
 url = f'https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage'
 
 @shared_task
+def send_message_to_telegrams(promotion_id):
+    """
+    Notifying the manager about the volunteer’s registration for incentives.
+    """
+    promo = Promotion.objects.get(id=promotion_id)
+    contact_person = promo.contact_person
+    chat_id = contact_person.tg_id
+    volunteers = promo.users.all()
+    if volunteers.exists():
+        name = volunteers.first().tg_username
+        message = f'Волонтер {name} записался на поощрение "{promo.name}"!'
+        payload = {'chat_id': chat_id, 'text': message}
+        response = requests.post(url, json=payload)
+        return response.json()
+
+
+@shared_task
 def send_promotion_to_telegram(promotion_id):
     """
     Notification of confirmation of participation in task.

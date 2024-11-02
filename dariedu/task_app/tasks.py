@@ -26,7 +26,7 @@ def send_message_to_telegram(task_id):
     chat_id = curator.tg_id
     volunteers = task.volunteers
     name = volunteers.first().tg_username
-    message = f'Пользователь {name} записался на выполнение задачи "{task.name}"!'
+    message = f'Волонтер {name} записался на выполнение Доброго дела "{task.name}"!'
     payload = {'chat_id': chat_id, 'text': message}
     response = requests.post(url, json=payload)
     return response.json()

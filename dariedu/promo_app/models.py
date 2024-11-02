@@ -37,6 +37,8 @@ class Promotion(models.Model):
     users = models.ManyToManyField(User, through='Participation', blank=True, verbose_name='получатель')
     picture = models.ImageField(blank=True, null=True, verbose_name='картинка', help_text='Ширина 328px, высота 205px')
     address = models.CharField(max_length=255, verbose_name='адрес', blank=True, null=True)
+    contact_person = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='contact_persons',
+                                       verbose_name='контактное лицо', blank=True, null=True)
 
     def __str__(self):
         return self.name
