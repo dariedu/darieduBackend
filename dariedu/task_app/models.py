@@ -1,9 +1,12 @@
+from django.urls import reverse
 from django.contrib import admin
 from django.db import models
 from django.utils.html import format_html
 
 from address_app.models import RouteSheet, City, Location
 from user_app.models import User
+
+from dariedu.settings import CURRENT_HOST
 
 
 class Delivery(models.Model):
@@ -77,6 +80,9 @@ class Task(models.Model):
 
     def __str__(self):
         return f'{self.name}, {self.start_date}'
+
+    def get_absolute_url(self):
+        return reverse('admin:task_app_task_change', args=[self.pk])
 
     class Meta:
         verbose_name = 'доброе дело'

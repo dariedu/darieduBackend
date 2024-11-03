@@ -25,8 +25,8 @@ def send_message_to_telegram(task_id):
     curator = task.curator
     chat_id = curator.tg_id
     volunteers = task.volunteers
-    name = volunteers.first().name
-    message = f"Пользователь {name} записался на выполнение задачи {task.name}!"
+    name = volunteers.first().tg_username
+    message = f'Волонтер {name} записался на выполнение Доброго дела "{task.name}"!'
     payload = {'chat_id': chat_id, 'text': message}
     response = requests.post(url, json=payload)
     return response.json()
@@ -41,12 +41,12 @@ def send_task_to_telegram(task_id):
     chat_id = task.curator.tg_id
     volunteer_tg_ids = [tg_id for tg_id in task.volunteers.values_list('tg_id', flat=True)]
     timedate = task.end_date
-    timedate = timedate.strftime('%d.%m.%Y %H:%M')
+    timedate = timedate.strftime('%d.%m.%Y')
     data = {
         'task_id': task_id,
         'curator_tg_id': chat_id
     }
-    messages = f'Подтвердите участие в задаче {task.name}, срок выполнения {timedate}!'
+    messages = f'Подтвердите выполнение Доброго дела "{task.name}", срок выполнения {timedate}!'
     keyboard = keyboard_task(data)
     reply_markup = json.dumps(keyboard)
     for volunteer_tg_id in volunteer_tg_ids:
@@ -72,7 +72,7 @@ def check_tasks():
                 eta = timezone.now().replace(hour=9, minute=5, second=0, microsecond=0)
         else:
             date = task.start_date__date + (task.end_date__date - task.start_date__date) // 2
-            eta = timezone.make_aware(datetime.combine(date, datetime.time(10)))
+            eta = timezone.make_aware(datetime.combine(date, datetime.time(task.start_date__time)))
         if eta >= timezone.now():
             send_task_to_telegram.apply_async(args=[task.id], eta=eta)
 
@@ -90,7 +90,8 @@ def send_delivery_to_telegram(delivery_id):
         return
 
     timedate = delivery.date
-    timedate = timedate.strftime('%d.%m.%Y %H:%M')
+    date_str = timedate.strftime('%d.%m.%Y')
+    time_str = timedate.strftime('%H:%M')
     curator_tg_id = delivery.curator.tg_id
     data = {
         'delivery_id': delivery_id,
@@ -98,7 +99,7 @@ def send_delivery_to_telegram(delivery_id):
     }
 
     keyboard = keyboard_delivery(data)
-    messages = f'Подтвердите участие в доставке, в {timedate}!'
+    messages = f'Подтвердите участие в Благотворительной доставке {date_str} в {time_str}!'
     reply_markup = json.dumps(keyboard)
 
     for volunteer_tg_id in volunteer_tg_ids:

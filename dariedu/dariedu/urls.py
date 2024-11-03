@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from googleapiclient.channel import notification_from_headers
 from rest_framework import routers
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from rest_framework_simplejwt.views import TokenBlacklistView, TokenRefreshView
@@ -27,11 +28,13 @@ from promo_app.urls import router as promo_approuter
 from feedback_app.urls import router as feedback_approuter
 from address_app.urls import router as address_approuter
 from stories_app.urls import router as stories_approuter
+from notifications_app.urls import router as notification_approuter
 from user_app.views import RegistrationView, CustomTokenObtainPairView
-from notifications_app.views import CreateNotificationView
+# from notifications_app.views import CreateNotificationView
 from promo_app.views import ParticipationView
 
 router = routers.DefaultRouter()
+router.registry.extend(notification_approuter.registry)
 router.registry.extend(user_approuter.registry)
 router.registry.extend(task_approuter.registry)
 router.registry.extend(promo_approuter.registry)
@@ -41,7 +44,7 @@ router.registry.extend(stories_approuter.registry)
 
 urlpatterns = [
     path('api/participation/', ParticipationView.as_view()),
-    path('api/notifications/', CreateNotificationView.as_view()),
+    # path('api/notifications/', CreateNotificationView.as_view()),
     # path('api/', include('notifications_app.urls')),
     path('stories/<slug:slug>/', StoriesDetailView.as_view()),
     path('admin/', admin.site.urls),
