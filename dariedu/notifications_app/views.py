@@ -1,14 +1,17 @@
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from .models import Notification
+from rest_framework import viewsets, mixins
+
 from .serializers import NotificationSerializer
 
-class CreateNotificationView(APIView):
-    def post(self, request):
-        serializer = NotificationSerializer(data=request.data)
+
+class CreateNotificationViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
+    serializer_class = NotificationSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'Уведомление создано успешно'}, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            notification = serializer.save()
+            return Response({'message': 'Уведомление создано успешно', 'notification_id': notification.id},
+                            status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
