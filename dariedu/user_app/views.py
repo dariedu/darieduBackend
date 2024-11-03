@@ -74,13 +74,14 @@ class CustomTokenObtainPairView(APIView):
 class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready
+    permission_classes = [IsAuthenticated]
     filterset_fields = ['is_superuser', 'is_staff', 'city', 'rating']
+    ordering_fields = ['id']
 
 
 class RatingViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Rating.objects.all()
-    permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready
+    permission_classes = [IsAuthenticated]
     serializer_class = RatingSerializer
 
 

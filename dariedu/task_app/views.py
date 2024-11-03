@@ -22,29 +22,27 @@ class TaskViewSet(
     API endpoint that provides methods to work with tasks.
 
     Actions:
-        list: get a list of available tasks
+        list: get a list of available tasks + filtering by date (for start_date) YYYY-MM-DD, category and city
         my: get a user specific tasks (supports filtering)
         accept: accept an available task
         refuse: refuse a user specific active uncompleted task
         complete: mark task as completed and add points to volunteers
         curator_of: get list of tasks where current user is curator
+        categories: get list of task categories
     """
-    queryset = Task.objects.filter(
-        is_active=True,
-        is_completed=False,
-        end_date__gt=timezone.now(),
-        volunteers_needed__gt=F('volunteers_taken')
-    )
+
+    queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
     ordering_fields = ['start_date', 'end_date']
+    filterset_fields = ['category', 'city']
 
     def get_queryset(self):
         """
         Get queryset for specific action.
 
         Actions:
-            list: all available tasks
+            list: all available tasks + filtering by date (for start_date) YYYY-MM-DD, category and city
             my: user specific tasks + filtering against query params
             accept: all available tasks
             refuse: user specific active uncompleted tasks
@@ -55,25 +53,53 @@ class TaskViewSet(
         if self.action == 'list':
             # all available tasks
             user_tasks = self.request.user.tasks.values_list('id', flat=True)
-            return Task.objects.filter(
+            date = self.request.query_params.get('date', None)
+            queryset = Task.objects.filter(
                 is_active=True,
                 is_completed=False,
                 end_date__gt=timezone.now(),
                 volunteers_needed__gt=F('volunteers_taken')
             ).exclude(id__in=user_tasks)
-        if self.action == 'my':
-            # all tasks of current user
-            queryset = self.request.user.tasks.all()
+            if date:
+                try:
+                    date = timezone.datetime.strptime(date, '%Y-%m-%d')
+                    queryset = queryset.filter(start_date__date=date)
+                except ValueError:
+                    pass
+            return queryset
 
+        if self.action == 'my':
+            user = self.request.user
+            queryset = user.tasks.all()
+
+            after = self.request.query_params.get('after', None)
+            before = self.request.query_params.get('before', None)
+            active = self.request.query_params.get('is_active', None)
+            completed = self.request.query_params.get('is_completed', None)
+            if after:
+                try:
+                    after = timezone.datetime.strptime(after, '%Y-%m-%d')
+                    queryset = queryset.filter(end_date__date__gte=after)
+                except ValueError:
+                    pass
+            if before:
+                try:
+                    before = timezone.datetime.strptime(before, '%Y-%m-%d')
+                    queryset = queryset.filter(start_date__date__lte=before)
+                except ValueError:
+                    pass
+            if active is not None and active.lower() == 'true':
+                queryset = queryset.filter(is_active=True).distinct()
+            if completed is not None and completed.lower() == 'true':
+                queryset = queryset.filter(is_completed=True).distinct()
             return queryset
 
         elif self.action == 'refuse':
             # the user can only abandon his active uncompleted task
             return self.request.user.tasks.filter(is_active=True, is_completed=False)
 
-        # Для метода завершения задачи куратором
         elif self.action == 'complete':
-            # can complete only active and uncompleted tasks
+            # curator can complete only active and uncompleted tasks
             return Task.objects.filter(is_active=True, is_completed=False)
 
         elif self.action == 'curator_of':
@@ -107,6 +133,14 @@ class TaskViewSet(
         Get current user's tasks.
         Returns all user's tasks by default.
         Authenticated only.
+        Filters:
+        is_active - filter tasks by active status, for available is true, true or false
+        is_completed - filter tasks by completed status, for history is true, true or false
+        after - filter tasks by start date
+        before - filter tasks by end date
+        Пример фильтров для календаря: api/tasks/my/?after=2024-10-05&before=2024-10-20
+        Формат даты: YYYY-MM-DD
+        можно использовать вместе или по отдельности
         """
         tasks = self.get_queryset()
         serializer = self.get_serializer(tasks, many=True)
@@ -118,18 +152,16 @@ class TaskViewSet(
     def accept(self, request, pk=None):
         """
         Accept an available task.
-
         Post request body should be empty. Will be ignored anyway.
-
         Authenticated only.
         """
         task = self.get_object()
 
         if request.user in task.volunteers.all():
-            raise BadRequest("You have already taken this task!")
+            return Response({"error": "You've already taken this task!"}, status=status.HTTP_400_BAD_REQUEST)
 
         if task.volunteers_taken >= task.volunteers_needed:
-            raise BadRequest("This task already has enough volunteers!")
+            return Response({"error": "This task is full!"}, status=status.HTTP_400_BAD_REQUEST)
 
         Task.objects.filter(pk=task.pk).update(volunteers_taken=F('volunteers_taken') + 1)
         task.volunteers.add(request.user)
@@ -144,15 +176,13 @@ class TaskViewSet(
         """
         Abandon the task.
         Can only abandon an active uncompleted task.
-
         Post request body should be empty. Will be ignored anyway.
-
         Authenticated only.
         """
         task = self.get_object()
 
         if request.user not in task.volunteers.all():
-            raise BadRequest("You haven't taken this task!")
+            return Response({"error": "You haven't taken this task!"}, status=status.HTTP_400_BAD_REQUEST)
         Task.objects.filter(pk=task.pk).update(volunteers_taken=F('volunteers_taken') - 1)
 
         task.volunteers.remove(request.user)
@@ -167,38 +197,13 @@ class TaskViewSet(
         """
         Complete the task.
         Can only complete an active uncompleted task.
-
         Post request body should be empty. Will be ignored anyway.
-
         Curators only.
         """
         task = self.get_object()
 
-        if request.user not in task.volunteers.all():
-            raise BadRequest("You haven't taken this task!")
-
-        # Атомарное обновление количества волонтеров
-        Task.objects.filter(pk=task.pk).update(
-            volunteers_taken=F('volunteers_taken') - 1
-        )
-        # Удаление волонтера
-        task.volunteers.remove(request.user)
-
-        # Обновляем объект из БД
-        task.refresh_from_db()
-        serializer = self.get_serializer(task)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(detail=True, methods=['post'], url_name='task_complete')
-    @is_confirmed
-    def complete(self, request, pk=None):
-        task = self.get_object()
-
-        if not request.user.is_curator or request.user != task.curator:
-            raise PermissionDenied("Only the task curator can complete the task")
-
         if task.is_completed:
-            raise BadRequest("Task is already completed")
+            return Response({"error": "This task is already completed!"}, status=status.HTTP_400_BAD_REQUEST)
 
         task.is_completed = True
         task.is_active = False
@@ -223,7 +228,6 @@ class TaskViewSet(
     def curator_of(self, request):
         """
         Get all tasks where current user is the curator of the task.
-
         Curators only.
         """
         tasks = self.get_queryset()
@@ -253,6 +257,15 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         free = self.request.query_params.get('free', None)
         active = self.request.query_params.get('active', None)
         completed = self.request.query_params.get('completed', None)
+        date = self.request.query_params.get('date', None)
+
+        # TODO it works only for list. need to add for volunteers and curators deliveries
+        if date:
+            try:
+                date = timezone.datetime.strptime(date, '%Y-%m-%d').date()
+                self.queryset = self.queryset.filter(date__date=date)
+            except ValueError:
+                pass
 
         if action == 'deliveries_curator' and self.request.user.is_staff:
             return queryset.filter(is_active=True, curator=user)
@@ -265,16 +278,8 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             queryset = queryset.filter(is_completed=True, assignments__volunteer=user).distinct()
         return queryset
 
-    # def get_serializer(self, *args, **kwargs):
-    #     if self.request.user.is_staff:
-    #         serializer = DeliverySerializer
-    #     else:
-    #         serializer = DeliverySerializer
-    #     return serializer(*args, **kwargs)
-
     @action(detail=False, methods=['get'], url_path='volunteer')
     def volunteer_deliveries(self, request):
-        # serializer = DeliveryVolunteerSerializer
         free_deliveries = self.get_queryset().filter(is_free=True).exclude(
             assignments__volunteer=request.user).distinct()
         active_deliveries = self.get_queryset().filter(is_active=True, assignments__volunteer=request.user).distinct()
@@ -309,11 +314,14 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         delivery = self.get_object()
 
         if delivery.is_free:
-            assignment = DeliveryAssignment.objects.create(delivery=delivery)
-            assignment.save()
-            assignment.volunteer.add(request.user)
-            serializer = DeliveryAssignmentSerializer(assignment)
-            return Response({status.HTTP_201_CREATED: serializer.data})
+            if not DeliveryAssignment.objects.filter(delivery=delivery, volunteer=request.user).exists():
+                assignment = DeliveryAssignment.objects.create(delivery=delivery)
+                assignment.save()
+                assignment.volunteer.add(request.user)
+                serializer = DeliveryAssignmentSerializer(assignment)
+                return Response({status.HTTP_201_CREATED: serializer.data})
+            else:
+                return Response({'error': 'You have already taken this delivery'}, status=400)
         else:
             return Response({'error': 'Delivery is already taken'}, status=400)
 

@@ -60,6 +60,7 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
         'metier',
         'consent_to_personal_data',
     )
+    list_editable = ('is_confirmed',)
     list_filter = (
         'city',
         'is_superuser',
