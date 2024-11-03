@@ -47,9 +47,10 @@ class DeliveryAssignmentSerializer(serializers.ModelSerializer):
 
 
 class LocationShortSerializer(serializers.ModelSerializer):
+    city = CitySerializer(read_only=True)
     class Meta:
         model = Location
-        fields = ['id', 'address', 'link', 'subway', 'description']
+        fields = ['id', 'address', 'link', 'subway', 'city', 'description']
 
 
 class DeliverySerializer(serializers.ModelSerializer):
