@@ -157,7 +157,8 @@ class Fix1(OpenApiViewExtension):
         @extend_schema(tags=['Tasks'])
         class Fixed(self.target_class):
             @extend_schema(
-                description='Get the list of available tasks\n\n'
+                description='Get the list of available tasks\n'
+                            '+ filtering by date (for start_date) YYYY-MM-DD, category and city\n'
                             'Available task is: active, uncompleted, not timed out, has free spots',
             )
             def list(self, request, *args, **kwargs):
