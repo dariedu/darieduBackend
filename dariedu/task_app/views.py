@@ -232,7 +232,6 @@ class TaskViewSet(
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_name='task_categories')
-    @is_confirmed
     def get_categories(self, request):
         """
         Вывод категорий задач
@@ -274,7 +273,6 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     #     return serializer(*args, **kwargs)
 
     @action(detail=False, methods=['get'], url_path='volunteer')
-    @is_confirmed
     def volunteer_deliveries(self, request):
         # serializer = DeliveryVolunteerSerializer
         free_deliveries = self.get_queryset().filter(is_free=True).exclude(
