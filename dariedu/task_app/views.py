@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from .exceptions import BadRequest
 from .models import Task, Delivery, DeliveryAssignment, TaskCategory
-from .permissions import IsAbleCompleteTask, IsCurator
+from .permissions import IsAbleCompleteTask, IsCurator, is_confirmed
 from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer, TaskVolunteerSerializer, \
     TaskCategorySerializer  #DeliveryVolunteerSerializer
 
@@ -101,6 +101,7 @@ class TaskViewSet(
             return TaskVolunteerSerializer
 
     @action(detail=False, methods=['get'], url_name='my_tasks')
+    @is_confirmed
     def my(self, request):
         """
         Get current user's tasks.
@@ -113,6 +114,7 @@ class TaskViewSet(
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], url_name='task_accept')
+    @is_confirmed
     def accept(self, request, pk=None):
         """
         Accept an available task.
@@ -137,6 +139,7 @@ class TaskViewSet(
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], url_name='task_refuse')
+    @is_confirmed
     def refuse(self, request, pk=None):
         """
         Abandon the task.
@@ -159,6 +162,7 @@ class TaskViewSet(
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], url_name='task_complete')
+    @is_confirmed
     def complete(self, request, pk=None):
         """
         Complete the task.
@@ -186,6 +190,7 @@ class TaskViewSet(
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=['post'], url_name='task_complete')
+    @is_confirmed
     def complete(self, request, pk=None):
         task = self.get_object()
 
@@ -214,6 +219,7 @@ class TaskViewSet(
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['get'], url_name='task_curator_of')
+    @is_confirmed
     def curator_of(self, request):
         """
         Get all tasks where current user is the curator of the task.
@@ -285,6 +291,7 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         return Response(response_data)
 
     @action(detail=False, methods=['get'], url_path='curator')
+    @is_confirmed
     def deliveries_curator(self, request):
         total_deliveries = Delivery.objects.filter(in_execution=True)
         id_deliveries = total_deliveries.values_list('id', flat=True)
@@ -297,6 +304,7 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         })
 
     @action(detail=True, methods=['post'], url_path='take')
+    @is_confirmed
     def take_delivery(self, request, pk):
         delivery = self.get_object()
 
@@ -310,6 +318,7 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             return Response({'error': 'Delivery is already taken'}, status=400)
 
     @action(detail=True, methods=['post'], url_path='cancel')
+    @is_confirmed
     def cancel_delivery(self, request, pk):
         delivery = self.get_object()
         delivery_assignment = delivery.assignments.filter(volunteer=request.user).first()
@@ -321,6 +330,7 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             return Response({'error': 'You are not authorized to cancel this delivery'}, status=403)
 
     @action(detail=True, methods=['post'], url_path='complete')
+    @is_confirmed
     def complete_delivery(self, request, pk):
         delivery = self.get_object()
         if self.request.user != delivery.curator:
