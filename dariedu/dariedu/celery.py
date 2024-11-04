@@ -45,17 +45,14 @@ app.conf.beat_schedule = {
     },
     'duplicate-tasks-every-friday': {
         'task': 'task_app.tasks.duplicate_tasks_for_next_week',
-        'schedule': crontab(),
-        # 'schedule': crontab(hour=0, minute=0, day_of_week='fri'),
+        'schedule': crontab(hour=0, minute=0, day_of_week='fri'),
     },
     'update-volunteer-stats-weekly': {
         'task': 'statistics_app.tasks.update_volunteer_stats',
-        'schedule': crontab(minute='*/3'),
-        # 'schedule': crontab(day_of_week=0, hour=0, minute=0),  # Каждое воскресенье в полночь
+        'schedule': crontab(day_of_week=0, hour=0, minute=0),  # Каждое воскресенье в полночь
     },
     'update-volunteer-stats-monthly': {
         'task': 'statistics_app.tasks.update_volunteer_stats',
-        'schedule': crontab(minute='*/2'),
-        # 'schedule': crontab(day_of_month=1, hour=0, minute=0),  # Первое число каждого месяца в полночь
+        'schedule': crontab(day_of_month=1, hour=0, minute=0),  # Первое число каждого месяца в полночь
     },
 }
