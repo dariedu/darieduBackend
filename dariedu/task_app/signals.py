@@ -3,6 +3,7 @@ from django.dispatch import receiver
 
 from .models import DeliveryAssignment, Task
 from .tasks import send_message_to_telegram
+from notifications_app.models import Notification
 
 
 @receiver(m2m_changed, sender=DeliveryAssignment.volunteer.through)
@@ -31,3 +32,11 @@ def send_message_to_telegram_on_volunteer_signup(sender, instance, action, **kwa
     if action == 'post_add':
         task_id = instance.id
         send_message_to_telegram.delay(task_id)
+        user = instance.volunteers.first()
+        notification = Notification.objects.create(
+            title='Запись на выполнение Доброго дела',
+            text=f'Волонтер {user.tg_username} записался на выполнение Доброго дела '
+                 f'"{instance.name}"!',
+            obj_link=instance.get_absolute_url(),
+        )
+        notification.save()

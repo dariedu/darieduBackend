@@ -1,12 +1,12 @@
 from datetime import timedelta
-
 from django.dispatch import receiver
 from django.utils import timezone
-from django.db.models.signals import post_save
-
+from django.db.models.signals import post_save, m2m_changed
 from django_celery_beat.models import PeriodicTask, CrontabSchedule
 
-from .models import Promotion
+from .models import Promotion, Participation
+from notifications_app.models import Notification
+from .tasks import send_message_to_telegrams
 
 
 @receiver(post_save, sender=Promotion)
@@ -26,3 +26,20 @@ def signal_for_promo_tickets(sender, instance, created, **kwargs):
             task='promo_app.tasks.event_start_promotion',
             args=[instance.pk]
         )
+
+
+@receiver(post_save, sender=Participation)
+def signal_for_promo_users(sender, instance, created, **kwargs):
+    if created:
+        user = instance.user
+        print(user)
+        name = instance.promotion.name
+        notification = Notification.objects.create(
+            title='Запись на Поощрение',
+            text=f'Волонтер {user.tg_username} записался на поощрение '
+                 f'"{name}"!',
+            obj_link=instance.promotion.get_absolute_url(),
+        )
+        notification.save()
+        if instance.promotion.contact_person:
+            send_message_to_telegrams.apply_async(args=[instance.promotion.id])

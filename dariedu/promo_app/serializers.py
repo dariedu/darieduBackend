@@ -17,6 +17,7 @@ class PromotionSerializer(serializers.ModelSerializer):
     category = PromoCategorySerializer(read_only=True)
     city = CitySerializer(read_only=True)
     address = serializers.CharField(max_length=255, allow_blank=True, required=False)
+    contact_person = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Promotion

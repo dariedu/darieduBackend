@@ -47,9 +47,10 @@ class DeliveryAssignmentSerializer(serializers.ModelSerializer):
 
 
 class LocationShortSerializer(serializers.ModelSerializer):
+    city = CitySerializer(read_only=True)
     class Meta:
         model = Location
-        fields = ['id', 'address', 'link', 'subway', 'description']
+        fields = ['id', 'address', 'link', 'subway', 'city', 'description']
 
 
 class DeliverySerializer(serializers.ModelSerializer):
@@ -61,11 +62,3 @@ class DeliverySerializer(serializers.ModelSerializer):
         model = Delivery
         fields = ['id', 'date', 'curator', 'price', 'is_free', 'is_active', 'location',
                   'is_completed', 'in_execution', 'volunteers_needed', 'volunteers_taken']
-
-
-# class DeliveryVolunteerSerializer(serializers.ModelSerializer):
-#
-#     class Meta:
-#         model = Delivery
-#         fields = ['id', 'date', 'curator', 'price', 'is_free', 'is_active',
-#                   'is_completed', 'in_execution', 'volunteers_needed', 'volunteers_taken']

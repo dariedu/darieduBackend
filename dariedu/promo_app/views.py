@@ -17,8 +17,9 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
     """Curators can see all available promotions, users can see only his"""
     queryset = Promotion.objects.all()
     serializer_class = PromotionSerializer
-    filterset_fields = ['category', 'city', 'start_date', 'is_active']
+    filterset_fields = ['category', 'city', 'is_active']
     ordering_fields = ['start_date', 'price']
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         """Curator can see all active promotions, user can see only his"""
@@ -34,6 +35,35 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
                 return Promotion.objects.filter(is_active=True, for_curators_only=False).filter(
                     models.Q(is_permanent=True) | models.Q(end_date__gte=now)).exclude(pk__in=promotions)
 
+        if self.action == 'get_my_promotions':
+            user = self.request.user
+            participations = Participation.objects.filter(user=user)
+            promotions = [participation.promotion.pk for participation in participations]
+            queryset = Promotion.objects.filter(pk__in=promotions)
+
+            after = self.request.query_params.get('after', None)
+            before = self.request.query_params.get('before', None)
+            is_active = self.request.query_params.get('is_active', None)
+            if after:
+                try:
+                    after = timezone.datetime.strptime(after, '%Y-%m-%d')
+                    queryset = queryset.filter(models.Q(is_permanent=True) | models.Q(end_date__date__gte=after))
+                except ValueError:
+                    pass
+            if before:
+                try:
+                    before = timezone.datetime.strptime(before, '%Y-%m-%d')
+                    queryset = queryset.filter(start_date__date__lte=before)
+                except ValueError:
+                    pass
+            if is_active:
+                try:
+                    is_active = bool(int(is_active))
+                    queryset = queryset.filter(is_active=is_active)
+                except ValueError:
+                    pass
+            return queryset
+
     @action(detail=True, methods=['post'], url_path='redeem')
     def redeem_promotion(self, request, pk):
         """
@@ -42,29 +72,21 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
         promotion = get_object_or_404(Promotion, pk=pk)
         user = request.user
 
-        # Проверка доступности поощрения
         if promotion.available_quantity <= 0:
             return Response({'error': 'Это поощрение недоступно'}, status=400)
-
-        # Проверка достаточности баллов у волонтёра
         if user.point < promotion.price:
             return Response({'error': 'Недостаточно баллов для приобретения'}, status=400)
-
-        # Проверяем, что волонтер еще не приобрел этот поощрение
         if Participation.objects.filter(user=user, promotion=promotion).exists():
             return Response({'error': 'Вы уже приобрели этот поощрение'}, status=400)
 
-        # Уменьшение количества баллов на стоимость поощрения
         user.point -= promotion.price
         user.save()
 
         serializer = PromotionSerializer(instance=promotion, context={'view': self, 'request': request})
 
-        # Присвоение поощрения волонтёру через создание записи в Participation
         try:
             Participation.objects.create(user=user, promotion=promotion)
 
-            # Обновляем serializer для возврата актуальной информации
             serializer = PromotionSerializer(instance=promotion, context={'view': self, 'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -81,19 +103,13 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
         promotion = get_object_or_404(Promotion, pk=pk)
         user = request.user
 
-        # Найти запись Participation, если она существует
         participation = Participation.objects.filter(user=user, promotion=promotion).first()
         if not participation:
             return Response({'error': 'У вас нет этого поощрения'}, status=400)
 
-        # Возврат баллов волонтёру
         user.point += promotion.price
         user.save()
-
-        # Удаляем запись о получении поощрения
         participation.delete()
-
-        # Обновляем serializer для возврата актуальной информации
         serializer = PromotionSerializer(instance=promotion, context={'view': self, 'request': request})
 
         try:
@@ -115,13 +131,19 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
     @action(detail=False, methods=['get'], url_path='my_promo')
     def get_my_promotions(self, request):
         """
-        Вывод взятых активных поощрений
+        Вывод взятых поощрений
+        фильтры:
+        after - начало периода
+        before - конец периода
+        is_active - активные поощрения
+        Календарь поощрений, взятых пользователем
+        Пример: api/promotions/my_promo/?after=2024-10-05&before=2024-10-20
+        Формат даты: YYYY-MM-DD
+        можно использовать вместе или по отдельности
         """
-        user = request.user
-        participations = Participation.objects.filter(user=user)
-        promotions = [participation.promotion for participation in participations]
+        queryset = self.get_queryset()
 
-        serializer = self.get_serializer(promotions, many=True)
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

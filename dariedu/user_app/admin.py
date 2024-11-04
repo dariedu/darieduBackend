@@ -49,6 +49,7 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
         'phone',
         'rating',
         'volunteer_hour',
+        "photo_view",
         'point',
         'is_superuser',
         'is_staff',
@@ -59,6 +60,7 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
         'metier',
         'consent_to_personal_data',
     )
+    list_editable = ('is_confirmed',)
     list_filter = (
         'city',
         'is_superuser',
@@ -79,7 +81,8 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
             "birthday",
             "is_adult",
             'is_confirmed',  # confirmed редактирование поля
-            "photo",  # TODO: add preview
+            "photo",
+            "photo_view",
             "volunteer_hour",
             "point",
             "email",

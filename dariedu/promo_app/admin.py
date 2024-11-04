@@ -78,6 +78,7 @@ class PromotionAdmin(BaseAdmin, ExportActionMixin):
         'description_short',
         'city',
         'display_volunteers',
+        'contact_person',
     )
     fields = (
         'name',
@@ -96,6 +97,7 @@ class PromotionAdmin(BaseAdmin, ExportActionMixin):
         'ticket_file',
         'about_tickets',
         'picture',
+        'contact_person',
     )
     inlines = [UsersInline, ]
     list_filter = ('is_active', 'city', 'category', 'for_curators_only', 'available_quantity', 'start_date')

@@ -16,11 +16,13 @@ class RegistrationSerializer(serializers.ModelSerializer):
             'surname',
             'phone',
             'photo',
+            'photo_view',
             'birthday',
             'is_adult',
             'city',
             'consent_to_personal_data'
         )
+        read_only_fields = ('photo_view',)
 
 
 class TelegramDataSerializer(serializers.Serializer):
