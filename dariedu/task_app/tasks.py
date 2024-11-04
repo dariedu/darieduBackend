@@ -196,8 +196,6 @@ def duplicate_tasks_for_next_week():
     # Задачи текущей недели
     tasks_to_duplicate = Task.objects.filter(
         start_date__range=(today, end_of_week),
-        is_active=True,
-        is_completed=False
     )
 
     # Копии задач на следующую неделю
