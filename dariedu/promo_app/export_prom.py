@@ -1,9 +1,14 @@
+from django.contrib.auth import get_user_model
+
 from import_export import resources
 from import_export.fields import Field
 from import_export.widgets import DateTimeWidget, ForeignKeyWidget, ManyToManyWidget
 
-from .models import User, PromoCategory
+from .models import PromoCategory
 from feedback_app.models import RequestMessage, Feedback
+
+
+User = get_user_model()
 
 
 class CombineResourcePromo(resources.ModelResource):

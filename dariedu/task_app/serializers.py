@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from address_app.models import Location
 from address_app.serializers import CitySerializer, CuratorSerializer
-from user_app.models import User
+
 from .models import Task, Delivery, DeliveryAssignment, TaskCategory
 
 

@@ -1,11 +1,15 @@
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 from django.utils.html import format_html
-from address_app.models import City
-from user_app.models import User
 from django.utils import timezone
+
+from address_app.models import City
+
+
+User = get_user_model()
 
 
 class Promotion(models.Model):

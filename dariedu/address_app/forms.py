@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import ModelChoiceField, Select
+from django.forms import ModelChoiceField
 
 from address_app.models import RouteSheet, Location
 import logging

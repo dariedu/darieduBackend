@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.contrib.auth import get_user_model
 from rest_framework import viewsets, mixins, generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -6,9 +7,12 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import User, Rating
+from .models import Rating
 from .serializers import UserSerializer, RatingSerializer, RegistrationSerializer, TelegramDataSerializer
 from google_drive import GoogleUser
+
+
+User = get_user_model()
 
 
 class RegistrationView(generics.CreateAPIView):

@@ -1,7 +1,11 @@
+from django.contrib.auth import get_user_model
+
 from rest_framework import serializers
 
-from user_app.models import User
 from .models import Address, Location, City, RouteSheet, Beneficiar
+
+
+User = get_user_model()
 
 
 class BeneficiarSerializer(serializers.ModelSerializer):

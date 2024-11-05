@@ -9,7 +9,7 @@ from rest_framework.decorators import action, api_view
 from rest_framework import status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from .models import Promotion, User, Participation, PromoCategory
+from .models import Promotion, Participation, PromoCategory
 from django.core.exceptions import ValidationError
 
 

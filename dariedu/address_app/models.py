@@ -1,8 +1,10 @@
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.html import format_html
 
-from user_app.models import User
+
+User = get_user_model()
 
 
 class City(models.Model):
