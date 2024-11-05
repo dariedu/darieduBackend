@@ -1,11 +1,15 @@
 from django.db import models
+from django.conf import settings
+from django.contrib import admin
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.utils.html import format_html
 
-from dariedu.settings import CURRENT_HOST
-from user_app.models import User
 from promo_app.models import Promotion
-from task_app.models import *
-from django.core.exceptions import ValidationError
+from task_app.models import Delivery, Task
+
+
+User = get_user_model()
 
 
 class RequestMessage(models.Model):
@@ -23,7 +27,7 @@ class RequestMessage(models.Model):
         return str(self.user)
 
     def get_absolute_url(self):
-        return f'{CURRENT_HOST}/admin/feedback_app/requestmessage/{self.id}/change/'
+        return f'{settings.CURRENT_HOST}/admin/feedback_app/requestmessage/{self.id}/change/'
 
     class Meta:
         verbose_name = 'заявка'
@@ -70,7 +74,7 @@ class Feedback(models.Model):
         return f"Отзыв от {self.user.name} {self.user.last_name}"
 
     def get_absolute_url(self):
-        return f'{CURRENT_HOST}/admin/feedback_app/feedback/{self.id}/change/'
+        return f'{settings.CURRENT_HOST}/admin/feedback_app/feedback/{self.id}/change/'
 
     class Meta:
         verbose_name = 'обратная связь'

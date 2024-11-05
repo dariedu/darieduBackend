@@ -22,7 +22,6 @@ services:
     ports:
       - "8000:8000"
     environment:
-
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${BACKEND_DB_PORT}/${DB_NAME}
     networks:
       - mynetwork

@@ -4,7 +4,6 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt ./
 COPY credentials.json ./
-COPY .env ./
 RUN pip install --upgrade pip
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -29,8 +28,3 @@ RUN useradd -ms /bin/bash celeryuser
 RUN chown -R celeryuser:celeryuser /usr/src/app
 
 USER celeryuser
-
-RUN python manage.py collectstatic --noinput
-
-
-CMD ["gunicorn", "dariedu.wsgi:application", "--bind", "0.0.0.0:8000"]

@@ -6,8 +6,6 @@ from django.utils.html import format_html
 from address_app.models import RouteSheet, City, Location
 from user_app.models import User
 
-from dariedu.settings import CURRENT_HOST
-
 
 class Delivery(models.Model):
     date = models.DateTimeField(verbose_name='дата доставки')

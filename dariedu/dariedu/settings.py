@@ -33,8 +33,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
-# TODO here is the secret key because JWT can not see it from env. To fix later
-# SECRET_KEY = 'django-insecure-i)0i=dqjw4esh4d20@&c(-l(4p9tj)@)08_9vxyc+#%u&33ef$'
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 
