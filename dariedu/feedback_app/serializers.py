@@ -1,7 +1,11 @@
-from attr.filters import exclude
+from django.contrib.auth import get_user_model
+
 from rest_framework import serializers
-from user_app.models import User
+
 from .models import Feedback, RequestMessage, PhotoReport
+
+
+User = get_user_model()
 
 
 class UserShortSerializer(serializers.ModelSerializer):

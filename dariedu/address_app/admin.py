@@ -9,17 +9,19 @@ from django.forms import ModelChoiceField
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.contrib.auth import get_user_model
 from import_export.admin import ImportExportModelAdmin
 from unfold.admin import ModelAdmin, TabularInline
 from unfold.contrib.import_export.forms import ImportForm, SelectableFieldsExportForm
 from unfold.decorators import action
 
-from user_app.models import User
 from .forms import AddToRouteSheetForm, AddToLocationForm
 from .models import Address, Beneficiar, City, Location, RouteSheet
 
 
 logging.basicConfig(level=logging.INFO)
+
+User = get_user_model()
 
 
 class BaseAdmin(ModelAdmin, ImportExportModelAdmin):

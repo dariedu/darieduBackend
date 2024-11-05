@@ -1,9 +1,12 @@
 from django.db.models.signals import post_save
+from django.contrib.auth import get_user_model
 from django.dispatch import receiver
 from django.utils import timezone
 
 from notifications_app.models import Notification
-from user_app.models import User
+
+
+User = get_user_model()
 
 
 @receiver(post_save, sender=User)

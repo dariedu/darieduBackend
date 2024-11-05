@@ -1,8 +1,10 @@
-# import datetime
-from datetime import timedelta, datetime
 import json
-from pprint import pprint
 import requests
+
+from datetime import timedelta, datetime
+
+from pprint import pprint
+
 from celery import shared_task
 from django.conf import settings
 from celery.utils.log import get_task_logger

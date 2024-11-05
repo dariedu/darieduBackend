@@ -1,10 +1,14 @@
+from django.contrib.auth import get_user_model
+
 from import_export import resources
 from import_export.fields import Field
 from import_export.widgets import DateWidget
 
-from .models import User
 from task_app.models import Delivery, DeliveryAssignment, Task
 from feedback_app.models import RequestMessage, Feedback
+
+
+User = get_user_model()
 
 
 class CombineResource(resources.ModelResource):

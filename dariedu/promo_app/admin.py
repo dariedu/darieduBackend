@@ -1,23 +1,25 @@
 import datetime
+import zoneinfo
+
 from typing import Optional, Dict
 
 from django.contrib import admin
+from django.conf import settings
 from django.http import HttpRequest
 from django.template.response import TemplateResponse
+
 from import_export.admin import ExportActionMixin, ImportExportModelAdmin
+
 from unfold.admin import ModelAdmin
 from unfold.contrib.filters.admin import RangeDateFilter
 from unfold.contrib.import_export.forms import ImportForm, SelectableFieldsExportForm
 from unfold.decorators import action
 
-from dariedu.settings import TIME_ZONE
-import zoneinfo
-
 from .export_prom import CombineResourcePromo
 from .models import Promotion, PromoCategory
 
 
-ZONE = zoneinfo.ZoneInfo(TIME_ZONE)
+ZONE = zoneinfo.ZoneInfo(settings.TIME_ZONE)
 
 
 class BaseAdmin(ModelAdmin, ImportExportModelAdmin):

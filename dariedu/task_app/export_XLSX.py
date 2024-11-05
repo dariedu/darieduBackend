@@ -1,10 +1,15 @@
+from django.contrib.auth import get_user_model
+
 from import_export import resources
 from import_export.fields import Field
 from import_export.widgets import DateTimeWidget, BooleanWidget, ForeignKeyWidget
 
-from .models import Task, Delivery, User
+from .models import Task, Delivery
 from address_app.models import Location, RouteSheet, Address, Beneficiar
 from feedback_app.models import Feedback, PhotoReport
+
+
+User = get_user_model()
 
 
 class CombinedResource(resources.ModelResource):

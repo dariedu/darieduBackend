@@ -1,7 +1,12 @@
+from django.contrib.auth import get_user_model
+
 from rest_framework import serializers
 
 from address_app.serializers import CitySerializer
-from .models import User, Rating
+from .models import Rating
+
+
+User = get_user_model()
 
 
 class RegistrationSerializer(serializers.ModelSerializer):

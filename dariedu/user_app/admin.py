@@ -1,13 +1,19 @@
 from django.contrib import admin
+from django.contrib.auth import get_user_model
+
 from import_export.admin import ImportExportModelAdmin, ExportActionMixin
+
 from unfold.admin import ModelAdmin
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
 
 from .google_export import export_to_gs
-from user_app.models import User, Rating, Volunteer, Employee, Curator
+from user_app.models import Rating, Volunteer, Employee, Curator
 
 from .export import CombineResource
+
+
+User = get_user_model()
 
 
 class BaseAdmin(ModelAdmin, ImportExportModelAdmin):

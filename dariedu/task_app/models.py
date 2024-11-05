@@ -2,11 +2,12 @@ from django.urls import reverse
 from django.contrib import admin
 from django.db import models
 from django.utils.html import format_html
+from django.contrib.auth import get_user_model
 
 from address_app.models import RouteSheet, City, Location
-from user_app.models import User
 
-from dariedu.settings import CURRENT_HOST
+
+User = get_user_model()
 
 
 class Delivery(models.Model):

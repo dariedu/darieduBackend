@@ -1,10 +1,11 @@
 import json
+import requests
+
 from datetime import datetime, timedelta
 from pprint import pprint
 from django.utils import timezone
 from django.conf import settings
 
-import requests
 from celery import shared_task
 
 from .models import Promotion

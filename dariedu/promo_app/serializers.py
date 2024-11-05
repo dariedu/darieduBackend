@@ -2,7 +2,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from address_app.serializers import CitySerializer
 from .models import Promotion, PromoCategory, Participation
-from user_app.models import User
 
 
 class PromoCategorySerializer(serializers.ModelSerializer):
