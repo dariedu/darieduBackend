@@ -130,9 +130,9 @@ class VolunteerInline(admin.TabularInline):
     extra = 0
 
     can_delete = False
-    formfield_overrides = {
-        models.ManyToManyField: {'widget': forms.CheckboxSelectMultiple},
-    }
+    # formfield_overrides = {
+    #     models.ManyToManyField: {'widget': forms.CheckboxSelectMultiple},
+    # }
 
 
 @admin.register(Delivery)
@@ -178,7 +178,6 @@ class DeliveryAdmin(BaseAdmin, ExportActionMixin):
         'route_sheet',
     )
     list_editable = ('is_active', 'is_completed', 'in_execution', 'is_free', 'volunteers_needed')
-
     inlines = [VolunteerInline, ]
 
     @action(description="Копировать")
