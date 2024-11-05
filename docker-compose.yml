@@ -16,7 +16,6 @@ services:
     volumes:
       - static_volume:/home/app/web/staticfiles
       - ./dariedu:/app
-      - ./credentials.json:/app/credentials.json
       - ./static:/static
       - ./media:/media
     ports:
@@ -37,7 +36,6 @@ services:
       - redis
     volumes:
       - ./dariedu:/app
-      - ./credentials.json:/app/credentials.json
     networks:
       - mynetwork
 
@@ -52,7 +50,6 @@ services:
       - redis
     volumes:
       - ./dariedu:/app
-      - ./credentials.json:/app/credentials.json
     networks:
       - mynetwork
 
