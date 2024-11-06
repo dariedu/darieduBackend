@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'feedback_app.apps.FeedbackAppConfig',
     'stories_app',
     'notifications_app',
+    'statistics_app',
 
     'django.contrib.postgres',
     'rest_framework',

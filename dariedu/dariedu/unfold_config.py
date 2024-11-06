@@ -250,6 +250,20 @@ UNFOLD_CONFIG = {
 
                     ],
                 },
+                {
+                    "title": _("Статистика"),
+                    "separator": True,
+                    "collapsible": True,
+                    "items": [
+                        {
+                            "title": _("Статистика по волонтерам"),
+                            "icon": "request_quote",
+                            "link": reverse_lazy("admin:statistics_app_volunteerstats_changelist"),
+                            # "badge": "main admin",
+                            "permission": lambda request: request.user.is_superuser,
+                        },
+                    ]
+                }
             ],
         },
     }
