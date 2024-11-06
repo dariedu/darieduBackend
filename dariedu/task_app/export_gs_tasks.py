@@ -25,13 +25,20 @@ def export_to_google_tasks(user_id, task_id):
     user = User.objects.get(id=user_id)
     tg_username = user.tg_username
     tg_id = user.tg_id
+    last_name = User.objects.get(id=user_id).last_name
+    name = User.objects.get(id=user_id).name[0]
+    surname = User.objects.get(id=user_id).surname[0]
+    data_user = f"{last_name} {name}.{surname}. ({tg_username})"
+
     task_name = Task.objects.get(id=task_id).name
-    task_date = Task.objects.get(id=task_id).end_date.strftime('%Y-%m-%d')
+    task_date = Task.objects.get(id=task_id).end_date.strftime('%d.%m.%Y')
+
     first_row_values = worksheet.row_values(1)
     values_list = worksheet3.row_values(1)
-    if tg_username in values_list:
+
+    if data_user in values_list:
         tg_username_index = values_list.index(
-            tg_username) + 1
+            data_user) + 1
         first_empty_row = next(
             (i for i, row in enumerate(worksheet3.get_all_values()) if row[tg_username_index - 1] == ''), None)
         if first_empty_row is None:
@@ -42,7 +49,7 @@ def export_to_google_tasks(user_id, task_id):
         worksheet3.update_cell(first_empty_row + 1, tg_username_index, new_value)
     else:
         next_column = len(values_list) + 1
-        worksheet3.update_cell(1, next_column, tg_username)
+        worksheet3.update_cell(1, next_column, data_user)
         worksheet3.append_row([None] * next_column)
         worksheet3.update_cell(2, next_column,
                                f"'{task_name}' {task_date}")
@@ -65,8 +72,13 @@ def export_to_google_tasks(user_id, task_id):
 def cancel_task_in_google_tasks(user_id, task_id):
     user = User.objects.get(id=user_id)
     tg_username = user.tg_username
+    last_name = User.objects.get(id=user_id).last_name
+    name = User.objects.get(id=user_id).name[0]
+    surname = User.objects.get(id=user_id).surname[0]
+    data_user = f"{last_name} {name}.{surname}. ({tg_username})"
+
     task_name = Task.objects.get(id=task_id).name
-    task_date = Task.objects.get(id=task_id).end_date.strftime('%Y-%m-%d')
+    task_date = Task.objects.get(id=task_id).end_date.strftime('%d.%m.%Y')
     name = f"{task_name} {task_date}"
     try:
         values_list = worksheet3.row_values(1)
@@ -74,8 +86,8 @@ def cancel_task_in_google_tasks(user_id, task_id):
         logging.error(f"SSL error occurred: {e}")
         return
 
-    if tg_username in values_list:
-        tg_username_index = values_list.index(tg_username) + 1
+    if data_user in values_list:
+        tg_username_index = values_list.index(data_user) + 1
         task_row_index = None
         for i, row in enumerate(worksheet3.get_all_values()):
             if row[tg_username_index - 1] == name:
@@ -97,18 +109,23 @@ def export_to_google_delivery(user_id, delivery_id):
     user = User.objects.get(id=user_id)
     tg_username = user.tg_username
     tg_id = user.tg_id
+    last_name = User.objects.get(id=user_id).last_name
+    name = User.objects.get(id=user_id).name[0]
+    surname = User.objects.get(id=user_id).surname[0]
+    data_user = f"{last_name} {name}.{surname}. ({tg_username})"
+
     moscow_tz = pytz.timezone('Europe/Moscow')
     local_time = Delivery.objects.get(id=delivery_id).date.astimezone(moscow_tz)
-    date_str = local_time.strftime('%Y-%m-%d')
+    date_str = local_time.strftime('%d.%m.%Y')
     time_str = local_time.strftime('%H:%M')
     subway = Delivery.objects.get(id=delivery_id).location.subway
 
     first_row_values = worksheet.row_values(1)
     values_list = worksheet2.row_values(1)
 
-    if tg_username in values_list:
+    if data_user in values_list:
         tg_username_index = values_list.index(
-            tg_username) + 1
+            data_user) + 1
         first_empty_row = next(
             (i for i, row in enumerate(worksheet2.get_all_values()) if row[tg_username_index - 1] == ''), None)
 
@@ -123,7 +140,7 @@ def export_to_google_delivery(user_id, delivery_id):
         worksheet2.update_cell(first_empty_row + 1, tg_username_index, new_value)
     else:
         next_column = len(values_list) + 1
-        worksheet2.update_cell(1, next_column, tg_username)
+        worksheet2.update_cell(1, next_column, data_user)
         worksheet2.append_row([None] * next_column)
         worksheet2.update_cell(2, next_column,
                                f"{date_str}, {time_str}, '{subway}'")
@@ -147,7 +164,12 @@ def export_to_google_delivery(user_id, delivery_id):
 def cancel_task_in_google_delivery(user_id, delivery_id):
     user = User.objects.get(id=user_id)
     tg_username = user.tg_username
-    date_str = Delivery.objects.get(id=delivery_id).date.strftime('%Y-%m-%d')
+    last_name = User.objects.get(id=user_id).last_name
+    name = User.objects.get(id=user_id).name[0]
+    surname = User.objects.get(id=user_id).surname[0]
+    data_user = f"{last_name} {name}.{surname}. ({tg_username})"
+
+    date_str = Delivery.objects.get(id=delivery_id).date.strftime('%d.%m.%Y')
     time_str = Delivery.objects.get(id=delivery_id).date.strftime('%H:%M')
     subway = Delivery.objects.get(id=delivery_id).location.subway
     list_data = f"{date_str}, {time_str}, '{subway}'"
@@ -158,8 +180,8 @@ def cancel_task_in_google_delivery(user_id, delivery_id):
         logging.error(f"SSL error occurred: {e}")
         return
 
-    if tg_username in values_list:
-        tg_username_index = values_list.index(tg_username) + 1
+    if data_user in values_list:
+        tg_username_index = values_list.index(data_user) + 1
         task_row_index = None
         for i, row in enumerate(worksheet2.get_all_values()):
             if row[tg_username_index - 1] == list_data:

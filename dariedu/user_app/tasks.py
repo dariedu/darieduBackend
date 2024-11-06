@@ -36,7 +36,7 @@ def export_to_google(user_id):
         'Отчество': user.surname,
         'Telegram ID': user.tg_id,
         'Город проживания': user.city.city if user.city else '',
-        'Дата рождения': user.birthday.strftime('%Y-%m-%d') if user.birthday else '',
+        'Дата рождения': user.birthday.strftime('%d.%m.%Y') if user.birthday else '',
         'Никнэйм': user.tg_username,
         'Номер телефона': user.phone,
         'Электронная почта': user.email,
@@ -76,7 +76,7 @@ def update_google_sheet(user_id):
         worksheet.update_cell(user_row_index, column_mapping['Telegram ID'], user.tg_id)
         worksheet.update_cell(user_row_index, column_mapping['Город проживания'], user.city.city if user.city else '')
         worksheet.update_cell(user_row_index, column_mapping['Дата рождения'],
-                              user.birthday.strftime('%Y-%m-%d') if user.birthday else '')
+                              user.birthday.strftime('%d.%m.%Y') if user.birthday else '')
         worksheet.update_cell(user_row_index, column_mapping['Никнэйм'], user.tg_username)
         worksheet.update_cell(user_row_index, column_mapping['Номер телефона'], user.phone)
         worksheet.update_cell(user_row_index, column_mapping['Электронная почта'], user.email)
