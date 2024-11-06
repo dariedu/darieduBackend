@@ -56,9 +56,9 @@ METIERS = (
 def export_to_gs(modeladmin, request, queryset):
     users = queryset.all()
     gc = gs
-    spreadsheet_url = os.getenv('SPREADSHEET_URL')
+    spreadsheet_url = os.getenv('SPREADSHEET_URL_ACTION')
     spreadsheet = gc.open_by_url(spreadsheet_url)
-    worksheet_name = os.getenv('WORKSHEET_NAME')
+    worksheet_name = os.getenv('WORKSHEET_NAME_ACTION')
     worksheet = spreadsheet.worksheet(worksheet_name)
     first_row_values = worksheet.row_values(1)
     existing_datas = worksheet.get_all_records()
