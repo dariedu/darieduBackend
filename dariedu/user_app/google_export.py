@@ -1,6 +1,5 @@
 import os
 from pprint import pprint
-
 from django.contrib.admin.actions import action
 
 from dariedu.gspread_config import gs
@@ -86,7 +85,7 @@ def export_to_gs(modeladmin, request, queryset):
             pprint(task_info)
 
             new_data = {
-                'Уровень': u.rating.level if u.rating else '',
+                'Рейтинг': u.rating.level if u.rating else '',
                 'Волонтёрский часов за всё время': u.volunteer_hour,
                 'Баллов на счету': u.point,
                 'Фамилия': u.last_name,
@@ -95,11 +94,11 @@ def export_to_gs(modeladmin, request, queryset):
                 'Telegram ID': u.tg_id,
                 'Город проживания': u.city.city if u.city else '',
                 'Дата рождения': u.birthday.strftime('%Y-%m-%d') if u.birthday else '',
-                'Имя пользователя в Telegram ': u.tg_username,
+                'Никнэйм ': u.tg_username,
                 'Номер телефона': u.phone,
                 'Электронная почта': u.email,
                 'Род деятельности': dict(METIERS).get(u.metier, ''),
-                'Хобби': u.interests,
+                'Интересы': u.interests,
                 'История доставок (дата, время и метро)': ';  '.join(delivery_info),
                 'История добрых дел': ';  '.join(task_info),
             }
@@ -137,7 +136,7 @@ def export_to_gs(modeladmin, request, queryset):
             # delivery_info = []
             pprint(info['deliveries'])
             data_to_append.append({
-                'Уровень': u.rating.level if u.rating else '',
+                'Рейтинг': u.rating.level if u.rating else '',
                 'Волонтёрский часов за всё время': u.volunteer_hour,
                 'Баллов на счету': u.point,
                 'Фамилия': u.last_name,
@@ -146,11 +145,11 @@ def export_to_gs(modeladmin, request, queryset):
                 'Telegram ID': u.tg_id,
                 'Город проживания': u.city.city if u.city else '',
                 'Дата рождения': u.birthday.strftime('%Y-%m-%d') if u.birthday else '',
-                'Имя пользователя в Telegram ': u.tg_username,
+                'Никнэйм ': u.tg_username,
                 'Номер телефона': u.phone,
                 'Электронная почта': u.email,
                 'Род деятельности': dict(METIERS).get(u.metier, ''),
-                'Хобби': u.interests,
+                'Интересы': u.interests,
                 'История доставок (дата, время и метро)': ', '.join(delivery_info),
                 'История добрых дел': ', '.join(task_info),
             })

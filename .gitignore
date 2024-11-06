@@ -2,7 +2,7 @@
 /venv/
 .idea/
 __pycache__/
-/credentials.json
+/dariedu/credentials.json
 
 # Google drive
 client_secrets.json
