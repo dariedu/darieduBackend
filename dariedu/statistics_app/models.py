@@ -7,7 +7,7 @@ User = get_user_model()
 
 class VolunteerStats(models.Model):
     volunteer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='stats', verbose_name="Волонтер")
-    week = models.PositiveIntegerField(verbose_name="Номер недели")
+    week = models.PositiveIntegerField(verbose_name="Неделя")
     month = models.PositiveIntegerField(verbose_name="Месяц", default=datetime.now().month)
     year = models.PositiveIntegerField(verbose_name="Год")
     hours = models.PositiveIntegerField(default=0, verbose_name="Часы")
