@@ -36,7 +36,7 @@ class TaskVolunteerSerializer(serializers.ModelSerializer):
         extends = ['volunteers']
         read_only_fields = [
             'id', 'category', 'name', 'volunteer_price', 'curator_price', 'description', 'start_date', 'end_date',
-            'volunteers_needed', 'is_active', 'is_completed', 'curator', 'volunteers'
+            'volunteers_needed', 'is_active', 'is_completed', 'curator',
         ]
 
 
