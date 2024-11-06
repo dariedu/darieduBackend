@@ -1,10 +1,12 @@
 import os
 from pprint import pprint
 from celery import shared_task
+import subprocess
+from datetime import datetime, timedelta
 
 from dariedu.gspread_config import gs
-from task_app.models import Delivery, Task
 from user_app.models import User
+from django.conf import settings
 
 
 METIERS = (
@@ -85,3 +87,44 @@ def update_google_sheet(user_id):
                               user.interests if user.interests else 'Нет интересов')
     else:
         export_to_google.delay(user_id)
+
+
+@shared_task
+def backup_database():
+    db_name = settings.DATABASES['default']['NAME']
+    db_user = settings.DATABASES['default']['USER']
+    db_host = settings.DATABASES['default']['HOST']
+    db_password = settings.DATABASES['default']['PASSWORD']
+    backup_dir = settings.BACKUP_DIR
+
+    if not os.path.exists(backup_dir):
+        os.makedirs(backup_dir)
+        print(f'Created backup directory: {backup_dir}')
+
+    date = datetime.now().strftime('%Y%m%d%H%M')
+    backup_file = os.path.join(backup_dir, f'backup_{date}.sql')
+    os.environ['PGPASSWORD'] = db_password
+    command = f'pg_dump -U {db_user} -h {db_host} -d {db_name} > {backup_file}'
+
+    try:
+        subprocess.run(command, shell=True, check=True)
+        print(f'Successfully created backup: {backup_file}')
+    except subprocess.CalledProcessError as e:
+        print(f'Error occurred while creating backup: {e}')
+
+    delete_old_backups(backup_dir)
+    del os.environ['PGPASSWORD']
+
+
+def delete_old_backups(backup_dir):
+    expiration_time = datetime.now() - timedelta(days=7)
+
+    for filename in os.listdir(backup_dir):
+        file_path = os.path.join(backup_dir, filename)
+
+        if os.path.isfile(file_path):
+            file_mod_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+
+            if file_mod_time < expiration_time:
+                os.remove(file_path)
+                print(f'Deleted old backup: {file_path}')

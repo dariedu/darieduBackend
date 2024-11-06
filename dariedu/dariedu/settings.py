@@ -52,6 +52,7 @@ ALLOWED_HOSTS = [
 CURRENT_HOST = 'https://skillfactory.dariedu.site'
 # CURRENT_HOST = '127.0.0.1:8000'
 
+BACKUP_DIR = os.path.join(BASE_DIR, 'backups/')
 
 SITE_ID = 1
 # Application definition
