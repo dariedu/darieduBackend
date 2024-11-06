@@ -36,7 +36,7 @@ def create_user(sender, instance, created, **kwargs):
 def create_users(sender, instance, created, **kwargs):
     if created:
         user_id = instance.id
-        export_to_google.delay(user_id)
+        export_to_google.apply_async(args=[user_id], countdown=10)
     else:
         user_id = instance.id
-        update_google_sheet.delay(user_id)
+        update_google_sheet.apply_async(args=[user_id], countdown=15)
