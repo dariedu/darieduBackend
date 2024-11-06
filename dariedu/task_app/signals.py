@@ -50,7 +50,7 @@ def create_task(sender, instance, action, **kwargs):
         if instance.volunteers.exists():
             task_id = instance.id
             user_id = instance.volunteers.first().id
-            export_to_google_tasks.apply_async(args=[user_id, task_id], countdown=60)
+            export_to_google_tasks.apply_async(args=[user_id, task_id], countdown=30)
     if action == 'post_remove':
         removed_volunteers = kwargs.get('pk_set', set())
         for user_id in removed_volunteers:
@@ -62,7 +62,7 @@ def create_delivery_assignment(sender, instance, action, **kwargs):
     if action == 'post_add':
         delivery_id = instance.delivery.id
         user_id = instance.volunteer.first().id
-        export_to_google_delivery.delay(user_id, delivery_id)
+        export_to_google_delivery.apply_async(args=[user_id, delivery_id], countdown=30)
     if action == 'post_remove':
         removed_volunteers = kwargs.get('pk_set', set())
         for user_id in removed_volunteers:
