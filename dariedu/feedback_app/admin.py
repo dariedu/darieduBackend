@@ -1,15 +1,15 @@
+import zoneinfo
+
 from django.contrib import admin
+from django.conf import settings
 from import_export.forms import ImportForm
 from unfold.admin import ModelAdmin
 from unfold.contrib.import_export.forms import SelectableFieldsExportForm
 
-from dariedu.settings import TIME_ZONE
-import zoneinfo
-
 from .models import Feedback, RequestMessage, PhotoReport
 
 
-ZONE = zoneinfo.ZoneInfo(TIME_ZONE)
+ZONE = zoneinfo.ZoneInfo(settings.TIME_ZONE)
 
 
 class BaseAdmin(ModelAdmin):

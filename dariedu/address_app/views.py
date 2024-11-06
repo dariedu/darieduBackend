@@ -1,12 +1,12 @@
 import logging
 
+from django.contrib.auth import get_user_model
 from django.shortcuts import render
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from user_app.models import User
 from user_app.serializers import UserSerializer
 from .models import Address, Location, City, RouteSheet, Beneficiar
 from .serializers import (
@@ -18,6 +18,8 @@ from .serializers import (
 )
 
 logging.basicConfig(level=logging.INFO)
+
+User = get_user_model()
 
 
 class LocationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):

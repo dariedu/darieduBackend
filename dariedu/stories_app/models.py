@@ -1,6 +1,5 @@
 from django.db import models
-
-from dariedu import settings
+from django.conf import settings
 
 
 class Stories(models.Model):

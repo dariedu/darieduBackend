@@ -1,11 +1,12 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
-from .models import RequestMessage
-from notifications_app.models import Notification
 from django.conf import settings
 from django.core.mail import send_mail
-from .models import Feedback
+
+from .models import RequestMessage, Feedback
+
+from notifications_app.models import Notification
 
 
 @receiver(post_save, sender=RequestMessage)

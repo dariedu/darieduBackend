@@ -1,11 +1,15 @@
 from django.db import models
+from django.conf import settings
+from django.contrib import admin
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.utils.html import format_html
 
-from dariedu.settings import CURRENT_HOST
-from user_app.models import User
 from promo_app.models import Promotion
-from task_app.models import *
-from django.core.exceptions import ValidationError
+from task_app.models import Delivery, Task
+
+
+User = get_user_model()
 
 
 class RequestMessage(models.Model):
@@ -23,7 +27,7 @@ class RequestMessage(models.Model):
         return str(self.user)
 
     def get_absolute_url(self):
-        return f'{CURRENT_HOST}/admin/feedback_app/requestmessage/{self.id}/change/'
+        return f'{settings.CURRENT_HOST}/admin/feedback_app/requestmessage/{self.id}/change/'
 
     class Meta:
         verbose_name = 'заявка'
@@ -59,18 +63,23 @@ class Feedback(models.Model):
             raise ValidationError("Для обратной связи о доставке необходимо указать доставку.")
         if self.type == 'promotion' and not self.promotion:
             raise ValidationError("Для обратной связи о поощрении необходимо указать поощрение.")
+        if self.type == 'task' and not self.task:
+            raise ValidationError("Для обратной связи о доброе дело необходимо указать доброе дело.")
         if self.delivery and self.promotion:
-            raise ValidationError("Обратная связь может быть связана только с одной моделью: либо доставка, либо поощрение.")
+            raise ValidationError("Обратная связь может быть связана только с одной моделью: "
+                                  "либо доставка, либо поощрение, либо доброе дело.")
 
     def __str__(self):
         if self.type == 'delivery':
             return f"Обратная связь о доставке {self.delivery} от {self.user.name} {self.user.last_name}"
         elif self.type == 'promotion':
             return f"Обратная связь о поощрении {self.promotion} от {self.user.name} {self.user.last_name}"
+        elif self.type == 'task':
+            return f"Обратная связь о доброе дело {self.task} от {self.user.name} {self.user.last_name}"
         return f"Отзыв от {self.user.name} {self.user.last_name}"
 
     def get_absolute_url(self):
-        return f'{CURRENT_HOST}/admin/feedback_app/feedback/{self.id}/change/'
+        return f'{settings.CURRENT_HOST}/admin/feedback_app/feedback/{self.id}/change/'
 
     class Meta:
         verbose_name = 'обратная связь'

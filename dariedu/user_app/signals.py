@@ -1,10 +1,13 @@
 from django.db.models.signals import post_save
+from django.contrib.auth import get_user_model
 from django.dispatch import receiver
 from django.utils import timezone
 
 from notifications_app.models import Notification
-from user_app.models import User
 from user_app.tasks import export_to_google, update_google_sheet
+
+
+User = get_user_model()
 
 
 @receiver(post_save, sender=User)

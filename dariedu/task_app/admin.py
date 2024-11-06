@@ -1,31 +1,32 @@
 import datetime
+import zoneinfo
+
 from typing import Optional
 
 from django import forms
 from django.contrib import admin
+from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.db import models
 from django.db.models import ForeignKey
 from django.forms import ModelChoiceField
 from django.http import HttpRequest
-from import_export.admin import ImportExportModelAdmin
+
+from import_export.admin import ImportExportModelAdmin, ExportActionMixin
+
 from unfold.admin import ModelAdmin
 from unfold.contrib.filters.admin import RangeDateFilter
+from unfold.decorators import action
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
-
-from import_export.admin import ExportActionMixin
-from unfold.decorators import action
-
-from dariedu.settings import TIME_ZONE
-import zoneinfo
-
-from user_app.models import User
 
 from .export_XLSX import CombinedResource, CombinedResourceDelivery
 from .models import Delivery, Task, DeliveryAssignment, TaskCategory
 
 
-ZONE = zoneinfo.ZoneInfo(TIME_ZONE)
+User = get_user_model()
+
+ZONE = zoneinfo.ZoneInfo(settings.TIME_ZONE)
 
 
 class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
@@ -129,9 +130,9 @@ class VolunteerInline(admin.TabularInline):
     extra = 0
 
     can_delete = False
-    formfield_overrides = {
-        models.ManyToManyField: {'widget': forms.CheckboxSelectMultiple},
-    }
+    # formfield_overrides = {
+    #     models.ManyToManyField: {'widget': forms.CheckboxSelectMultiple},
+    # }
 
 
 @admin.register(Delivery)
@@ -177,7 +178,6 @@ class DeliveryAdmin(BaseAdmin, ExportActionMixin):
         'route_sheet',
     )
     list_editable = ('is_active', 'is_completed', 'in_execution', 'is_free', 'volunteers_needed')
-
     inlines = [VolunteerInline, ]
 
     @action(description="Копировать")
