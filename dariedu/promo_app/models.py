@@ -39,7 +39,8 @@ class Promotion(models.Model):
 
     city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='город')
     users = models.ManyToManyField(User, through='Participation', blank=True, verbose_name='получатель')
-    picture = models.ImageField(blank=True, null=True, verbose_name='картинка', help_text='Ширина 328px, высота 205px')
+    picture = models.ImageField(blank=True, null=True, upload_to='promo_pictures/', verbose_name='картинка',
+                                help_text='Ширина 328px, высота 205px')
     address = models.CharField(max_length=255, verbose_name='адрес', blank=True, null=True)
     contact_person = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='contact_persons',
                                        verbose_name='контактное лицо', blank=True, null=True)

@@ -30,16 +30,17 @@ class TaskSerializer(serializers.ModelSerializer):
 class TaskVolunteerSerializer(serializers.ModelSerializer):
     city = CitySerializer(read_only=True)
     category = TaskCategorySerializer(read_only=True)
+    curator = CuratorSerializer(read_only=True)
 
     class Meta:
         model = Task
         fields = [
-            'id', 'category', 'city', 'name', 'volunteer_price', 'curator_price', 'description', 'start_date', 'end_date',
-            'volunteers_needed', 'is_active', 'is_completed', 'curator',
+            'id', 'category', 'city', 'name', 'volunteer_price', 'curator_price', 'description',
+            'start_date', 'end_date', 'volunteers_needed', 'is_active', 'is_completed', 'curator',
         ]
         read_only_fields = [
-            'id', 'category', 'name', 'city', 'volunteer_price', 'curator_price', 'description', 'start_date', 'end_date',
-            'volunteers_needed', 'is_active', 'is_completed', 'curator',
+            'id', 'category', 'name', 'city', 'volunteer_price', 'curator_price', 'description',
+            'start_date', 'end_date', 'volunteers_needed', 'is_active', 'is_completed', 'curator',
         ]
 
 

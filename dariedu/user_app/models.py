@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.urls import reverse
 
 from .managers import UserManager
 
@@ -60,7 +61,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f'{self.name} {self.last_name}, ' + (f' {self.tg_username}' if self.tg_username else f'{self.tg_id}')
 
     def get_absolute_url(self):
-        return f'{settings.CURRENT_HOST}/admin/user_app/user/{self.pk}/change/'
+        return reverse('admin:user_app_user_change', args=[self.pk])
 
     def update_volunteer_hours(self, hours):
         self.volunteer_hour = hours
