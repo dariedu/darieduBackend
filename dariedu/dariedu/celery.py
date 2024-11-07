@@ -55,4 +55,8 @@ app.conf.beat_schedule = {
         'task': 'statistics_app.tasks.update_volunteer_stats',
         'schedule': crontab(day_of_month=1, hour=0, minute=0),  # Первое число каждого месяца в полночь
     },
+    'backup-database-every-day': {
+        'task': 'user_app.tasks.backup_database',
+        'schedule': crontab(hour='20', minute='52'),
+    },
 }
