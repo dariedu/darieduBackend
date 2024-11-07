@@ -256,9 +256,23 @@ UNFOLD_CONFIG = {
                     "collapsible": True,
                     "items": [
                         {
-                            "title": _("Статистика по волонтерам"),
+                            "title": _("Статистика по волонтерам за неделю"),
                             "icon": "request_quote",
-                            "link": reverse_lazy("admin:statistics_app_volunteerstats_changelist"),
+                            "link": reverse_lazy("admin:statistics_app_weeklyvolunteerstats_changelist"),
+                            # "badge": "main admin",
+                            "permission": lambda request: request.user.is_superuser,
+                        },
+                        {
+                            "title": _("Статистика по волонтерам за месяц"),
+                            "icon": "request_quote",
+                            "link": reverse_lazy("admin:statistics_app_monthlyvolunteerstats_changelist"),
+                            # "badge": "main admin",
+                            "permission": lambda request: request.user.is_superuser,
+                        },
+                        {
+                            "title": _("Сводная статистика за месяц"),
+                            "icon": "request_quote",
+                            "link": reverse_lazy("admin:statistics_app_consolidatedmonthlystats_changelist"),
                             # "badge": "main admin",
                             "permission": lambda request: request.user.is_superuser,
                         },
