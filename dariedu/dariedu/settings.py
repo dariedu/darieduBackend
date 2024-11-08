@@ -47,6 +47,7 @@ ALLOWED_HOSTS = [
     '95.163.185.57',
     'https://dariedufront.vercel.app/',
     'https://localhost:5173/',
+    'https://skillfactory.dariedu.site/',
 ] + [os.getenv('ALLOWED_HOSTS')]
 
 CURRENT_HOST = 'https://skillfactory.dariedu.site'
