@@ -211,13 +211,14 @@ class TaskViewSet(
 
         for volunteer in task.volunteers.all():
             volunteer.update_volunteer_hours(
-                hours=F('volunteer_hour') + task.volunteer_price,
-                point=F('point') + task.volunteer_price
+                hours=volunteer.volunteer_hour + task.volunteer_price,
+                point=volunteer.point + task.volunteer_price
             )
 
-        task.curator.update_volunteer_hours(
-            hours=F('volunteer_hour') + task.curator_price,
-            point=F('point') + task.curator_price
+        curator = task.curator
+        curator.update_volunteer_hours(
+            hours=curator.volunteer_hour + task.curator_price,
+            point=curator.point + task.curator_price
         )
 
         task.refresh_from_db()
@@ -352,13 +353,16 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 delivery.in_execution = False
                 delivery.is_active = False
                 delivery.is_free = False
-                delivery.curator.update_volunteer_hours(hours=F('volunteer_hour') + 4,
-                                                        point=F('point') + 4)
+                curator = delivery.curator
+                curator.update_volunteer_hours(hours=curator.volunteer_hour + 4,
+                                               point=curator.point + 4)
+                curator.save()
                 for assignment in delivery.assignments.all():
                     for volunteer in assignment.volunteer.all():
                         volunteer.update_volunteer_hours(
-                            hours=F('volunteer_hour') + delivery.price,
-                            point=F('point') + delivery.price
+                            hours=volunteer.volunteer_hour + delivery.price,
+                            point=volunteer.point + delivery.price
                         )
+                        volunteer.save()
                 delivery.save()
                 return Response({'message': 'Delivery completed successfully'}, status=200)
