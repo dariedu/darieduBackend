@@ -63,9 +63,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_absolute_url(self):
         return reverse('admin:user_app_user_change', args=[self.pk])
 
-    def update_volunteer_hours(self, hours):
+    def update_volunteer_hours(self, hours, point):
         self.volunteer_hour = hours
-        self.save(update_fields=['volunteer_hour'])
+        self.point = point
+        self.save(update_fields=['volunteer_hour', 'point'])
 
     def update_rating(self):
         new_rating = Rating.objects.filter(hours_needed__lte=self.volunteer_hour).order_by('-hours_needed').first()

@@ -209,13 +209,14 @@ class TaskViewSet(
         task.is_active = False
         task.save()
 
-        task.volunteers.all().update(
-            volunteer_hour=F('volunteer_hour') + task.volunteer_price,
-            point=F('point') + task.volunteer_price
-        )
+        for volunteer in task.volunteers.all():
+            volunteer.update_volunteer_hours(
+                hours=F('volunteer_hour') + task.volunteer_price,
+                point=F('point') + task.volunteer_price
+            )
 
-        task.curator.update(
-            volunteer_hour=F('volunteer_hour') + task.curator_price,
+        task.curator.update_volunteer_hours(
+            hours=F('volunteer_hour') + task.curator_price,
             point=F('point') + task.curator_price
         )
 
@@ -351,9 +352,13 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 delivery.in_execution = False
                 delivery.is_active = False
                 delivery.is_free = False
-                delivery.curator.update(volunteer_hour=F('volunteer_hour') + 4,
-                                        point=F('point') + 4)
-                delivery.assignments.volunteer.update(volunteer_hour=F('volunteer_hour') + delivery.price,
-                                                      point=F('point') + delivery.price)
+                delivery.curator.update_volunteer_hours(hours=F('volunteer_hour') + 4,
+                                                        point=F('point') + 4)
+                for assignment in delivery.assignments.all():
+                    for volunteer in assignment.volunteer.all():
+                        volunteer.update_volunteer_hours(
+                            hours=F('volunteer_hour') + delivery.price,
+                            point=F('point') + delivery.price
+                        )
                 delivery.save()
                 return Response({'message': 'Delivery completed successfully'}, status=200)
