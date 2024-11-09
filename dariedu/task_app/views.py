@@ -2,11 +2,9 @@ from django.db.models import F
 from django.utils import timezone
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .exceptions import BadRequest
 from .models import Task, Delivery, DeliveryAssignment, TaskCategory
 from .permissions import IsAbleCompleteTask, IsCurator, is_confirmed
 from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer, TaskVolunteerSerializer, \
@@ -245,7 +243,7 @@ class TaskViewSet(
         return Response(serializer.data)
 
 
-class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = Delivery.objects.all()
     serializer_class = DeliverySerializer
     permission_classes = [IsAuthenticated]
@@ -286,8 +284,8 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         completed_deliveries = self.get_queryset().filter(is_completed=True,
                                                           assignments__volunteer=request.user).distinct()
         free_serializer = self.get_serializer(free_deliveries, many=True)
-        active_serializer = self.get_serializer(active_deliveries, many=True)
-        completed_serializer = self.get_serializer(completed_deliveries, many=True)
+        active_serializer = self.get_serializer(active_deliveries, many=True, context={'is_volunteer_view': True})
+        completed_serializer = self.get_serializer(completed_deliveries, many=True, context={'is_volunteer_view': True})
         response_data = {
             'свободные доставки': free_serializer.data,
             'мои активные доставки': active_serializer.data,
@@ -299,13 +297,27 @@ class DeliveryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     @is_confirmed
     def deliveries_curator(self, request):
         total_deliveries = Delivery.objects.filter(in_execution=True)
-        id_deliveries = total_deliveries.values_list('id', flat=True)
         active_deliveries = Delivery.objects.filter(is_active=True)
-        id_active_deliveries = active_deliveries.values_list('id', flat=True)
+
+        executing_deliveries = []
+        for delivery in total_deliveries:
+            route_sheet_ids = [route.id for route in delivery.route_sheet.all()]
+            executing_deliveries.append({
+                "id_delivery": delivery.id,
+                "id_route_sheet": route_sheet_ids
+            })
+
+        active_deliveries_list = []
+        for delivery in active_deliveries:
+            route_sheet_ids = [route.id for route in delivery.route_sheet.all()]
+            active_deliveries_list.append({
+                "id_delivery": delivery.id,
+                "id_route_sheet": route_sheet_ids
+            })
 
         return Response({
-            'выполняются доставки (id)': id_deliveries,
-            'количество активных доставок (id)': id_active_deliveries,
+            'выполняются доставки': executing_deliveries,
+            'количество активных доставок': active_deliveries_list,
         })
 
     @action(detail=True, methods=['post'], url_path='take')
