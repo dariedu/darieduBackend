@@ -279,7 +279,7 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     @action(detail=False, methods=['get'], url_path='volunteer')
     def volunteer_deliveries(self, request):
         """
-        Пример фильтров для календаря: api/tasks/my/?after=2024-10-05&before=2024-10-20
+        Пример фильтров для календаря: api/deliveries/volunteer/?after=2024-10-05&before=2024-10-20
         Формат даты: YYYY-MM-DD
         можно использовать вместе или по отдельности
         """
