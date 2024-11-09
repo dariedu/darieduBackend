@@ -71,6 +71,6 @@ class DeliverySerializer(serializers.ModelSerializer):
     def get_route_sheet(self, obj):
         print(f"Checking route_sheet for Delivery ID: {obj.id}, in_execution: {obj.in_execution}")
         if self.context.get('is_volunteer_view', False):
-            if obj.in_execution:
+            if obj.in_execution or obj.is_completed:
                 return [route.id for route in obj.route_sheet.all()]
         return []
