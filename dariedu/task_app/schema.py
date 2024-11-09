@@ -85,7 +85,9 @@ class Fix2(OpenApiViewExtension):
                         status_codes=[str(status.HTTP_200_OK)],
                     ),
                 ],
-                description='Get volunteer deliveries'
+                description='Пример фильтров для календаря: '
+                            'api/deliveries/volunteer/?after=2024-10-05&before=2024-10-20. '
+                            'Формат даты: YYYY-MM-DD можно использовать вместе или по отдельности.'
             )
             def volunteer_deliveries(self, request):
                 return super().volunteer_deliveries(request)

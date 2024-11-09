@@ -278,20 +278,63 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
 
     @action(detail=False, methods=['get'], url_path='volunteer')
     def volunteer_deliveries(self, request):
+        """
+        Пример фильтров для календаря: api/tasks/my/?after=2024-10-05&before=2024-10-20
+        Формат даты: YYYY-MM-DD
+        можно использовать вместе или по отдельности
+        """
+        after = self.request.query_params.get('after', None)
+        before = self.request.query_params.get('before', None)
+
         free_deliveries = self.get_queryset().filter(is_free=True).exclude(
             assignments__volunteer=request.user).distinct()
         active_deliveries = self.get_queryset().filter(is_active=True, assignments__volunteer=request.user).distinct()
         completed_deliveries = self.get_queryset().filter(is_completed=True,
                                                           assignments__volunteer=request.user).distinct()
+
+        if after:
+            try:
+                after_date = timezone.datetime.strptime(after, '%Y-%m-%d')
+                active_deliveries = active_deliveries.filter(date__date__gte=after_date)
+                completed_deliveries = completed_deliveries.filter(date__date__gte=after_date)
+            except ValueError:
+                return Response({'error': 'Invalid date format for "after". Expected format: YYYY-MM-DD'}, status=400)
+
+        if before:
+            try:
+                before_date = timezone.datetime.strptime(before, '%Y-%m-%d')
+                active_deliveries = active_deliveries.filter(date__date__lte=before_date)
+                completed_deliveries = completed_deliveries.filter(date__date__lte=before_date)
+            except ValueError:
+                return Response({'error': 'Invalid date format for "before". Expected format: YYYY-MM-DD'}, status=400)
+
         free_serializer = self.get_serializer(free_deliveries, many=True)
         active_serializer = self.get_serializer(active_deliveries, many=True, context={'is_volunteer_view': True})
         completed_serializer = self.get_serializer(completed_deliveries, many=True, context={'is_volunteer_view': True})
+
         response_data = {
             'свободные доставки': free_serializer.data,
             'мои активные доставки': active_serializer.data,
             'мои завершенные доставки': completed_serializer.data
         }
         return Response(response_data)
+
+    # @action(detail=False, methods=['get'], url_path='volunteer')
+    # def volunteer_deliveries(self, request):
+    #     free_deliveries = self.get_queryset().filter(is_free=True).exclude(
+    #         assignments__volunteer=request.user).distinct()
+    #     active_deliveries = self.get_queryset().filter(is_active=True, assignments__volunteer=request.user).distinct()
+    #     completed_deliveries = self.get_queryset().filter(is_completed=True,
+    #                                                       assignments__volunteer=request.user).distinct()
+    #     free_serializer = self.get_serializer(free_deliveries, many=True)
+    #     active_serializer = self.get_serializer(active_deliveries, many=True, context={'is_volunteer_view': True})
+    #     completed_serializer = self.get_serializer(completed_deliveries, many=True, context={'is_volunteer_view': True})
+    #     response_data = {
+    #         'свободные доставки': free_serializer.data,
+    #         'мои активные доставки': active_serializer.data,
+    #         'мои завершенные доставки': completed_serializer.data
+    #     }
+    #     return Response(response_data)
 
     @action(detail=False, methods=['get'], url_path='curator')
     @is_confirmed
