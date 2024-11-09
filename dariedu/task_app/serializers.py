@@ -61,8 +61,16 @@ class DeliverySerializer(serializers.ModelSerializer):
     # delivery_assignments = DeliveryAssignmentSerializer(many=True, source='assignments')
     curator = CuratorSerializer(read_only=True)
     location = LocationShortSerializer(read_only=True)
+    route_sheet = serializers.SerializerMethodField()
 
     class Meta:
         model = Delivery
         fields = ['id', 'date', 'curator', 'price', 'is_free', 'is_active', 'location',
-                  'is_completed', 'in_execution', 'volunteers_needed', 'volunteers_taken']
+                  'is_completed', 'in_execution', 'volunteers_needed', 'volunteers_taken', 'route_sheet']
+
+    def get_route_sheet(self, obj):
+        print(f"Checking route_sheet for Delivery ID: {obj.id}, in_execution: {obj.in_execution}")
+        if self.context.get('is_volunteer_view', False):
+            if obj.in_execution or obj.is_completed:
+                return [route.id for route in obj.route_sheet.all()]
+        return []

@@ -20,6 +20,8 @@ class Fix2(OpenApiViewExtension):
                                      description="Filter by is_completed", required=False),
                     OpenApiParameter("volunteer", OpenApiTypes.INT, OpenApiParameter.QUERY,
                                      description="Filter by volunteer ID", required=False),
+                    OpenApiParameter("route_sheet", OpenApiTypes.INT, OpenApiParameter.QUERY,
+                                     description="Filter by route_sheet ID", required=False),
                 ],
                 summary="List deliveries",
                 operation_id="listDeliveries",
@@ -83,7 +85,9 @@ class Fix2(OpenApiViewExtension):
                         status_codes=[str(status.HTTP_200_OK)],
                     ),
                 ],
-                description='Get volunteer deliveries'
+                description='Пример фильтров для календаря: '
+                            'api/deliveries/volunteer/?after=2024-10-05&before=2024-10-20. '
+                            'Формат даты: YYYY-MM-DD можно использовать вместе или по отдельности.'
             )
             def volunteer_deliveries(self, request):
                 return super().volunteer_deliveries(request)
@@ -98,9 +102,23 @@ class Fix2(OpenApiViewExtension):
                         "Post example",
                         description="Example of obtaining a id of deliveries",
                         value={
-                            'выполняются доставки (id)': [1, 6, 25],
-                            'количество активных доставок (id)': [5, 32, 56, 78],
-                        },
+                              "выполняются доставки": [
+                                {
+                                  "id_delivery": 24,
+                                  "id_route_sheet": [
+                                    4, 7
+                                  ]
+                                }
+                              ],
+                              "количество активных доставок": [
+                                {
+                                  "id_delivery": 23,
+                                  "id_route_sheet": [
+                                    8, 9, 10
+                                  ]
+                                },
+                              ]
+                            },
                         status_codes=[str(status.HTTP_200_OK)],
                     ),
                 ],
