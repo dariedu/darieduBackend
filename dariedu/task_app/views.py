@@ -319,23 +319,6 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         }
         return Response(response_data)
 
-    # @action(detail=False, methods=['get'], url_path='volunteer')
-    # def volunteer_deliveries(self, request):
-    #     free_deliveries = self.get_queryset().filter(is_free=True).exclude(
-    #         assignments__volunteer=request.user).distinct()
-    #     active_deliveries = self.get_queryset().filter(is_active=True, assignments__volunteer=request.user).distinct()
-    #     completed_deliveries = self.get_queryset().filter(is_completed=True,
-    #                                                       assignments__volunteer=request.user).distinct()
-    #     free_serializer = self.get_serializer(free_deliveries, many=True)
-    #     active_serializer = self.get_serializer(active_deliveries, many=True, context={'is_volunteer_view': True})
-    #     completed_serializer = self.get_serializer(completed_deliveries, many=True, context={'is_volunteer_view': True})
-    #     response_data = {
-    #         'свободные доставки': free_serializer.data,
-    #         'мои активные доставки': active_serializer.data,
-    #         'мои завершенные доставки': completed_serializer.data
-    #     }
-    #     return Response(response_data)
-
     @action(detail=False, methods=['get'], url_path='curator')
     @is_confirmed
     def deliveries_curator(self, request):
