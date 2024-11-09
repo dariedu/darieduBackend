@@ -214,12 +214,14 @@ class TaskViewSet(
                 hours=volunteer.volunteer_hour + task.volunteer_price,
                 point=volunteer.point + task.volunteer_price
             )
+            volunteer.save()
 
         curator = task.curator
         curator.update_volunteer_hours(
             hours=curator.volunteer_hour + task.curator_price,
             point=curator.point + task.curator_price
         )
+        curator.save()
 
         task.refresh_from_db()
         serializer = self.get_serializer(task)

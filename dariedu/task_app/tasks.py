@@ -134,8 +134,19 @@ def complete_task(task_id):
     else:
         task.is_active = False
         task.is_completed = True
-        task.volunteers.update(volunteer_hours=F('volunteer_hours') + task.volunteer_price)
-        task.curator.volunteer_hours += task.curator_price
+        for volunteer in task.volunteers.all():
+            volunteer.update_volunteer_hours(
+                hours=volunteer.volunteer_hour + task.volunteer_price,
+                point=volunteer.point + task.volunteer_price
+            )
+            volunteer.save()
+
+        curator = task.curator
+        curator.update_volunteer_hours(
+            hours=curator.volunteer_hour + task.curator_price,
+            point=curator.point + task.curator_price
+        )
+        curator.save()
         task.save()
 
 
@@ -161,8 +172,17 @@ def complete_delivery(delivery_id):
         delivery.is_completed = True
         delivery.in_execution = False
         delivery.is_free = False
-        delivery.volunteers.update(volunteer_hours=F('volunteer_hours') + delivery.price)
-        delivery.curator.volunteer_hours += 4
+        curator = delivery.curator
+        curator.update_volunteer_hours(hours=curator.volunteer_hour + 4,
+                                       point=curator.point + 4)
+        curator.save()
+        for assignment in delivery.assignments.all():
+            for volunteer in assignment.volunteer.all():
+                volunteer.update_volunteer_hours(
+                    hours=volunteer.volunteer_hour + delivery.price,
+                    point=volunteer.point + delivery.price
+                )
+                volunteer.save()
         delivery.save()
 
 
