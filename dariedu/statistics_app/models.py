@@ -1,8 +1,8 @@
-from datetime import datetime
-from django.db import models
-from django.contrib.auth import get_user_model
-from django.db.models import Sum
 from django.utils import timezone
+from datetime import timedelta
+from django.db import models
+from django.db.models import Sum
+from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
@@ -21,11 +21,7 @@ class WeeklyVolunteerStats(models.Model):
     def __str__(self):
         return f'{self.volunteer.last_name} {self.volunteer.name} за {self.start_date} - {self.end_date}'
 
-    def save(self, *args, **kwargs):
-        # Считываем значения volunteer_hour и point для записи в статистику
-        self.hours = self.volunteer.volunteer_hour
-        self.points = self.volunteer.point
-        super().save(*args, **kwargs)
+
 
 
 class MonthlyVolunteerStats(models.Model):
@@ -58,6 +54,7 @@ class ConsolidatedMonthlyStats(models.Model):
 
     class Meta:
         verbose_name = "Сводная статистика"
+        verbose_name_plural = "Сводная статистика"
         unique_together = ('start_date', 'end_date')
 
     def __str__(self):
@@ -79,15 +76,3 @@ class ConsolidatedMonthlyStats(models.Model):
         consolidated_stat.total_points = stats['total_points'] or 0
         consolidated_stat.save()
 
-
-
-
-### Сигнал для автоматического обновления сводной статистики
-
-# Связываем с событием сохранения VolunteerStats, чтобы обновлять ConsolidatedStatistics
-# @receiver(post_save, sender=VolunteerStats)
-# def update_consolidated_statistics(sender, instance, **kwargs):
-#     """
-#     Сигнал для обновления сводной статистики после сохранения VolunteerStats.
-#     """
-#     ConsolidatedStatistics.update_statistics(month=instance.month, year=instance.year)

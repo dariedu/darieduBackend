@@ -47,8 +47,8 @@ app.conf.beat_schedule = {
         'task': 'task_app.tasks.duplicate_tasks_for_next_week',
         'schedule': crontab(hour=0, minute=0, day_of_week='fri'),
     },
-    'update-volunteer-stats-weekly': {
-        'task': 'statistics_app.tasks.update_volunteer_stats',
+    'collect_weekly_volunteer_stats': {
+        'task': 'statistics_app.tasks.collect_weekly_volunteer_stats',
         'schedule': crontab(day_of_week=0, hour=0, minute=0),  # Каждое воскресенье в полночь
     },
     'update-volunteer-stats-monthly': {
