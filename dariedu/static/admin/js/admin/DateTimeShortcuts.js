@@ -14,10 +14,10 @@
                 [gettext_noop('11:00'), 11],
                 [gettext_noop('12:00'), 12],
                 [gettext_noop('13:00'), 13],
-                [gettext_noop('14:00'), 14]
-                [gettext_noop('15:00'), 15]
-                [gettext_noop('16:00'), 16]
-                [gettext_noop('17:00'), 17]
+                [gettext_noop('14:00'), 14],
+                [gettext_noop('15:00'), 15],
+                [gettext_noop('16:00'), 16],
+                [gettext_noop('17:00'), 17],
                 [gettext_noop('18:00'), 18]
             ]
         },
