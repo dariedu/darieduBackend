@@ -1,8 +1,11 @@
 import os
-from pprint import pprint
 from celery import shared_task
 import subprocess
 from datetime import datetime, timedelta
+import time
+from gspread.exceptions import GSpreadException
+from django.core.cache import cache
+from requests.exceptions import SSLError
 
 from dariedu.gspread_config import gs
 from user_app.models import User
@@ -26,7 +29,6 @@ worksheet = spreadsheet.worksheet(worksheet_name)
 
 @shared_task
 def export_to_google(user_id):
-    first_row_values = worksheet.row_values(1)
     user = User.objects.get(id=user_id)
 
     data_to_append = [{
@@ -47,46 +49,85 @@ def export_to_google(user_id):
     }]
 
     if data_to_append:
+        first_row_values = cache.get(settings.FIRST_ROW_VALUES_CACHE_KEY)
+        print("First row values is from cache:", first_row_values)
+        if first_row_values is None:
+            first_row_values = worksheet.row_values(1)
+            print("First row values is from worksheet:", first_row_values)
+            cache.set(settings.FIRST_ROW_VALUES_CACHE_KEY, first_row_values,
+                      timeout=int(timedelta(days=1).total_seconds()))
+
         empty_row_index = len(worksheet.get_all_records()) + 1
         data_to_append_list = [[row.get(key, '') for key in first_row_values] for row in data_to_append]
-        pprint(data_to_append_list)
-        worksheet.append_rows(data_to_append_list, table_range=f'A{empty_row_index}')
+
+        print("Data to append:", data_to_append)
+        print("Data to append list:", data_to_append_list)
+        print("Empty row index:", empty_row_index)
+
+        try:
+            worksheet.append_rows(data_to_append_list, table_range=f'A{empty_row_index}')
+        except Exception as e:
+            print("Error while appending rows:", e)
 
 
 @shared_task
 def update_google_sheet(user_id):
-    first_row_values = worksheet.row_values(1)
-    existing_datas = worksheet.get_all_records()
-    column_mapping = {header: index + 1 for index, header in enumerate(first_row_values)}
+    first_row_values = cache.get(settings.FIRST_ROW_VALUES_CACHE_KEY)
+    if first_row_values is None:
+        first_row_values = worksheet.row_values(1)
+        cache.set(settings.FIRST_ROW_VALUES_CACHE_KEY, first_row_values, timeout=int(timedelta(days=1).total_seconds()))
+
+    existing_datas = None
+    retries = 3
+    for attempt in range(retries):
+        try:
+            existing_datas = worksheet.get_all_records()
+            break
+        except SSLError as e:
+            print(f"Attempt {attempt + 1} failed with SSLError: {e}")
+            if attempt < retries - 1:
+                time.sleep(2)
+            else:
+                raise
 
     user = User.objects.get(id=user_id)
     tg_id = user.tg_id
-    print('tg_id', tg_id)
     user_row_index = None
     for index, row in enumerate(existing_datas):
         if row.get('Telegram ID') == tg_id:
             user_row_index = index + 2
             break
 
+    user_data = [
+        user.rating.level if user.rating else '',
+        user.volunteer_hour,
+        user.point,
+        user.last_name,
+        user.name,
+        user.surname,
+        user.tg_id,
+        user.city.city if user.city else '',
+        user.birthday.strftime('%d.%m.%Y') if user.birthday else '',
+        user.tg_username,
+        user.phone,
+        user.email,
+        dict(METIERS).get(user.metier, ''),
+        user.interests if user.interests else 'Нет интересов'
+    ]
+
     if user_row_index is not None:
-        worksheet.update_cell(user_row_index, column_mapping['Рейтинг'], user.rating.level if user.rating else '')
-        worksheet.update_cell(user_row_index, column_mapping['Волонтёрский часов за всё время'], user.volunteer_hour)
-        worksheet.update_cell(user_row_index, column_mapping['Баллов на счету'], user.point)
-        worksheet.update_cell(user_row_index, column_mapping['Фамилия'], user.last_name)
-        worksheet.update_cell(user_row_index, column_mapping['Имя'], user.name)
-        worksheet.update_cell(user_row_index, column_mapping['Отчество'], user.surname)
-        worksheet.update_cell(user_row_index, column_mapping['Telegram ID'], user.tg_id)
-        worksheet.update_cell(user_row_index, column_mapping['Город проживания'], user.city.city if user.city else '')
-        worksheet.update_cell(user_row_index, column_mapping['Дата рождения'],
-                              user.birthday.strftime('%d.%m.%Y') if user.birthday else '')
-        worksheet.update_cell(user_row_index, column_mapping['Никнэйм'], user.tg_username)
-        worksheet.update_cell(user_row_index, column_mapping['Номер телефона'], user.phone)
-        worksheet.update_cell(user_row_index, column_mapping['Электронная почта'], user.email)
-        worksheet.update_cell(user_row_index, column_mapping['Род деятельности'], dict(METIERS).get(user.metier, ''))
-        worksheet.update_cell(user_row_index, column_mapping['Интересы'],
-                              user.interests if user.interests else 'Нет интересов')
+        try:
+            worksheet.update(f'A{user_row_index}:N{user_row_index}', [user_data])
+        except GSpreadException as e:
+            if e.response.status_code == 429:
+                print("Quota exceeded, retrying after a delay")
+                time.sleep(60)
+                update_google_sheet(user_id)
+            else:
+                raise
     else:
-        export_to_google.delay(user_id)
+        empty_row_index = len(existing_datas) + 2
+        worksheet.update(f'A{empty_row_index}:N{empty_row_index}', [user_data])
 
 
 @shared_task
@@ -128,3 +169,14 @@ def delete_old_backups(backup_dir):
             if file_mod_time < expiration_time:
                 os.remove(file_path)
                 print(f'Deleted old backup: {file_path}')
+
+
+@shared_task
+def delete_cached_gsheets():
+    cache.delete(settings.FIRST_ROW_VALUES_CACHE_KEY)
+    time.sleep(1)
+    cache.delete(settings.FIRST_ROW_VALUES_CACHE_KEY_2)
+    time.sleep(1)
+    cache.delete(settings.FIRST_ROW_VALUES_CACHE_KEY_3)
+    time.sleep(1)
+    cache.delete(settings.FIRST_ROW_VALUES_CACHE_KEY_4)

@@ -1,5 +1,8 @@
 import os
+from datetime import datetime, timedelta
 from celery import shared_task
+from django.conf import settings
+from django.core.cache import cache
 
 from dariedu.gspread_config import gs
 from .models import RequestMessage, Feedback
@@ -30,8 +33,11 @@ def export_to_google_feedback_user(feedback_id, user_id):
     surname = User.objects.get(id=user_id).surname[0]
     data_user = f"{last_name} {name}.{surname}. ({tg_username})"
 
-    first_row_values = worksheet.row_values(1)
-    values_list = worksheet4.row_values(1)
+    values_list = cache.get(settings.FIRST_ROW_VALUES_CACHE_KEY_4)
+    if values_list is None:
+        values_list = worksheet4.row_values(1)
+        cache.set(settings.FIRST_ROW_VALUES_CACHE_KEY_4, values_list,
+                  timeout=int(timedelta(days=1).total_seconds()))
 
     if data_user in values_list:
         tg_username_index = values_list.index(
@@ -56,6 +62,14 @@ def export_to_google_feedback_user(feedback_id, user_id):
         cell_address = f"{chr(65 + (next_column - 1))}1"
         cell_link = (f"https://docs.google.com/spreadsheets/d/"
                      f"{spreadsheet_id}/edit#gid={worksheet_id}&range={cell_address}")
+
+        first_row_values = cache.get(settings.FIRST_ROW_VALUES_CACHE_KEY)
+
+        if first_row_values is None:
+            first_row_values = worksheet.row_values(1)
+            cache.set(settings.FIRST_ROW_VALUES_CACHE_KEY, first_row_values,
+                      timeout=int(timedelta(days=1).total_seconds()))
+
         existing_datas = worksheet.get_all_records()
         column_mapping = {header: index + 1 for index, header in enumerate(first_row_values)}
         user_row_index = None
@@ -77,7 +91,12 @@ def export_to_google_request_message(request_id, user_id):
     date = RequestMessage.objects.get(id=request_id).date.strftime('%d.%m.%Y')
 
     existing_datas = worksheet.get_all_records()
-    first_row_values = worksheet.row_values(1)
+    first_row_values = cache.get(settings.FIRST_ROW_VALUES_CACHE_KEY)
+
+    if first_row_values is None:
+        first_row_values = worksheet.row_values(1)
+        cache.set(settings.FIRST_ROW_VALUES_CACHE_KEY, first_row_values,
+                  timeout=int(timedelta(days=1).total_seconds()))
 
     column_mapping = {header: index + 1 for index, header in enumerate(first_row_values)}
     user_row_index = None
