@@ -1,4 +1,5 @@
 from datetime import datetime
+from django_admin_filters import DateRange, DateRangePicker
 from django.contrib import admin
 from .models import *
 from rangefilter.filters import (
@@ -11,15 +12,41 @@ from rangefilter.filters import (
 
 User = get_user_model()
 
+class MyDateRange(DateRange):
+    FILTER_LABEL = "Интервал данных"
+    FROM_LABEL = "От"
+    TO_LABEL = "До"
+    ALL_LABEL = 'Все'
+    CUSTOM_LABEL = "пользовательский"
+    NULL_LABEL = "без даты"
+    BUTTON_LABEL = "Задать интервал"
+    DATE_FORMAT = "YYYY-MM-DD HH:mm"
 
+    is_null_option = True
 
+    options = (
+      ('1da', "24 часа вперед", 60 * 60 * 24),
+      ('1dp', "последние 24 часа", 60 * 60 * -24),
+    )
+
+class MyDateRangePicker(DateRangePicker):
+    WIDGET_LOCALE = 'ru'
+    WIDGET_BUTTON_LABEL = "Выбрать"
+    WIDGET_WITH_TIME = False
+    DATE_FORMAT = "DD-MM-YYYY"
+
+    WIDGET_START_TITLE = 'Начальная дата'
+    WIDGET_START_TOP = -350
+    # WIDGET_START_LEFT = -400
+
+    WIDGET_END_TITLE = 'Конечная дата'
+    WIDGET_END_TOP = -350
+    # WIDGET_END_LEFT = -400
 
 @admin.register(WeeklyVolunteerStats)
 class WeeklyVolunteerStatsAdmin(admin.ModelAdmin):
     list_display = ('volunteer_name', 'hours', 'points')
-    list_filter = (
-        ("start_date", DateRangeFilterBuilder()),
-    )
+    list_filter = (('start_date', MyDateRangePicker),)
     search_fields = ('volunteer__last_name', 'volunteer__name',)
     ordering = ('-hours',)  # Сортировка по убыванию часов
 
