@@ -1,32 +1,42 @@
-from datetime import datetime
 from django.contrib import admin
 from .models import *
-from rangefilter.filters import (
-    DateRangeFilterBuilder,
-    DateTimeRangeFilterBuilder,
-    NumericRangeFilterBuilder,
-    DateRangeQuickSelectListFilterBuilder,
-)
+from django.db.models import Sum
 
-
-User = get_user_model()
-
-
+@admin.register(Week)
+class WeekAdmin(admin.ModelAdmin):
+    list_display = ('__str__',)  # Диапазон дат недели
+    ordering = ('-start_date',)  # Сортировка по дате начала недели
 
 
 @admin.register(WeeklyVolunteerStats)
 class WeeklyVolunteerStatsAdmin(admin.ModelAdmin):
-    list_display = ('volunteer_name', 'hours', 'points')
-    list_filter = (
-        ("start_date", DateRangeFilterBuilder()),
-    )
-    search_fields = ('volunteer__last_name', 'volunteer__name',)
-    ordering = ('-hours',)  # Сортировка по убыванию часов
+    # Показываем волонтера, диапазон недели, часы и баллы
+    list_display = ('volunteer', 'week_range', 'hours', 'points')
 
-    def volunteer_name(self, obj):
-        return f'{obj.volunteer.last_name} {obj.volunteer.name}'
+    # Добавляем фильтрацию по дате начала недели, чтобы можно было выбрать нужные недели
+    date_hierarchy = 'start_date'
+    list_filter = ('start_date',)
+    ordering = ('-start_date',)
 
-    volunteer_name.short_description = 'Имя волонтера'
+    def week_range(self, obj):
+        """Метод для отображения диапазона недельной статистики."""
+        return f'{obj.start_date} – {obj.end_date}'
+    week_range.short_description = 'Неделя'
+
+
+# @admin.register(WeeklyVolunteerStats)
+# class WeeklyVolunteerStatsAdmin(admin.ModelAdmin):
+#     list_display = ('volunteer_name', 'hours', 'points')
+#     list_filter = (
+#         ("start_date", DateRangeFilterBuilder()),
+#     )
+#     search_fields = ('volunteer__last_name', 'volunteer__name',)
+#     ordering = ('-hours',)  # Сортировка по убыванию часов
+#
+#     def volunteer_name(self, obj):
+#         return f'{obj.volunteer.last_name} {obj.volunteer.name}'
+#
+#     volunteer_name.short_description = 'Имя волонтера'
 
 
 
@@ -38,10 +48,10 @@ class MonthlyVolunteerStatsAdmin(admin.ModelAdmin):
     search_fields = ('volunteer__last_name', 'volunteer__name',)
     ordering = ('-hours',)  # Сортировка по убыванию часов
 
-    # def volunteer_name(self, obj):
-    #     return f'{obj.volunteer.last_name} {obj.volunteer.name}'
-    #
-    # volunteer_name.short_description = 'Имя волонтера'
+    def volunteer_name(self, obj):
+        return f'{obj.volunteer.last_name} {obj.volunteer.name}'
+
+    volunteer_name.short_description = 'Имя волонтера'
 
 
 @admin.register(ConsolidatedMonthlyStats)

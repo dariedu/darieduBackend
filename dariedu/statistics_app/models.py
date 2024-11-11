@@ -6,6 +6,18 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+class Week(models.Model):
+    start_date = models.DateField(verbose_name="Дата начала недели")
+    end_date = models.DateField(verbose_name="Дата окончания недели")
+
+    class Meta:
+        verbose_name = "Неделя"
+        verbose_name_plural = "Недели"
+        ordering = ['-start_date']
+
+    def __str__(self):
+        return f"{self.start_date.strftime('%d.%m.%Y')} – {self.end_date.strftime('%d.%m.%Y')}"
+
 class WeeklyVolunteerStats(models.Model):
     volunteer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='weekly_stats', verbose_name="Волонтер")
     start_date = models.DateField(verbose_name="Дата начала недели")
