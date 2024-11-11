@@ -7,8 +7,9 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from task_app.models import Delivery
 from user_app.serializers import UserSerializer
-from .models import Address, Location, City, RouteSheet, Beneficiar
+from .models import Address, Location, City, RouteSheet, Beneficiar, RouteAssignment
 from .serializers import (
     AddressSerializer,
     LocationSerializer,
@@ -57,30 +58,41 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
     @action(detail=True, methods=['post'], url_name='assign_route')
     def assign(self, request, pk=None):
         """
-        Assign a routesheet by curator to a volunteer with id=volunteer_id
+        Assign a routesheet by curator to a volunteer with id=volunteer_id for delivery with id=delivery_id
         Body:
         {
-            "volunteer_id":
+            "volunteer_id": {id}
+            "delivery_id": {id}
         }
         """
         if self.request.user.is_staff:
             routesheet = self.get_object()
             volunteer_id = self.request.data.get('volunteer_id', None)
-            # все волонтёры, записанные на эту доставку:
-            volunteers = routesheet.delivery.filter(is_active=True).assignment.volunteer.all()
+            logging.info(volunteer_id)
+            delivery_id = self.request.data.get('delivery_id', None)
+            logging.info(delivery_id)
             try:
-                user = User.get(id=volunteer_id)
+                delivery = Delivery.objects.get(id=delivery_id)
+            except Delivery.DoesNotExist as error:
+                return Response(status=status.HTTP_404_NOT_FOUND,
+                                data={'detail': 'Такой доставки не существует'})
+            except Exception as error:
+                logging.info(error)
+                return Response(status=status.HTTP_400_BAD_REQUEST,
+                                data={'detail': 'Некорректные данные доставки'})
+            try:
+                user = User.objects.get(id=volunteer_id)
             except User.DoesNotExist as error:
-                # logging.info(error, exc_info=True)
                 return Response(status=status.HTTP_404_NOT_FOUND,
                                 data={'detail': 'Такого пользователя не существует'})
             except Exception as error:
-                # logging.info(error, exc_info=True)
                 return Response(status=status.HTTP_400_BAD_REQUEST,
-                                data={'detail': 'Неправильные данные'})
+                                data={'detail': 'Некорректные данные пользователя'})
+            # все волонтёры, записанные на эту доставку:
+            volunteers_id = [assignment.volunteer.first().id for assignment in delivery.assignments.all()]
+            volunteers = User.objects.filter(id__in=volunteers_id)
             if user in volunteers:
-                routesheet.user = user
-                routesheet.save()
+                RouteAssignment.objects.create(volunteer=user, route_sheet=routesheet, delivery=delivery)
                 return Response(status=status.HTTP_200_OK)
             else:
                 return Response(status=status.HTTP_403_FORBIDDEN,
@@ -88,4 +100,3 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
         else:
             return Response(status=status.HTTP_403_FORBIDDEN,
                             data={'detail': 'Доступ запрещен'})
-#

@@ -42,8 +42,6 @@ class RouteSheet(models.Model):
     map = models.URLField(max_length=500, blank=True, null=True, verbose_name='карта')
     location = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, blank=True,
                                  related_name='route_sheets', verbose_name='локация')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='route_sheets', verbose_name='волонтёр',
-                             blank=True, null=True)
 
     def __str__(self):
         return str(self.name)
@@ -59,6 +57,22 @@ class RouteSheet(models.Model):
     class Meta:
         verbose_name = 'маршрутный лист'
         verbose_name_plural = 'маршрутные листы'
+
+
+class RouteAssignment(models.Model):
+    route_sheet = models.ForeignKey(RouteSheet, on_delete=models.CASCADE, related_name='assignments',
+                                    verbose_name='маршрутный лист')
+    volunteer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='route_assignments',
+                                  verbose_name='волонтёр')
+    delivery = models.ForeignKey('task_app.Delivery', on_delete=models.CASCADE, related_name='route_assignments',
+                                 verbose_name='доставка')
+
+    def __str__(self):
+        return f'{self.route_sheet.name} - {self.volunteer}'
+
+    class Meta:
+        verbose_name = 'маршрутный лист волонтёра'
+        verbose_name_plural = 'маршрутные листы волонтёров'
 
 
 class Address(models.Model):
