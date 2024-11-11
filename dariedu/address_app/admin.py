@@ -157,9 +157,9 @@ class CityAdmin(BaseAdmin):
 @admin.register(RouteSheet)
 class RouteSheetAdmin(BaseAdmin):
 
-    autocomplete_fields = ('user', 'location')
-    list_display = ('name', 'location', 'display_address', 'display_curator',  'user')
-    fields = ('name', 'map', 'location', 'user')
+    autocomplete_fields = ('location',)
+    list_display = ('name', 'location', 'display_address', 'display_curator')
+    fields = ('name', 'map', 'location')
     inlines = [AddressInline, ]
     list_filter = ('location',)
     search_fields = ('name', 'location__address')
