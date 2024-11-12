@@ -2,6 +2,7 @@ import zoneinfo
 
 from django.contrib import admin
 from django.conf import settings
+from django.utils.html import format_html
 
 from unfold.admin import ModelAdmin
 from unfold.contrib.import_export.forms import ImportForm, SelectableFieldsExportForm
@@ -35,7 +36,13 @@ class NotificationAdmin(BaseAdmin):
             return obj.text[:45] + '...' if len(obj.text) > 45 else obj.text
         return None
 
-    list_display = ('title', 'text_short', 'obj_link', 'created_format')
+    def get_link(self, obj):
+        if obj.obj_link:
+            return format_html(f'<a href={obj.obj_link}>{obj.obj_link}</a>')
+
+    get_link.shot_description = 'Ссылка на объект'
+
+    list_display = ('title', 'text_short', 'get_link', 'created_format')
     list_filter = ('created',)
     readonly_fields = ('title', 'text', 'obj_link', 'created')
     search_fields = ('title', 'text', 'created')
