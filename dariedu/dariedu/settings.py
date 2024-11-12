@@ -292,3 +292,20 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
+
+# settings.py
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://redis:6379',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
+
+FIRST_ROW_VALUES_CACHE_KEY = 'first_row_values'
+FIRST_ROW_VALUES_CACHE_KEY_2 = 'first_row_values_2'
+FIRST_ROW_VALUES_CACHE_KEY_3 = 'first_row_values_3'
+FIRST_ROW_VALUES_CACHE_KEY_4 = 'first_row_values_4'

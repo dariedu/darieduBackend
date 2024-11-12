@@ -59,4 +59,8 @@ app.conf.beat_schedule = {
         'task': 'user_app.tasks.backup_database',
         'schedule': crontab(hour='20', minute='52'),
     },
+    'delete-cached-gsheets-every-day': {
+        'task': 'user_app.tasks.delete_cached_gsheets',
+        'schedule': crontab(hour='02', minute='00'),
+    },
 }

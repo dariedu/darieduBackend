@@ -3,8 +3,11 @@ import os
 from celery import shared_task
 import requests
 import pytz
+from django.core.cache import cache
+from datetime import datetime, timedelta
 
 from dariedu.gspread_config import gs
+from django.conf import settings
 from .models import Delivery, Task
 from user_app.models import User
 
@@ -33,8 +36,11 @@ def export_to_google_tasks(user_id, task_id):
     task_name = Task.objects.get(id=task_id).name
     task_date = Task.objects.get(id=task_id).end_date.strftime('%d.%m.%Y')
 
-    first_row_values = worksheet.row_values(1)
-    values_list = worksheet3.row_values(1)
+    values_list = cache.get(settings.FIRST_ROW_VALUES_CACHE_KEY_3)
+    if values_list is None:
+        values_list = worksheet3.row_values(1)
+        cache.set(settings.FIRST_ROW_VALUES_CACHE_KEY_3, values_list,
+                  timeout=int(timedelta(days=1).total_seconds()))
 
     if data_user in values_list:
         tg_username_index = values_list.index(
@@ -58,7 +64,15 @@ def export_to_google_tasks(user_id, task_id):
         cell_address = f"{chr(65 + (next_column - 1))}1"
         cell_link = (f"https://docs.google.com/spreadsheets/d/"
                      f"{spreadsheet_id}/edit#gid={worksheet_id}&range={cell_address}")
+
         existing_datas = worksheet.get_all_records()
+
+        first_row_values = cache.get(settings.FIRST_ROW_VALUES_CACHE_KEY)
+        if first_row_values is None:
+            first_row_values = worksheet.row_values(1)
+            cache.set(settings.FIRST_ROW_VALUES_CACHE_KEY, first_row_values,
+                      timeout=int(timedelta(days=1).total_seconds()))
+
         column_mapping = {header: index + 1 for index, header in enumerate(first_row_values)}
         user_row_index = None
         for index, row in enumerate(existing_datas):
@@ -81,7 +95,11 @@ def cancel_task_in_google_tasks(user_id, task_id):
     task_date = Task.objects.get(id=task_id).end_date.strftime('%d.%m.%Y')
     name = f"{task_name} {task_date}"
     try:
-        values_list = worksheet3.row_values(1)
+        values_list = cache.get(settings.FIRST_ROW_VALUES_CACHE_KEY_3)
+        if values_list is None:
+            values_list = worksheet3.row_values(1)
+            cache.set(settings.FIRST_ROW_VALUES_CACHE_KEY_3, values_list,
+                      timeout=int(timedelta(days=1).total_seconds()))
     except requests.exceptions.SSLError as e:
         logging.error(f"SSL error occurred: {e}")
         return
@@ -120,8 +138,11 @@ def export_to_google_delivery(user_id, delivery_id):
     time_str = local_time.strftime('%H:%M')
     subway = Delivery.objects.get(id=delivery_id).location.subway
 
-    first_row_values = worksheet.row_values(1)
-    values_list = worksheet2.row_values(1)
+    values_list = cache.get(settings.FIRST_ROW_VALUES_CACHE_KEY_2)
+    if values_list is None:
+        values_list = worksheet2.row_values(1)
+        cache.set(settings.FIRST_ROW_VALUES_CACHE_KEY_2, values_list,
+                  timeout=int(timedelta(days=1).total_seconds()))
 
     if data_user in values_list:
         tg_username_index = values_list.index(
@@ -150,6 +171,13 @@ def export_to_google_delivery(user_id, delivery_id):
         cell_link = (f"https://docs.google.com/spreadsheets/d/"
                      f"{spreadsheet_id}/edit#gid={worksheet_id}&range={cell_address}")
         existing_datas = worksheet.get_all_records()
+
+        first_row_values = cache.get(settings.FIRST_ROW_VALUES_CACHE_KEY)
+        if first_row_values is None:
+            first_row_values = worksheet.row_values(1)
+            cache.set(settings.FIRST_ROW_VALUES_CACHE_KEY, first_row_values,
+                      timeout=int(timedelta(days=1).total_seconds()))
+
         column_mapping = {header: index + 1 for index, header in enumerate(first_row_values)}
         user_row_index = None
         for index, row in enumerate(existing_datas):
@@ -175,7 +203,12 @@ def cancel_task_in_google_delivery(user_id, delivery_id):
     list_data = f"{date_str}, {time_str}, '{subway}'"
 
     try:
-        values_list = worksheet2.row_values(1)
+        values_list = cache.get(settings.FIRST_ROW_VALUES_CACHE_KEY_2)
+        if values_list is None:
+            values_list = worksheet2.row_values(1)
+            cache.set(settings.FIRST_ROW_VALUES_CACHE_KEY_2, values_list,
+                      timeout=int(timedelta(days=1).total_seconds()))
+
     except requests.exceptions.SSLError as e:
         logging.error(f"SSL error occurred: {e}")
         return
