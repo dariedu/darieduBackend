@@ -117,7 +117,15 @@ class Fix2(OpenApiViewExtension):
                                     8, 9, 10
                                   ]
                                 },
-                              ]
+                              ],
+                              "количество завершенных доставок": [
+                                {
+                                    "id_delivery": 48,
+                                    "id_route_sheet": [
+                                        4
+                                    ]
+                                },
+                               ],
                             },
                         status_codes=[str(status.HTTP_200_OK)],
                     ),

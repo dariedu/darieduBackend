@@ -9,6 +9,7 @@ from .models import Task, Delivery, DeliveryAssignment, TaskCategory
 from .permissions import IsAbleCompleteTask, IsCurator, is_confirmed
 from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer, TaskVolunteerSerializer, \
     TaskCategorySerializer  #DeliveryVolunteerSerializer
+from .tasks import complete_delivery
 
 
 class TaskViewSet(
@@ -328,6 +329,7 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     def deliveries_curator(self, request):
         total_deliveries = Delivery.objects.filter(in_execution=True)
         active_deliveries = Delivery.objects.filter(is_active=True)
+        complete_deliveries = Delivery.objects.filter(is_completed=True)
 
         executing_deliveries = []
         for delivery in total_deliveries:
@@ -345,9 +347,18 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
                 "id_route_sheet": route_sheet_ids
             })
 
+        complete_deliveries_list = []
+        for delivery in complete_deliveries:
+            route_sheet_ids = [route.id for route in delivery.route_sheet.all()]
+            complete_deliveries_list.append({
+                "id_delivery": delivery.id,
+                "id_route_sheet": route_sheet_ids
+            })
+
         return Response({
             'выполняются доставки': executing_deliveries,
             'количество активных доставок': active_deliveries_list,
+            'количество завершенных доставок': complete_deliveries_list
         })
 
     @action(detail=True, methods=['post'], url_path='take')
