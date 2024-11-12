@@ -113,6 +113,7 @@ class Beneficiar(models.Model):
     )
 
     phone = models.CharField(max_length=50, blank=True, null=True, verbose_name='телефон')
+    second_phone = models.CharField(max_length=50, blank=True, null=True, verbose_name='дополнительный телефон')
     full_name = models.CharField(max_length=255, verbose_name='ФИО')
     comment = models.TextField(blank=True, null=True, verbose_name='комментарий')
     category = models.CharField(max_length=255, blank=True, null=True, verbose_name='категория')
