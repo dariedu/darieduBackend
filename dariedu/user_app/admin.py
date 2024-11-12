@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from django.contrib.auth import get_user_model
 
 from import_export.admin import ImportExportModelAdmin, ExportActionMixin
@@ -55,11 +56,11 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
         'phone',
         'rating',
         'volunteer_hour',
-        "photo_view",
+        "get_link",
         'point',
         'is_superuser',
         'is_staff',
-        'is_confirmed',  # confirmed вывод пользователя
+        'is_confirmed',
         'birthday_format',
         'is_adult',
         'short_interests',
@@ -72,7 +73,7 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
         'is_superuser',
         'is_staff',
         'is_adult',
-        'is_confirmed',  # confirmed фильтрация по этому полю
+        'is_confirmed',
         'consent_to_personal_data',
         'rating',
         'metier',
@@ -86,7 +87,7 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
             "surname",
             "birthday",
             "is_adult",
-            'is_confirmed',  # confirmed редактирование поля
+            'is_confirmed',
             "photo",
             "photo_view",
             "volunteer_hour",
@@ -103,6 +104,12 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
     ]
     search_fields = ('tg_id', 'name', 'surname', 'last_name', 'email', 'phone')
     list_display_links = ('tg_id', 'tg_username', 'last_name', 'name', 'surname')
+
+    def get_link(self, obj):
+        if obj.photo_view:
+            return format_html(f'<a href={obj.photo_view}>{obj.photo_view}</a>')
+
+    get_link.short_description = 'Ссылка на фотографию'
 
 
 @admin.register(Volunteer)
