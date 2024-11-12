@@ -9,6 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Rating
 from .serializers import UserSerializer, RatingSerializer, RegistrationSerializer, TelegramDataSerializer
+from address_app.signals import get_phone_number
 from google_drive import GoogleUser
 
 
@@ -35,6 +36,14 @@ class RegistrationView(generics.CreateAPIView):
 
         try:
             request = serializer.validated_data  # Данные из сериализатора, не путать с self.request
+
+            phone: str = request.get('phone')
+            if phone:
+                request['phone'] = get_phone_number(phone)
+
+            if len(request['phone']) != 11:
+                raise Exception('validation with phone')
+
             file_name = request.get('photo')
             full_name = request.get('last_name') + request.get('name') + request.get('surname')
             telegram_id = request.get('tg_id')
@@ -49,8 +58,8 @@ class RegistrationView(generics.CreateAPIView):
             view_link = drive_user.get_link_view(data.photo)
             data.photo_view = view_link
             data.save()
-        except:
-            raise Exception('Error with registration')
+        except Exception as e:
+            raise Exception(f'{e}')
 
 
 class CustomTokenObtainPairView(APIView):

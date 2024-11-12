@@ -6,7 +6,11 @@ from .models import Beneficiar
 
 
 def get_phone_number(phone: str) -> str:
-    phone = phone.replace('+7', '8', 1)
+    if phone.startswith('+7'):
+        phone = phone.replace('+7', '8', 1)
+    elif phone.startswith('7'):
+        phone = phone.replace('7', '8', 1)
+
     phone = ''.join(filter(str.isdigit, phone))
 
     if len(phone) != 11:
