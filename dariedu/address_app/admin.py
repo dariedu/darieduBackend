@@ -8,6 +8,7 @@ from django.db.models import ForeignKey
 from django.forms import ModelChoiceField
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import render
+from django.utils.html import format_html
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from import_export.admin import ImportExportModelAdmin
@@ -168,9 +169,15 @@ class RouteSheetAdmin(BaseAdmin):
 
 @admin.register(Beneficiar)
 class BeneficiarAdmin(BaseAdmin):
-    list_display = ('full_name', 'address', 'phone', 'second_phone', 'photo_link', 'presence', 'category', 'comment')
+    list_display = ('full_name', 'address', 'phone', 'second_phone', 'get_link', 'presence', 'category', 'comment')
     search_fields = ('full_name', 'phone', 'comment')
     list_filter = ('address', 'category', 'presence')
     list_display_links = ('full_name', 'phone', 'address')
     autocomplete_fields = ['address']
     list_editable = ('presence', )
+
+    def get_link(self, obj: Beneficiar):
+        if obj.photo_link:
+            return format_html(f'<a href={obj.photo_link}>{obj.photo_link}</a>')
+
+    get_link.short_description = 'Ссылка на фото'
