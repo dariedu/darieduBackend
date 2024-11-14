@@ -87,6 +87,12 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
         def update(self, instance, validated_data):
+
+            if 'phone' in validated_data:
+                instance.phone = validated_data['phone']
+                instance.save()
+                return instance
+
             instance.email = validated_data.get('email', instance.email)
             instance.photo = validated_data.get('photo', instance.photo)
             instance.city = validated_data.get('city', instance.city)

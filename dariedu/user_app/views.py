@@ -91,6 +91,13 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
     filterset_fields = ['is_superuser', 'is_staff', 'city', 'rating']
     ordering_fields = ['id']
 
+    def get_queryset(self):
+        queryset = User.objects.all()
+        tg_id = self.request.query_params.get('tg_id', None)
+        if tg_id is not None:
+            queryset = queryset.filter(tg_id=tg_id)
+        return queryset
+
 
 class RatingViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Rating.objects.all()
