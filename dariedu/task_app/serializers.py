@@ -73,4 +73,6 @@ class DeliverySerializer(serializers.ModelSerializer):
         if self.context.get('is_volunteer_view', False):
             if obj.in_execution or obj.is_completed:
                 return [route.id for route in obj.route_sheet.all()]
+        elif self.context.get('is_curator_view', False):
+            return [route.id for route in obj.route_sheet.all()]
         return []

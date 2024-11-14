@@ -126,11 +126,11 @@ class TaskCategoryAdmin(BaseAdmin):
     search_fields = ('name',)
 
 
-# class VolunteerInline(admin.TabularInline):
-#     model = DeliveryAssignment
-#     extra = 0
-#
-#     can_delete = False
+class VolunteerInline(admin.TabularInline):
+    model = DeliveryAssignment
+    extra = 0
+
+    can_delete = False
     # formfield_overrides = {
     #     models.ManyToManyField: {'widget': forms.CheckboxSelectMultiple},
     # }
@@ -180,7 +180,7 @@ class DeliveryAdmin(BaseAdmin, ExportActionMixin):
         # 'assignments',
     )
     list_editable = ('is_active', 'is_completed', 'in_execution', 'is_free', 'volunteers_needed')
-    # inlines = [VolunteerInline, ]
+    inlines = [VolunteerInline, ]
 
     @action(description="Копировать")
     def copy(self, request, queryset, *args):
