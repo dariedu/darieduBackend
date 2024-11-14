@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.urls import reverse
 from django.utils.html import format_html
 
 from promo_app.models import Promotion
@@ -27,7 +28,7 @@ class RequestMessage(models.Model):
         return str(self.user)
 
     def get_absolute_url(self):
-        return f'{settings.CURRENT_HOST}/admin/feedback_app/requestmessage/{self.id}/change/'
+        return reverse ('admin:feedback_app_requestmessage_change', args=[self.pk])
 
     class Meta:
         verbose_name = 'заявка'
@@ -79,7 +80,7 @@ class Feedback(models.Model):
         return f"Отзыв от {self.user.name} {self.user.last_name}"
 
     def get_absolute_url(self):
-        return f'{settings.CURRENT_HOST}/admin/feedback_app/feedback/{self.id}/change/'
+        return reverse('admin:feedback_app_feedback_change', args=[self.pk])
 
     class Meta:
         verbose_name = 'обратная связь'

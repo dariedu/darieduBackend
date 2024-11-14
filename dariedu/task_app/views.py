@@ -296,6 +296,8 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         active_deliveries = self.get_queryset().filter(is_active=True, assignments__volunteer=request.user).distinct()
         completed_deliveries = self.get_queryset().filter(is_completed=True,
                                                           assignments__volunteer=request.user).distinct()
+        executing_deliveries = self.get_queryset().filter(is_active=True, assignments__volunteer=request.user,
+                                                          in_execution=True).distinct()
 
         if after:
             try:
@@ -311,15 +313,23 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
                 active_deliveries = active_deliveries.filter(date__date__lte=before_date)
                 completed_deliveries = completed_deliveries.filter(date__date__lte=before_date)
             except ValueError:
-                return Response({'error': 'Invalid date format for "before". Expected format: YYYY-MM-DD'}, status=400)
+                return Response({
+                    'error': 'Invalid date format for "before". Expected format: YYYY-MM-DD'
+                }, status=400)
 
         free_serializer = self.get_serializer(free_deliveries, many=True)
-        active_serializer = self.get_serializer(active_deliveries, many=True, context={'is_volunteer_view': True})
-        completed_serializer = self.get_serializer(completed_deliveries, many=True, context={'is_volunteer_view': True})
+        active_serializer = self.get_serializer(active_deliveries, many=True,
+                                                context={'is_volunteer_view': True})
+        completed_serializer = self.get_serializer(completed_deliveries, many=True,
+                                                   context={'is_volunteer_view': True})
+
+        executing_serializer = self.get_serializer(executing_deliveries, many=True,
+                                                   context={'is_volunteer_view': True})
 
         response_data = {
             'свободные доставки': free_serializer.data,
             'мои активные доставки': active_serializer.data,
+            'выполняются доставки': executing_serializer.data,
             'мои завершенные доставки': completed_serializer.data
         }
         return Response(response_data)
@@ -327,9 +337,9 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     @action(detail=False, methods=['get'], url_path='curator')
     @is_confirmed
     def deliveries_curator(self, request):
-        total_deliveries = Delivery.objects.filter(in_execution=True)
-        active_deliveries = Delivery.objects.filter(is_active=True)
-        complete_deliveries = Delivery.objects.filter(is_completed=True)
+        total_deliveries = Delivery.objects.filter(in_execution=True, curator=request.user)
+        active_deliveries = Delivery.objects.filter(is_active=True, curator=request.user, in_execution=False)
+        complete_deliveries = Delivery.objects.filter(is_completed=True, curator=request.user)
 
         executing_deliveries = []
         for delivery in total_deliveries:
@@ -357,8 +367,8 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
 
         return Response({
             'выполняются доставки': executing_deliveries,
-            'количество активных доставок': active_deliveries_list,
-            'количество завершенных доставок': complete_deliveries_list
+            'активные доставки': active_deliveries_list,
+            'завершенные доставки': complete_deliveries_list
         })
 
     @action(detail=True, methods=['post'], url_path='take')
