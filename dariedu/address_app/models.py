@@ -111,12 +111,21 @@ class Beneficiar(models.Model):
         ('в отъезде', 'в отъезде'),
         ('архив', 'архив')
     )
+    CATEGORY = (
+        ('Пенсионер', 'Пенсионер'),
+        ('Ветеран ВОВ', 'Ветеран ВОВ'),
+        ('Ветеран труда', 'Ветеран труда'),
+        ('Инвалид I группы', 'Инвалид I группы'),
+        ('Инвалид II группы', 'Инвалид II группы'),
+        ('Инвалид III группы', 'Инвалид III группы'),
+    )
 
     phone = models.CharField(max_length=50, blank=True, null=True, verbose_name='телефон')
     second_phone = models.CharField(max_length=50, blank=True, null=True, verbose_name='дополнительный телефон')
     full_name = models.CharField(max_length=255, verbose_name='ФИО')
     comment = models.TextField(blank=True, null=True, verbose_name='комментарий')
-    category = models.CharField(max_length=255, blank=True, null=True, verbose_name='категория')
+    category = models.CharField(choices=CATEGORY, max_length=255, blank=True, null=True, default=None,
+                                verbose_name='категория')
     presence = models.CharField(choices=CHOICES, max_length=15, default='да', verbose_name='присутствие')
     address = models.ForeignKey(Address, on_delete=models.CASCADE,
                                 related_name='beneficiar', verbose_name='адрес')

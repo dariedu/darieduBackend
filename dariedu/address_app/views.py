@@ -38,13 +38,13 @@ class LocationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 class CityViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = City.objects.all()
     serializer_class = CitySerializer
-    # permission_classes = [IsAutheticated]  # TODO swap to comment when authentication is ready
+    # permission_classes = [IsAutheticated]
 
 
 class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = RouteSheet.objects.all()
     serializer_class = RouteSheetSerializer
-    permission_classes = [IsAuthenticated]  # TODO swap to comment when authentication is ready
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         """Curator can see only his routesheets, volunter can see only his routesheets in execution"""
@@ -53,7 +53,9 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
             # logging.info(RouteSheet.objects.filter(location__curator=self.request.user))
             return RouteSheet.objects.filter(location__curator=self.request.user, delivery__is_active=True)
         else:
-            return RouteSheet.objects.filter(user=self.request.user, delivery__in_execution=True)
+            delivery = [delivery.id for delivery in Delivery.objects.filter(in_execution=True,
+                                                                            assignment__volunteer=self.request.user)]
+            return RouteSheet.objects.filter(delivery__id__in=delivery)
 
     @action(detail=True, methods=['post'], url_name='assign_route')
     def assign(self, request, pk=None):
