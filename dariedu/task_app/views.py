@@ -8,8 +8,7 @@ from rest_framework.response import Response
 from .models import Task, Delivery, DeliveryAssignment, TaskCategory
 from .permissions import IsAbleCompleteTask, IsCurator, is_confirmed
 from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer, TaskVolunteerSerializer, \
-    TaskCategorySerializer  #DeliveryVolunteerSerializer
-from .tasks import complete_delivery
+    TaskCategorySerializer
 
 
 class TaskViewSet(
@@ -345,33 +344,66 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         for delivery in total_deliveries:
             route_sheet_ids = [route.id for route in delivery.route_sheet.all()]
             assignments = DeliveryAssignment.objects.filter(delivery=delivery)
-            volunteers_ids = [assignment.volunteer.first().id for assignment in assignments]
+
+            volunteers_info = []
+            for assignment in assignments:
+                for volunteer in assignment.volunteer.all():
+                    volunteers_info.append({
+                        "id": volunteer.id,
+                        "tg_username": volunteer.tg_username,
+                        "last_name": volunteer.last_name,
+                        "name": volunteer.name,
+                        "photo": volunteer.photo.url if volunteer.photo else None
+                    })
+
             executing_deliveries.append({
                 "id_delivery": delivery.id,
                 "id_route_sheet": route_sheet_ids,
-                'volunteers': volunteers_ids
+                'volunteers': volunteers_info
             })
 
         active_deliveries_list = []
         for delivery in active_deliveries:
             route_sheet_ids = [route.id for route in delivery.route_sheet.all()]
             assignments = DeliveryAssignment.objects.filter(delivery=delivery)
-            volunteers_ids = [assignment.volunteer.first().id for assignment in assignments]
+
+            volunteers_info = []
+            for assignment in assignments:
+                for volunteer in assignment.volunteer.all():
+                    volunteers_info.append({
+                        "id": volunteer.id,
+                        "tg_username": volunteer.tg_username,
+                        "last_name": volunteer.last_name,
+                        "name": volunteer.name,
+                        "photo": volunteer.photo.url if volunteer.photo else None
+                    })
+
             active_deliveries_list.append({
                 "id_delivery": delivery.id,
                 "id_route_sheet": route_sheet_ids,
-                'volunteers': volunteers_ids
+                'volunteers': volunteers_info
             })
 
         complete_deliveries_list = []
         for delivery in complete_deliveries:
             route_sheet_ids = [route.id for route in delivery.route_sheet.all()]
             assignments = DeliveryAssignment.objects.filter(delivery=delivery)
-            volunteers_ids = [assignment.volunteer.first().id for assignment in assignments]
+
+            volunteers_info = []
+            for assignment in assignments:
+                for volunteer in assignment.volunteer.all():
+                    volunteers_info.append({
+                        "id": volunteer.id,
+                        "tg_username": volunteer.tg_username,
+                        "last_name": volunteer.last_name,
+                        "name": volunteer.name,
+                        "photo": volunteer.photo.url if volunteer.photo else None
+                    })
+
             complete_deliveries_list.append({
                 "id_delivery": delivery.id,
                 "id_route_sheet": route_sheet_ids,
-                'volunteers': volunteers_ids
+                'volunteers': volunteers_info
             })
 
         return Response({
@@ -402,9 +434,11 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     def cancel_delivery(self, request, pk):
         delivery = self.get_object()
         delivery_assignment = delivery.assignments.filter(volunteer=request.user).first()
+        assignment = DeliveryAssignment.objects.filter(delivery=delivery, volunteer=request.user).first()
 
         if delivery_assignment:
             delivery_assignment.volunteer.remove(request.user)
+            assignment.delete()
             return Response({'message': 'Delivery cancelled successfully'}, status=200)
         else:
             return Response({'error': 'You are not authorized to cancel this delivery'}, status=403)
