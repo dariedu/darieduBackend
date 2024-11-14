@@ -344,25 +344,34 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         executing_deliveries = []
         for delivery in total_deliveries:
             route_sheet_ids = [route.id for route in delivery.route_sheet.all()]
+            assignments = DeliveryAssignment.objects.filter(delivery=delivery)
+            volunteers_ids = [assignment.volunteer.first().id for assignment in assignments]
             executing_deliveries.append({
                 "id_delivery": delivery.id,
-                "id_route_sheet": route_sheet_ids
+                "id_route_sheet": route_sheet_ids,
+                'volunteers': volunteers_ids
             })
 
         active_deliveries_list = []
         for delivery in active_deliveries:
             route_sheet_ids = [route.id for route in delivery.route_sheet.all()]
+            assignments = DeliveryAssignment.objects.filter(delivery=delivery)
+            volunteers_ids = [assignment.volunteer.first().id for assignment in assignments]
             active_deliveries_list.append({
                 "id_delivery": delivery.id,
-                "id_route_sheet": route_sheet_ids
+                "id_route_sheet": route_sheet_ids,
+                'volunteers': volunteers_ids
             })
 
         complete_deliveries_list = []
         for delivery in complete_deliveries:
             route_sheet_ids = [route.id for route in delivery.route_sheet.all()]
+            assignments = DeliveryAssignment.objects.filter(delivery=delivery)
+            volunteers_ids = [assignment.volunteer.first().id for assignment in assignments]
             complete_deliveries_list.append({
                 "id_delivery": delivery.id,
-                "id_route_sheet": route_sheet_ids
+                "id_route_sheet": route_sheet_ids,
+                'volunteers': volunteers_ids
             })
 
         return Response({
