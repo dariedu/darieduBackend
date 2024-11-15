@@ -18,22 +18,15 @@ class Week(models.Model):
     def __str__(self):
         return f"{self.start_date.strftime('%d.%m.%Y')} – {self.end_date.strftime('%d.%m.%Y')}"
 
-class WeeklyVolunteerStats(models.Model):
-    volunteer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='weekly_stats', verbose_name="Волонтер")
-    start_date = models.DateField(verbose_name="Дата начала недели")
-    end_date = models.DateField(verbose_name="Дата окончания недели")
-    hours = models.PositiveIntegerField(default=0, verbose_name="Часы")
-    points = models.PositiveIntegerField(default=0, verbose_name="Баллы")
 
-    class Meta:
-        verbose_name = "Статистика волонтера за неделю"
-        verbose_name_plural = "Статистика волонтеров за неделю"
-        unique_together = ('volunteer', 'start_date', 'end_date')
+class VolunteerStats(models.Model):
+    volunteer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Волонтер")
+    volunteer_hours = models.PositiveIntegerField(default=0, verbose_name='Волонтерские часы')
+    points = models.PositiveIntegerField(default=0, verbose_name='Баллы')
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name="Дата записи")
 
     def __str__(self):
-        return f'{self.volunteer.last_name} {self.volunteer.name} за {self.start_date} - {self.end_date}'
-
-
+        return f"{self.volunteer} - {self.timestamp}"
 
 
 class MonthlyVolunteerStats(models.Model):

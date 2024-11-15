@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
-
+from model_utils import FieldTracker
 from .managers import UserManager
 
 
@@ -42,6 +42,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     interests = models.TextField(blank=True, null=True, verbose_name='интересы')
     metier = models.CharField(choices=METIERS, max_length=50, blank=True, null=True, verbose_name='род деятельности',
                               default=None)
+    tracker = FieldTracker(fields=['volunteer_hour', 'point'])
 
     USERNAME_FIELD = 'tg_id'
     REQUIRED_FIELDS = []

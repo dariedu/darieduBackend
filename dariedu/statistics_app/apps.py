@@ -6,5 +6,5 @@ class StatisticsAppConfig(AppConfig):
     name = 'statistics_app'
     verbose_name = 'Статистика'
 
-    # def ready(self):
-    #     import statistics_app.signals
+    def ready(self):
+        import statistics_app.signals

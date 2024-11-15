@@ -289,3 +289,23 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 ADMIN_EMAIL = os.getenv('ADMIN_EMAIL')
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',  # Уровень логирования (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+            'class': 'logging.FileHandler',  # Класс обработчика для записи в файл
+            'filename': 'logs/django_debug.log',  # Путь к файлу лога
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],  # Указание обработчика для логера Django
+            'level': 'DEBUG',  # Уровень логирования для Django
+            'propagate': True,
+        },
+    },
+}
