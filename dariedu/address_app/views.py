@@ -100,8 +100,11 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
             volunteers_id = [assignment.volunteer.first().id for assignment in delivery.assignments.all()]
             volunteers = User.objects.filter(id__in=volunteers_id)
             if user in volunteers:
-                if RouteAssignment.objects.get(route_sheet=routesheet, delivery=delivery).exists():
-                    RouteAssignment.objects.filter(route_sheet=routesheet, delivery=delivery).delete()
+                try:
+                    route = RouteAssignment.objects.get(route_sheet=routesheet, delivery=delivery)
+                    route.delete()
+                except RouteAssignment.DoesNotExist as error:
+                    pass
 
                 RouteAssignment.objects.get(volunteer=user, route_sheet=routesheet, delivery=delivery)
                 return Response(status=status.HTTP_200_OK)
