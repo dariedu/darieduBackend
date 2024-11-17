@@ -10,6 +10,7 @@ router.register(r'cities', views.CityViewSet)
 # router.register(r'beneficiaries', views.BeneficiarViewSet)
 router.register(r'locations', views.LocationViewSet)
 router.register(r'route_sheets', views.RouteSheetViewSet)
+router.register(r'route_assignments', views.RouteAssignmentViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

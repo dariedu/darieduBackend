@@ -2,8 +2,7 @@ from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
 
-from .models import Address, Location, City, RouteSheet, Beneficiar
-
+from .models import Address, Location, City, RouteSheet, Beneficiar, RouteAssignment
 
 User = get_user_model()
 
@@ -73,6 +72,15 @@ class RouteSheetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RouteSheet
+        fields = '__all__'
+        extra_kwargs = {
+            'id': {'read_only': True},
+        }
+
+
+class RouteAssignmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RouteAssignment
         fields = '__all__'
         extra_kwargs = {
             'id': {'read_only': True},
