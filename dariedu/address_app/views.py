@@ -51,28 +51,38 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
         if self.request.user.is_staff:
             # logging.info(RouteSheet.objects.filter(location__curator=self.request.user, delivery__is_active=True))
             # logging.info(RouteSheet.objects.filter(location__curator=self.request.user))
-            return RouteSheet.objects.filter(location__curator=self.request.user, delivery__is_active=True)
+            return RouteSheet.objects.filter(location__curator=self.request.user, delivery__is_active=True).distinct()
         else:
             delivery = [delivery.id for delivery in Delivery.objects.filter(in_execution=True,
                                                                             assignment__volunteer=self.request.user)]
-            return RouteSheet.objects.filter(delivery__id__in=delivery)
+            return RouteSheet.objects.filter(delivery__id__in=delivery).distinct()
 
-    @action(detail=True, methods=['post'], url_name='assign_route')
-    def assign(self, request, pk=None):
+    @action(detail=False, methods=['post'], url_name='assign_route')
+    def assign(self, request):
         """
         Assign a routesheet by curator to a volunteer with id=volunteer_id for delivery with id=delivery_id
         Body:
         {
+            "routesheet_id": {id},
             "volunteer_id": {id}
             "delivery_id": {id}
         }
         """
         if self.request.user.is_staff:
-            routesheet = self.get_object()
+            routesheet_id = self.request.data.get('routesheet_id', None)
+            logging.info(routesheet_id)
             volunteer_id = self.request.data.get('volunteer_id', None)
             logging.info(volunteer_id)
             delivery_id = self.request.data.get('delivery_id', None)
             logging.info(delivery_id)
+            try:
+                routesheet = RouteSheet.objects.get(id=routesheet_id)
+            except RouteSheet.DoesNotExist as error:
+                return Response(status=status.HTTP_404_NOT_FOUND,
+                                data={'detail': 'Такой маршрут не существует'})
+            except Exception as error:
+                return Response(status=status.HTTP_400_BAD_REQUEST,
+                                data={'detail': 'Некорректные данные маршрута'})
             try:
                 delivery = Delivery.objects.get(id=delivery_id)
             except Delivery.DoesNotExist as error:
