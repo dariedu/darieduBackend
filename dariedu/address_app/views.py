@@ -15,7 +15,7 @@ from .serializers import (
     LocationSerializer,
     CitySerializer,
     RouteSheetSerializer,
-    BeneficiarSerializer
+    BeneficiarSerializer, RouteAssignmentSerializer
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -82,6 +82,12 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
                 logging.info(error)
                 return Response(status=status.HTTP_400_BAD_REQUEST,
                                 data={'detail': 'Некорректные данные доставки'})
+            if delivery.curator != self.request.user:
+                return Response(status=status.HTTP_403_FORBIDDEN,
+                                data={'detail': 'Вы не являетесь куратором этой доставки'})
+            if delivery.is_completed:
+                return Response(status=status.HTTP_400_BAD_REQUEST,
+                                data={'detail': 'Доставка уже завершена'})
             try:
                 user = User.objects.get(id=volunteer_id)
             except User.DoesNotExist as error:
@@ -94,7 +100,10 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
             volunteers_id = [assignment.volunteer.first().id for assignment in delivery.assignments.all()]
             volunteers = User.objects.filter(id__in=volunteers_id)
             if user in volunteers:
-                RouteAssignment.objects.create(volunteer=user, route_sheet=routesheet, delivery=delivery)
+                if RouteAssignment.objects.get(route_sheet=routesheet, delivery=delivery).exists():
+                    RouteAssignment.objects.filter(route_sheet=routesheet, delivery=delivery).delete()
+
+                RouteAssignment.objects.get(volunteer=user, route_sheet=routesheet, delivery=delivery)
                 return Response(status=status.HTTP_200_OK)
             else:
                 return Response(status=status.HTTP_403_FORBIDDEN,
@@ -102,3 +111,9 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
         else:
             return Response(status=status.HTTP_403_FORBIDDEN,
                             data={'detail': 'Доступ запрещен'})
+
+
+class RouteAssignmentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    queryset = RouteAssignment.objects.all()
+    serializer_class = RouteAssignmentSerializer
+    permission_classes = [IsAuthenticated]
