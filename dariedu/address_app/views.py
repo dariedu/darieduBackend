@@ -98,6 +98,9 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
             if delivery.is_completed:
                 return Response(status=status.HTTP_400_BAD_REQUEST,
                                 data={'detail': 'Доставка уже завершена'})
+            if routesheet.id not in delivery.route_sheet.all().values_list('id', flat=True):
+                return Response(status=status.HTTP_400_BAD_REQUEST,
+                                data={'detail': 'Данного маршрута нет в этой доставке'})
             try:
                 user = User.objects.get(id=volunteer_id)
             except User.DoesNotExist as error:
