@@ -116,7 +116,7 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
                 except RouteAssignment.DoesNotExist as error:
                     pass
 
-                RouteAssignment.objects.get(volunteer=user, route_sheet=routesheet, delivery=delivery)
+                RouteAssignment.objects.create(volunteer=user, route_sheet=routesheet, delivery=delivery)
                 return Response(status=status.HTTP_200_OK)
             else:
                 return Response(status=status.HTTP_403_FORBIDDEN,
