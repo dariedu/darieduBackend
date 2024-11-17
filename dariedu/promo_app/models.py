@@ -13,7 +13,7 @@ User = get_user_model()
 
 
 class Promotion(models.Model):
-    category = models.ForeignKey('PromoCategory', on_delete=models.CASCADE,
+    category = models.ForeignKey('PromoCategory', on_delete=models.SET_NULL,
                                  null=True, blank=True, verbose_name='категория')
     name = models.CharField(max_length=255, verbose_name='название')
     price = models.PositiveIntegerField(verbose_name='стоимость')
@@ -37,7 +37,7 @@ class Promotion(models.Model):
     end_date = models.DateTimeField(blank=True, null=True, verbose_name='дата окончания',
                                     help_text='Только если поощрение не бессрочное')
 
-    city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='город')
+    city = models.ForeignKey(City, on_delete=models.PROTECT, verbose_name='город')
     users = models.ManyToManyField(User, through='Participation', blank=True, verbose_name='получатель')
     picture = models.ImageField(blank=True, null=True, upload_to='promo_pictures/', verbose_name='картинка',
                                 help_text='Ширина 328px, высота 205px')

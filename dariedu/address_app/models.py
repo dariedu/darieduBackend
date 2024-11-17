@@ -23,8 +23,8 @@ class Location(models.Model):
     link = models.URLField(max_length=500, verbose_name='ссылка', blank=True, null=True)
     subway = models.CharField(max_length=255, blank=True, null=True, verbose_name='метро')
 
-    city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='город')
-    curator = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='куратор',
+    city = models.ForeignKey(City, on_delete=models.PROTECT, verbose_name='город')
+    curator = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name='куратор',
                                 blank=True, null=True)
     media_files = models.FileField(blank=True, null=True, verbose_name='файлы', upload_to='location_files')
     description = models.TextField(blank=True, null=True, verbose_name='описание')
@@ -40,7 +40,7 @@ class Location(models.Model):
 class RouteSheet(models.Model):
     name = models.CharField(verbose_name='название', unique=True, max_length=500)
     map = models.URLField(max_length=500, blank=True, null=True, verbose_name='карта')
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, blank=True,
+    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True,
                                  related_name='route_sheets', verbose_name='локация')
 
     def __str__(self):
@@ -79,9 +79,9 @@ class Address(models.Model):
     address = models.CharField(max_length=255, verbose_name='адрес')
     link = models.URLField(max_length=500, verbose_name='ссылка', blank=True, null=True)
 
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='address_location',
+    location = models.ForeignKey(Location, on_delete=models.SET_NULL, related_name='address_location',
                                  verbose_name='локация', blank=True, null=True)
-    route_sheet = models.ForeignKey(RouteSheet, on_delete=models.CASCADE, related_name='address',
+    route_sheet = models.ForeignKey(RouteSheet, on_delete=models.SET_NULL, related_name='address',
                                     verbose_name='маршрутный лист', blank=True, null=True)
 
     def __str__(self):
@@ -129,7 +129,7 @@ class Beneficiar(models.Model):
     category = models.CharField(choices=CATEGORY, max_length=255, blank=True, null=True, default=None,
                                 verbose_name='категория')
     presence = models.CharField(choices=CHOICES, max_length=15, default='да', verbose_name='присутствие')
-    address = models.ForeignKey(Address, on_delete=models.CASCADE,
+    address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True, blank=True,
                                 related_name='beneficiar', verbose_name='адрес проживания')
     photo_link = models.URLField(max_length=500, verbose_name='просмотр фото', blank=True, null=True)
 

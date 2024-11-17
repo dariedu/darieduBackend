@@ -1,5 +1,4 @@
 from django.db import models
-from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -28,7 +27,7 @@ class RequestMessage(models.Model):
         return str(self.user)
 
     def get_absolute_url(self):
-        return reverse ('admin:feedback_app_requestmessage_change', args=[self.pk])
+        return reverse('admin:feedback_app_requestmessage_change', args=[self.pk])
 
     class Meta:
         verbose_name = 'заявка'
@@ -88,7 +87,7 @@ class Feedback(models.Model):
 
 
 class PhotoReport(models.Model):
-    address = models.ForeignKey('address_app.Address', on_delete=models.CASCADE, verbose_name='адрес')
+    address = models.ForeignKey('address_app.Address', on_delete=models.SET_NULL, verbose_name='адрес')
     photo_view = models.URLField(max_length=500, verbose_name='показ фотографии', blank=True, null=True)
     photo_download = models.URLField(max_length=500, verbose_name='загрузка фотографии', blank=True, null=True)
     date = models.DateField(verbose_name='дата', auto_now_add=True)

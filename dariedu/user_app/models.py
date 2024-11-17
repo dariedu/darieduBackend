@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.db import models
-from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.urls import reverse
 
@@ -26,7 +25,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(max_length=50, blank=True, null=True, verbose_name='телефон')
     photo = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name='фото')
     photo_view = models.URLField(max_length=500, verbose_name='фотография пользователя', blank=True, null=True)
-    # avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name='аватарка')
     volunteer_hour = models.PositiveIntegerField(default=0, verbose_name='волонтерские часы')
     point = models.PositiveIntegerField(default=0, verbose_name='баллы')
     is_superuser = models.BooleanField(default=False, verbose_name='Сотрудник')
@@ -36,9 +34,9 @@ class User(AbstractBaseUser, PermissionsMixin):
                                                    help_text='Принятие условий договора-оферты')
     birthday = models.DateField(blank=True, null=True, verbose_name='дата рождения')
     is_adult = models.BooleanField(default=True, verbose_name='18+')
-    rating = models.ForeignKey('Rating', on_delete=models.CASCADE, blank=True, null=True, verbose_name='рейтинг')
+    rating = models.ForeignKey('Rating', on_delete=models.SET_NULL, blank=True, null=True, verbose_name='рейтинг')
 
-    city = models.ForeignKey('address_app.City', on_delete=models.CASCADE, blank=True, null=True,
+    city = models.ForeignKey('address_app.City', on_delete=models.PROTECT, blank=True, null=True,
                              related_name='users', verbose_name='город')
     interests = models.TextField(blank=True, null=True, verbose_name='интересы')
     metier = models.CharField(choices=METIERS, max_length=50, blank=True, null=True, verbose_name='род деятельности',
