@@ -101,7 +101,9 @@ class Address(models.Model):
 
     @admin.display(description='комментарии')
     def display_comment(self):
-        return format_html('<br>'.join([beneficiar.comment for beneficiar in self.beneficiar.all()]))
+        return format_html('<br>'.join([
+            beneficiar.comment if beneficiar.comment else '' for beneficiar in self.beneficiar.all()
+        ]))
 
 
 class Beneficiar(models.Model):
@@ -121,18 +123,18 @@ class Beneficiar(models.Model):
     )
 
     phone = models.CharField(max_length=50, blank=True, null=True, verbose_name='телефон')
-    second_phone = models.CharField(max_length=50, blank=True, null=True, verbose_name='дополнительный телефон')
+    second_phone = models.CharField(max_length=50, blank=True, null=True, verbose_name='доп. телефон')
     full_name = models.CharField(max_length=255, verbose_name='ФИО')
-    comment = models.TextField(blank=True, null=True, verbose_name='комментарий')
+    comment = models.TextField(blank=True, null=True, verbose_name='комментарий', default='')
     category = models.CharField(choices=CATEGORY, max_length=255, blank=True, null=True, default=None,
                                 verbose_name='категория')
     presence = models.CharField(choices=CHOICES, max_length=15, default='да', verbose_name='присутствие')
     address = models.ForeignKey(Address, on_delete=models.CASCADE,
-                                related_name='beneficiar', verbose_name='адрес')
+                                related_name='beneficiar', verbose_name='адрес проживания')
     photo_link = models.URLField(max_length=500, verbose_name='просмотр фото', blank=True, null=True)
 
     def __str__(self):
-        return f'{self.full_name}, {self.phone}\n{self.comment}'
+        return f'{self.full_name}, {self.phone}\n{self.comment or ""}'
 
     class Meta:
         verbose_name = 'благополучатель'

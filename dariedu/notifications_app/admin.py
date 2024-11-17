@@ -3,6 +3,7 @@ import zoneinfo
 from django.contrib import admin
 from django.conf import settings
 from django.utils.html import format_html
+from import_export.admin import ImportExportModelAdmin
 
 from unfold.admin import ModelAdmin
 from unfold.contrib.import_export.forms import ImportForm, SelectableFieldsExportForm
@@ -13,7 +14,7 @@ from .models import Notification
 ZONE = zoneinfo.ZoneInfo(settings.TIME_ZONE)
 
 
-class BaseAdmin(ModelAdmin):
+class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
     import_form_class = ImportForm
     export_form_class = SelectableFieldsExportForm  # ExportForm
     compressed_fields = True  # Default: False

@@ -2,6 +2,7 @@ import zoneinfo
 
 from django.contrib import admin
 from django.conf import settings
+from import_export.admin import ImportExportModelAdmin
 from import_export.forms import ImportForm
 from unfold.admin import ModelAdmin
 from unfold.contrib.import_export.forms import SelectableFieldsExportForm
@@ -12,7 +13,7 @@ from .models import Feedback, RequestMessage, PhotoReport
 ZONE = zoneinfo.ZoneInfo(settings.TIME_ZONE)
 
 
-class BaseAdmin(ModelAdmin):
+class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
     import_form_class = ImportForm
     export_form_class = SelectableFieldsExportForm  # ExportForm
     compressed_fields = True  # Default: False
@@ -40,7 +41,7 @@ class FeedbackAdmin(BaseAdmin):
     search_fields = ('text',)
     list_display_links = ('text_short', 'type', 'user')
     autocomplete_fields = ('user', )
-    # readonly_fields = ('type', 'user', 'text', 'created_at')  # for prod
+    readonly_fields = ('type', 'user', 'text', 'created_at')  # for prod
 
 
 @admin.register(RequestMessage)
@@ -81,7 +82,7 @@ class RequestMessageAdmin(BaseAdmin):
     list_display_links = ('type', 'about_location_short', 'about_presence_short', 'about_worktime_short')
     autocomplete_fields = ('user', )
 
-    # readonly_fields = ('type', 'user', 'text', 'date')  # for prod
+    readonly_fields = ('type', 'user', 'date')  # for prod
 
 
 @admin.register(PhotoReport)
@@ -104,4 +105,4 @@ class PhotoReportAdmin(BaseAdmin):
     list_display_links = ('address', 'display_beneficiar')
     autocomplete_fields = ('user', )
 
-    # readonly_fields = ('type', 'user', 'text', 'date')  # for prod
+    readonly_fields = ('user', 'date')  # for prod
