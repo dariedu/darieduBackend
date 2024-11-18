@@ -13,9 +13,9 @@ User = get_user_model()
 class Delivery(models.Model):
     date = models.DateTimeField(verbose_name='дата доставки')
     price = models.PositiveIntegerField('часы', default=2)
-    curator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='delivery',
+    curator = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='delivery',
                                 blank=True, null=True, verbose_name='куратор',)
-    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='delivery', verbose_name='Локация')
+    location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name='delivery', verbose_name='Локация')
     is_free = models.BooleanField(default=True, verbose_name='свободная')
     is_active = models.BooleanField(default=True, verbose_name='активная')
     is_completed = models.BooleanField(default=False, verbose_name='завершена')
@@ -62,7 +62,7 @@ class DeliveryAssignment(models.Model):
 
 
 class Task(models.Model):
-    category = models.ForeignKey('TaskCategory', on_delete=models.CASCADE,
+    category = models.ForeignKey('TaskCategory', on_delete=models.SET_NULL,
                                  null=True, blank=True, verbose_name='категория')
     name = models.CharField(max_length=255, verbose_name='название')
     volunteer_price = models.PositiveIntegerField(verbose_name='волонтёрские часы', default=2)
@@ -75,8 +75,8 @@ class Task(models.Model):
     is_active = models.BooleanField(default=True, verbose_name='активная')
     is_completed = models.BooleanField(default=False, verbose_name='завершена')
 
-    city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name='город')
-    curator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_curator', verbose_name='куратор')
+    city = models.ForeignKey(City, on_delete=models.PROTECT, verbose_name='город')
+    curator = models.ForeignKey(User, on_delete=models.PROTECT, related_name='task_curator', verbose_name='куратор')
     volunteers = models.ManyToManyField(User, blank=True, related_name='tasks', verbose_name='волонтёры')
 
     def __str__(self):
