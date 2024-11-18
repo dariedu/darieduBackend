@@ -52,7 +52,10 @@ class RouteSheet(models.Model):
 
     @admin.display(description='куратор локации')
     def display_curator(self):
-        return self.location.curator
+        if self.location:
+            return self.location.curator
+
+        return None
 
     class Meta:
         verbose_name = 'маршрутный лист'

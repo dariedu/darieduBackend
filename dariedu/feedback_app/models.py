@@ -87,7 +87,8 @@ class Feedback(models.Model):
 
 
 class PhotoReport(models.Model):
-    address = models.ForeignKey('address_app.Address', on_delete=models.SET_NULL, verbose_name='адрес')
+    address = models.ForeignKey('address_app.Address', on_delete=models.SET_NULL, verbose_name='адрес'
+                                , null=True, blank=True)
     photo_view = models.URLField(max_length=500, verbose_name='показ фотографии', blank=True, null=True)
     photo_download = models.URLField(max_length=500, verbose_name='загрузка фотографии', blank=True, null=True)
     date = models.DateField(verbose_name='дата', auto_now_add=True)
