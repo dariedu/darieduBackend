@@ -3,6 +3,7 @@ import zoneinfo
 
 from django.contrib import admin
 from django.conf import settings
+from django.utils.safestring import mark_safe
 
 from import_export.admin import ExportActionMixin, ImportExportModelAdmin
 
@@ -94,6 +95,7 @@ class PromotionAdmin(BaseAdmin, ExportActionMixin):
         'ticket_file',
         'about_tickets',
         'picture',
+        'preview',
         'contact_person',
     )
     inlines = [UsersInline, ]
@@ -102,6 +104,10 @@ class PromotionAdmin(BaseAdmin, ExportActionMixin):
     ordering = ('-start_date',)
     list_editable = ('price', 'is_active', 'quantity', 'for_curators_only')
     list_display_links = ('name', 'category')
+    readonly_fields = ("preview",)
+
+    def preview(self, obj):
+        return mark_safe(f'<img src="{obj.picture.url}">')
 
     @action(description="Копировать")
     def copy(self, request, queryset, *args):
