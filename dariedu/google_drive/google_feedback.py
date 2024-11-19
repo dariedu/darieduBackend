@@ -12,7 +12,7 @@ class GoogleFeedback(GoogleAuthCustom):
         today = str(datetime.date.today())
         query = f'title="{today}" and trashed=false'
         folders_list = self.drive.ListFile({'q': query}).GetList()
-
+        print(folders_list)
         if not folders_list:
             folder_metadata = {
                 'title': today,

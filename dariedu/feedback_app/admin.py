@@ -2,6 +2,7 @@ import zoneinfo
 
 from django.contrib import admin
 from django.conf import settings
+from django.utils.html import format_html
 from import_export.admin import ImportExportModelAdmin
 from import_export.forms import ImportForm
 from unfold.admin import ModelAdmin
@@ -94,7 +95,7 @@ class PhotoReportAdmin(BaseAdmin):
 
     list_display = (
         "address",
-        "photo_view",
+        "get_link",
         "display_beneficiar",
         "date_format",
         "user",
@@ -106,3 +107,9 @@ class PhotoReportAdmin(BaseAdmin):
     autocomplete_fields = ('user', )
 
     readonly_fields = ('user', 'date')  # for prod
+
+    def get_link(self, obj: PhotoReport):
+        if obj.photo_view:
+            return format_html(f'<a href={obj.photo_view}>{obj.photo_view}</a>')
+
+    get_link.short_description = 'Ссылка на фотографию'
