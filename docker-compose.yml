@@ -15,7 +15,8 @@ services:
       - .env
     volumes:
       - static_volume:/home/app/web/staticfiles
-      - media_volume:/home/app/web/media
+      - ./dariedu:/app
+      - ./media:/usr/src/app/media
     ports:
       - "8000:8000"
     environment:
