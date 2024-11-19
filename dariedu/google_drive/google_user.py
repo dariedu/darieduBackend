@@ -4,13 +4,13 @@ from google_drive.google_auth import GoogleAuthCustom
 class GoogleUser(GoogleAuthCustom):
     FOLDER_NAME = 'Users'
 
-    def get_link_view(self, file):  # : File
+    def get_link_view(self, file):  # file: File
 
         google_file = self.upload_file(file)
 
         return google_file['embedLink']
 
-    def upload_file(self, file):  # : File
+    def upload_file(self, file):  # file: File
         self.drive.auth = self.auth()
         folder_id = self.get_folder_id()
 
@@ -27,7 +27,7 @@ class GoogleUser(GoogleAuthCustom):
         file_to_google.InsertPermission(
             {
                 'type': 'anyone',
-                'value': 'anyone',
+                'withLink': True,
                 'role': 'reader'
             }
         )

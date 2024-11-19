@@ -34,7 +34,7 @@ class PromotionSerializer(serializers.ModelSerializer):
     # Подсчет числа участников поощрений
     def get_volunteers_count(self, obj):
         return Participation.objects.filter(promotion=obj).count()
-
+      
 
 class ParticipationSerializer(serializers.ModelSerializer):
     promotion_id = serializers.IntegerField()

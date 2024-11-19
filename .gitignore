@@ -3,6 +3,7 @@
 .idea/
 __pycache__/
 /dariedu/credentials.json
+service_key.json
 
 # Google drive
 client_secrets.json

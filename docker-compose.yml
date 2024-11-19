@@ -83,6 +83,7 @@ volumes:
     driver: local
   static_volume:
   media_volume:
+    driver: local
 
 networks:
   mynetwork:
