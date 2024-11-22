@@ -41,7 +41,7 @@ class RegistrationView(generics.CreateAPIView):
             if phone:
                 request['phone'] = get_phone_number(phone)
 
-            if len(request['phone']) != 11:
+            if len(request['phone']) > 15 or len(request['phone']) < 10:
                 raise Exception('validation with phone')
 
             file_name = request.get('photo')
