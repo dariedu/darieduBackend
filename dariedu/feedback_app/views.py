@@ -13,7 +13,7 @@ from .serializers import FeedbackSerializer, RequestMessageSerializer, PhotoRepo
 from google_drive import GoogleFeedback
 
 
-class FeedbackViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class FeedbackViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
     """
     Пользователи могут создавать отзывы и просматривать только свои, администраторы могут просматривать все.
     """

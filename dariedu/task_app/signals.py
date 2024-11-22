@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from .models import DeliveryAssignment, Task
 from .tasks import send_message_to_telegram
 from notifications_app.models import Notification
+from feedback_app.models import Feedback
 from .export_gs_tasks import export_to_google_tasks, cancel_task_in_google_tasks, export_to_google_delivery, \
     cancel_task_in_google_delivery
 
@@ -20,6 +21,7 @@ def update_delivery_status(sender, instance, action, **kwargs):
             delivery.is_free = False
         delivery.save()
     if action == 'post_remove':
+        print('IM IN UPDATE_DELIVERY_STATUS')
         delivery = instance.delivery
         volunteers_taken = delivery.volunteers_taken - 1
         delivery.volunteers_taken = volunteers_taken
@@ -27,6 +29,10 @@ def update_delivery_status(sender, instance, action, **kwargs):
             # delivery.in_execution = False
             delivery.is_free = True
         delivery.save()
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        user_id = kwargs['pk_set'].pop()
+        type_feed = 'canceled_delivery'
+        Feedback.objects.create(type=type_feed, text='', user_id=user_id, delivery=delivery)
 
 
 @receiver(m2m_changed, sender=Task.volunteers.through)
