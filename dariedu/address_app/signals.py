@@ -13,7 +13,7 @@ def get_phone_number(phone: str) -> str:
 
     phone = ''.join(filter(str.isdigit, phone))
 
-    if len(phone) != 11:
+    if 10 > len(phone) or len(phone) > 15:
         raise ValidationError(message='Не правильный формат телефона')
 
     return phone
