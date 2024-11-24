@@ -22,6 +22,13 @@ class GoogleAuthCustom:
 
         return self.google_auth
 
+    def update_file(self, file_id, file):
+        self.drive.auth = self.auth()
+
+        up_file = self.drive.CreateFile({'id': file_id})
+        up_file.SetContentFile(f'media/{file}')
+        up_file.Upload()
+
 
 if __name__ == '__main__':
     test_auth = GoogleAuthCustom()

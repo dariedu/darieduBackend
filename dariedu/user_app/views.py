@@ -1,3 +1,5 @@
+import os
+
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
 from rest_framework import viewsets, mixins, generics
@@ -90,6 +92,25 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
     permission_classes = [IsAuthenticated]
     filterset_fields = ['is_superuser', 'is_staff', 'city', 'rating']
     ordering_fields = ['id']
+
+    def perform_update(self, serializer: UserSerializer):
+        gdrive = GoogleUser()
+        val_photo = serializer.validated_data.get('photo')
+
+        if not val_photo:
+            return
+
+        instance_photo = serializer.instance.photo
+        file_id = serializer.instance.photo_view.split('/')[-2]
+        photo_name = instance_photo.name.split(os.sep)[-1]
+        instance_photo.delete()
+
+        val_photo.name = photo_name
+        serializer.validated_data['photo'] = val_photo
+
+        data = serializer.save()
+
+        gdrive.update_file(file_id=file_id, file=data.photo)
 
     def get_queryset(self):
         queryset = User.objects.all()
