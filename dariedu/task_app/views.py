@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from address_app.models import RouteAssignment
 from .models import Task, Delivery, DeliveryAssignment, TaskCategory
 from .permissions import IsAbleCompleteTask, IsCurator, is_confirmed
 from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer, TaskVolunteerSerializer, \
@@ -435,8 +436,11 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         delivery = self.get_object()
         delivery_assignment = delivery.assignments.filter(volunteer=request.user).first()
         assignment = DeliveryAssignment.objects.filter(delivery=delivery, volunteer=request.user).first()
+        route_assignment = RouteAssignment.objects.filter(delivery=delivery, volunteer=request.user).first()
 
         if delivery_assignment:
+            if route_assignment:
+                route_assignment.delete()
             delivery_assignment.volunteer.remove(request.user)
             assignment.delete()
             return Response({'message': 'Delivery cancelled successfully'}, status=200)
