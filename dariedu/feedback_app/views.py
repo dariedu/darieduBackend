@@ -6,7 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from address_app.models import Address, Beneficiar
+from address_app.models import Address, Beneficiar, RouteSheet
+from task_app.models import Delivery
 from .models import Feedback, RequestMessage, PhotoReport
 from .serializers import FeedbackSerializer, RequestMessageSerializer, PhotoReportSerializer
 
@@ -112,11 +113,24 @@ class PhotoReportViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
         201 - если данные сохранены в бд
         """
         address_id = request.data.get('address')
+        route_sheet_id = request.data.get('route_sheet_id')
+        delivery_id = request.data.get('delivery_id')
 
         try:
             address = Address.objects.get(id=address_id)
         except Address.DoesNotExist:
             return Response({'detail': 'Address not found.'}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            route_sheet = RouteSheet.objects.get(id=route_sheet_id)
+        except RouteSheet.DoesNotExist:
+            return Response({'detail': 'Route sheet not found.'}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            delivery = Delivery.objects.get(id=delivery_id)
+        except Delivery.DoesNotExist:
+            return Response({'detail': 'Delivery not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if route_sheet.id not in delivery.route_sheet.all().values_list('id', flat=True):
+            return Response({'detail': 'Route sheet not found in delivery.'}, status=status.HTTP_404_NOT_FOUND)
 
         beneficiary = Beneficiar.objects.filter(address_id=address_id).values_list('full_name')
 
@@ -134,7 +148,9 @@ class PhotoReportViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
             address=address,
             photo_view=links.get('view'),
             photo_download=links.get('download'),
-            comment=request.data.get('comment')
+            comment=request.data.get('comment'),
+            route_sheet_id=route_sheet,
+            delivery_id=delivery
         )
 
         photo_report.save()
