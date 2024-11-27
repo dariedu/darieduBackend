@@ -36,6 +36,31 @@ class TaskViewSet(
     ordering_fields = ['start_date', 'end_date']
     filterset_fields = ['category', 'city']
 
+    def filter_queryset(self, queryset):
+        user = self.request.user
+
+        after = self.request.query_params.get('after', None)
+        before = self.request.query_params.get('before', None)
+        active = self.request.query_params.get('is_active', None)
+        completed = self.request.query_params.get('is_completed', None)
+        if after:
+            try:
+                after = timezone.datetime.strptime(after, '%Y-%m-%d')
+                queryset = queryset.filter(end_date__date__gte=after)
+            except ValueError:
+                pass
+        if before:
+            try:
+                before = timezone.datetime.strptime(before, '%Y-%m-%d')
+                queryset = queryset.filter(start_date__date__lte=before)
+            except ValueError:
+                pass
+        if active is not None and active.lower() == 'true':
+            queryset = queryset.filter(is_active=True).distinct()
+        if completed is not None and completed.lower() == 'true':
+            queryset = queryset.filter(is_completed=True).distinct()
+        return queryset
+
     def get_queryset(self):
         """
         Get queryset for specific action.
@@ -70,27 +95,7 @@ class TaskViewSet(
         if self.action == 'my':
             user = self.request.user
             queryset = user.tasks.all()
-
-            after = self.request.query_params.get('after', None)
-            before = self.request.query_params.get('before', None)
-            active = self.request.query_params.get('is_active', None)
-            completed = self.request.query_params.get('is_completed', None)
-            if after:
-                try:
-                    after = timezone.datetime.strptime(after, '%Y-%m-%d')
-                    queryset = queryset.filter(end_date__date__gte=after)
-                except ValueError:
-                    pass
-            if before:
-                try:
-                    before = timezone.datetime.strptime(before, '%Y-%m-%d')
-                    queryset = queryset.filter(start_date__date__lte=before)
-                except ValueError:
-                    pass
-            if active is not None and active.lower() == 'true':
-                queryset = queryset.filter(is_active=True).distinct()
-            if completed is not None and completed.lower() == 'true':
-                queryset = queryset.filter(is_completed=True).distinct()
+            queryset = self.filter_queryset(queryset)
             return queryset
 
         elif self.action == 'refuse':
@@ -103,7 +108,9 @@ class TaskViewSet(
 
         elif self.action == 'curator_of':
             # return tasks where the current user is curator
-            return self.request.user.task_curator.filter(is_active=True, is_completed=False)
+            queryset = self.request.user.task_curator
+            queryset = self.filter_queryset(queryset)
+            return queryset
 
         # all available tasks
         return super().get_queryset()
