@@ -5,7 +5,7 @@ def keyboard_task(data):
     inline_keyboard = {
         "inline_keyboard": [
             [
-                {"text": "Подтвердить участие", "callback_data": "accept_task"},
+                {"text": "Подтвердить участие", "callback_data": f"accept_task:{json.dumps(data)}"},
                 {"text": "Отказаться", "callback_data": f'refuse_task:{json.dumps(data)}'}
             ]
         ]
