@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils.html import format_html
 
+from address_app.models import RouteSheet
 from promo_app.models import Promotion
 from task_app.models import Delivery, Task
 
@@ -90,9 +91,13 @@ class PhotoReport(models.Model):
     address = models.ForeignKey('address_app.Address', on_delete=models.SET_NULL, verbose_name='адрес'
                                 , null=True, blank=True)
     photo_view = models.URLField(max_length=500, verbose_name='показ фотографии', blank=True, null=True)
-    photo_download = models.URLField(max_length=500, verbose_name='загрузка фотографии', blank=True, null=True)
+    photo_download = models.FileField(max_length=500, verbose_name='загрузка фотографии', blank=True, null=True)
     date = models.DateField(verbose_name='дата', auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name='пользователь', null=True, blank=True)
+    delivery_id = models.ForeignKey(Delivery, on_delete=models.SET_NULL, verbose_name='доставка',
+                                    blank=True, null=True)
+    route_sheet_id = models.ForeignKey(RouteSheet, on_delete=models.SET_NULL, verbose_name='маршрутный лист',
+                                       null=True, blank=True)
     comment = models.TextField(verbose_name='комментарий', blank=True, null=True, max_length=255)
 
     @admin.display(description='благополучатели')

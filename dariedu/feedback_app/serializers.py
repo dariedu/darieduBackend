@@ -67,6 +67,7 @@ class RequestMessageSerializer(serializers.ModelSerializer):
 
 class PhotoReportSerializer(serializers.ModelSerializer):
     user = UserShortSerializer(read_only=True)
+    photo = serializers.ImageField(write_only=True)
 
     class Meta:
         model = PhotoReport
@@ -74,4 +75,6 @@ class PhotoReportSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'id': {'read_only': True},
             'user': {'read_only': True},
+            'photo_view': {'read_only': True},
+            'photo_download': {'read_only': True},
         }
