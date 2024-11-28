@@ -104,10 +104,6 @@ class PromotionAdmin(BaseAdmin, ExportActionMixin):
     ordering = ('-start_date',)
     list_editable = ('price', 'is_active', 'quantity', 'for_curators_only')
     list_display_links = ('name', 'category')
-    readonly_fields = ("preview",)
-
-    def preview(self, obj):
-        return mark_safe(f'<img src="{obj.picture.url}">')
 
     @action(description="Копировать")
     def copy(self, request, queryset, *args):
