@@ -94,10 +94,18 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
     ordering_fields = ['id']
 
     def perform_update(self, serializer: UserSerializer):
+        serializer.validated_data.pop('last_name', None)
+        serializer.validated_data.pop('name', None)
+        serializer.validated_data.pop('surname', None)
+        serializer.validated_data.pop('phone', None)
+        serializer.validated_data.pop('birthday', None)
+        serializer.validated_data.pop('tg_username', None)
+
         gdrive = GoogleUser()
         val_photo = serializer.validated_data.get('photo')
 
         if not val_photo:
+            serializer.save()
             return
 
         instance_photo = serializer.instance.photo
