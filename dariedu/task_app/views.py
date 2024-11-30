@@ -213,21 +213,21 @@ class TaskViewSet(
 
         task.is_completed = True
         task.is_active = False
-        task.save()
+        task.save(update_fields=['is_completed', 'is_active'])
 
         for volunteer in task.volunteers.all():
             volunteer.update_volunteer_hours(
                 hours=volunteer.volunteer_hour + task.volunteer_price,
                 point=volunteer.point + task.volunteer_price
             )
-            volunteer.save()
+            volunteer.save(update_fields=['volunteer_hour', 'point'])
 
         curator = task.curator
         curator.update_volunteer_hours(
             hours=curator.volunteer_hour + task.curator_price,
             point=curator.point + task.curator_price
         )
-        curator.save()
+        curator.save(update_fields=['volunteer_hour', 'point'])
 
         task.refresh_from_db()
         serializer = self.get_serializer(task)
@@ -471,13 +471,13 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
                 curator = delivery.curator
                 curator.update_volunteer_hours(hours=curator.volunteer_hour + 4,
                                                point=curator.point + 4)
-                curator.save()
+                curator.save(update_fields=['volunteer_hour', 'point'])
                 for assignment in delivery.assignments.all():
                     for volunteer in assignment.volunteer.all():
                         volunteer.update_volunteer_hours(
                             hours=volunteer.volunteer_hour + delivery.price,
                             point=volunteer.point + delivery.price
                         )
-                        volunteer.save()
-                delivery.save()
+                        volunteer.save(update_fields=['volunteer_hour', 'point'])
+                delivery.save(update_fields=['is_completed', 'in_execution', 'is_active', 'is_free'])
                 return Response({'message': 'Delivery completed successfully'}, status=200)

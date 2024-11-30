@@ -130,7 +130,7 @@ def complete_task(task_id):
     task = Task.objects.get(id=task_id)
     if task.is_completed:
         task.is_active = False
-        task.save()
+        task.save(update_fields=['is_active'])
     else:
         task.is_active = False
         task.is_completed = True
@@ -139,15 +139,15 @@ def complete_task(task_id):
                 hours=volunteer.volunteer_hour + task.volunteer_price,
                 point=volunteer.point + task.volunteer_price
             )
-            volunteer.save()
+            volunteer.save(update_fields=['volunteer_hour', 'point'])
 
         curator = task.curator
         curator.update_volunteer_hours(
             hours=curator.volunteer_hour + task.curator_price,
             point=curator.point + task.curator_price
         )
-        curator.save()
-        task.save()
+        curator.save(update_fields=['volunteer_hour', 'point'])
+        task.save(update_fields=['is_completed', 'is_active'])
 
 
 @shared_task
@@ -165,8 +165,7 @@ def complete_delivery(delivery_id):
         delivery.is_active = False
         delivery.is_free = False
         delivery.in_execution = False
-        delivery.is_active = False
-        delivery.save()
+        delivery.save(update_fields=['is_active', 'is_free', 'in_execution'])
     else:
         delivery.is_active = False
         delivery.is_completed = True
@@ -175,15 +174,15 @@ def complete_delivery(delivery_id):
         curator = delivery.curator
         curator.update_volunteer_hours(hours=curator.volunteer_hour + 4,
                                        point=curator.point + 4)
-        curator.save()
+        curator.save(update_fields=['volunteer_hour', 'point'])
         for assignment in delivery.assignments.all():
             for volunteer in assignment.volunteer.all():
                 volunteer.update_volunteer_hours(
                     hours=volunteer.volunteer_hour + delivery.price,
                     point=volunteer.point + delivery.price
                 )
-                volunteer.save()
-        delivery.save()
+                volunteer.save(update_fields=['volunteer_hour', 'point'])
+        delivery.save(update_fields=['is_completed', 'is_active', 'in_execution', 'is_free'])
 
 
 @shared_task
@@ -199,7 +198,7 @@ def activate_delivery(delivery_id):
     delivery = Delivery.objects.get(id=delivery_id)
     if delivery.is_active:
         delivery.in_execution = True
-        delivery.save()
+        delivery.save(update_fields=['in_execution'])
 
 
 @shared_task
@@ -228,4 +227,4 @@ def duplicate_tasks_for_next_week():
         task.end_date += timedelta(weeks=1)
         task.is_active = False  # неактивные по умолчанию
         task.volunteers.clear()  # удаление волонтёров
-        task.save()
+        task.save(update_fields=['start_date', 'end_date', 'is_active', 'volunteers'])
