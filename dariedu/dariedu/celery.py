@@ -43,9 +43,9 @@ app.conf.beat_schedule = {
         'task': 'task_app.tasks.check_activate_delivery',
         'schedule': crontab(minute='00', hour='10'),
     },
-    'duplicate-tasks-every-friday': {
-        'task': 'task_app.tasks.duplicate_tasks_for_next_week',
-        'schedule': crontab(hour=0, minute=0, day_of_week='fri'),
+    'duplicate-delivery-every-friday': {
+        'task': 'task_app.tasks.duplicate_deliveries_for_next_week',
+        'schedule': crontab(hour=10, minute=0, day_of_week='fri'),
     },
     'update-volunteer-stats-weekly': {
         'task': 'statistics_app.tasks.update_volunteer_stats',

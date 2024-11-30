@@ -210,21 +210,26 @@ def check_activate_delivery():
 
 
 @shared_task
-def duplicate_tasks_for_next_week():
-    # Текущая дата для фильтрации задач на этой неделе
+def duplicate_delivery_for_next_week():
     today = timezone.now().date()
     end_of_week = today + timedelta(days=(6 - today.weekday()))
 
-    # Задачи текущей недели
-    tasks_to_duplicate = Task.objects.filter(
-        start_date__range=(today, end_of_week),
+    deliveries_to_duplicate = Task.objects.filter(
+        date__range=(today, end_of_week),
     )
 
-    # Копии задач на следующую неделю
-    for task in tasks_to_duplicate:
-        task.pk = None  # сброс первичного ключа для создания новой записи
-        task.start_date += timedelta(weeks=1)  # обновление даты на следующую неделю
-        task.end_date += timedelta(weeks=1)
-        task.is_active = False  # неактивные по умолчанию
-        task.volunteers.clear()  # удаление волонтёров
-        task.save(update_fields=['start_date', 'end_date', 'is_active', 'volunteers'])
+    for delivery in deliveries_to_duplicate:
+        new_delivery = Delivery.objects.create(
+            curator=delivery.curator,
+            location=delivery.location,
+            price=delivery.price,
+            date=delivery.date + timedelta(weeks=1),
+            is_active=False,
+            is_completed=False,
+            in_execution=False,
+            is_free=True,
+            volunteers_needed=delivery.volunteers_needed,
+            volunteers_taken=0,
+        )
+        new_delivery.route_sheet.add(*delivery.route_sheet.all())
+        new_delivery.save()
