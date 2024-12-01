@@ -42,8 +42,34 @@ class FeedbackViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         - 201: Если отзыв успешно создан.
         - 400: Если данные невалидные.
         """
-        serializer = FeedbackSerializer(data=request.data)
+
+        data = request.data
+        serializer = FeedbackSerializer(data=data)
         if serializer.is_valid():
+            # Проверка, что обратная связь может быть только о доставке или поощрении, но не о двух одновременно
+            if (data['type'] == 'canceled_delivery' or data['type'] == 'completed_delivery') and not data['delivery']:
+                return Response(
+                    {"error": "Для обратной связи о доставке необходимо указать доставку."}, status=400)
+            elif ((data['type'] == 'canceled_promotion' or data['type'] == 'completed_promotion')
+                  and not data['promotion']):
+                return Response(
+                    {"error": "Для обратной связи о поощрении необходимо указать поощрение."}, status=400)
+            elif (data['type'] == 'canceled_task' or data['type'] == 'completed_task') and not data['task']:
+                return Response(
+                    {"error": "Для обратной связи о добром деле необходимо указать доброе дело."}, status=400)
+            elif ((data['type'] == 'suggestion' or data['type'] == 'support') and
+                (data['delivery'] or data['promotion'] or data['task'])):
+                return Response(
+                    {"error":
+                         "Для предложений или поддержки не требуется указывать доставку, поощрение или доброе дело."},
+                    status=400)
+            if (data['delivery'] and data['promotion']
+                    or data['delivery'] and data['task']
+                    or data['promotion'] and data['task']):
+                return Response(
+                    {"error": "Отзыв может быть связан не более чем с одной моделью: либо доставка, либо поощрение."},
+                    status=400
+                )
             serializer.save(user=request.user)  # Присваиваем отзыв пользователю
             return Response({"message": "Спасибо за ваш отзыв!"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -44,6 +44,7 @@ class Feedback(models.Model):
         ('completed_task', 'Завершенное доброе дело'),
         ('canceled_task', 'Отмененное доброе дело'),
         ('suggestion', 'Вопросы и предложения'),
+        ('support', 'Техническая поддержка'),
     ]
 
     id = models.AutoField(primary_key=True, verbose_name="ID")
@@ -58,26 +59,8 @@ class Feedback(models.Model):
                              related_name="feedbacks")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
-    def clean(self):
-        # Проверка, что обратная связь может быть только о доставке или поощрении, но не о двух одновременно
-        if self.type == 'delivery' and not self.delivery:
-            raise ValidationError("Для обратной связи о доставке необходимо указать доставку.")
-        if self.type == 'promotion' and not self.promotion:
-            raise ValidationError("Для обратной связи о поощрении необходимо указать поощрение.")
-        if self.type == 'task' and not self.task:
-            raise ValidationError("Для обратной связи о доброе дело необходимо указать доброе дело.")
-        if self.delivery and self.promotion:
-            raise ValidationError("Обратная связь может быть связана только с одной моделью: "
-                                  "либо доставка, либо поощрение, либо доброе дело.")
-
     def __str__(self):
-        if self.type == 'delivery':
-            return f"Обратная связь о доставке {self.delivery} от {self.user.name} {self.user.last_name}"
-        elif self.type == 'promotion':
-            return f"Обратная связь о поощрении {self.promotion} от {self.user.name} {self.user.last_name}"
-        elif self.type == 'task':
-            return f"Обратная связь о доброе дело {self.task} от {self.user.name} {self.user.last_name}"
-        return f"Отзыв от {self.user.name} {self.user.last_name}"
+        return f'{self.type}: обратная связь от {self.user.name} {self.user.last_name}, {self.created_at}'
 
     def get_absolute_url(self):
         return reverse('admin:feedback_app_feedback_change', args=[self.pk])
