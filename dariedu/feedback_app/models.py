@@ -22,7 +22,7 @@ class RequestMessage(models.Model):
     about_worktime = models.CharField(max_length=255, verbose_name='график работы', blank=True, null=True,
                                       help_text='Какой у вас график работы/учебы?')
     date = models.DateField(verbose_name='дата', auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name='пользователь', null=True, blank=True)
 
     def __str__(self):
         return str(self.user)
@@ -49,12 +49,12 @@ class Feedback(models.Model):
     id = models.AutoField(primary_key=True, verbose_name="ID")
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, verbose_name="Тип обратной связи")
     text = models.TextField(verbose_name="Текст обратной связи", max_length=500)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
-    delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, null=True, blank=True,
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Пользователь")
+    delivery = models.ForeignKey(Delivery, on_delete=models.SET_NULL, null=True, blank=True,
                                  verbose_name="Доставка", related_name="feedbacks")
-    promotion = models.ForeignKey(Promotion, on_delete=models.CASCADE, null=True, blank=True,
+    promotion = models.ForeignKey(Promotion, on_delete=models.SET_NULL, null=True, blank=True,
                                   verbose_name="Поощрение", related_name="feedbacks")
-    task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Доброе дело",
+    task = models.ForeignKey(Task, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Доброе дело",
                              related_name="feedbacks")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
