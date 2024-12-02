@@ -13,7 +13,7 @@ User = get_user_model()
 class Delivery(models.Model):
     date = models.DateTimeField(verbose_name='дата доставки')
     price = models.PositiveIntegerField('часы', default=2)
-    curator = models.ForeignKey(User, on_delete=models.SET_NULL, related_name='delivery',
+    curator = models.ForeignKey(User, on_delete=models.PROTECT, related_name='delivery',
                                 blank=True, null=True, verbose_name='куратор',)
     location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name='delivery', verbose_name='Локация')
     is_free = models.BooleanField(default=True, verbose_name='свободная')

@@ -1,6 +1,7 @@
 import logging
 
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 from django.shortcuts import render
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
@@ -48,14 +49,19 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
 
     def get_queryset(self):
         """Curator can see only his routesheets, volunter can see only his routesheets in execution"""
+        delivery = [delivery.id for delivery in Delivery.objects.filter(in_execution=True,
+                                                                        assignments__volunteer=self.request.user)]
+        # logging.info(delivery)
+        route_assignment = RouteAssignment.objects.filter(volunteer=self.request.user, delivery__id__in=delivery)
         if self.request.user.is_staff:
             # logging.info(RouteSheet.objects.filter(location__curator=self.request.user, delivery__is_active=True))
             # logging.info(RouteSheet.objects.filter(location__curator=self.request.user))
-            return RouteSheet.objects.filter(location__curator=self.request.user, delivery__is_active=True).distinct()
+            return RouteSheet.objects.filter(
+                Q(location__curator=self.request.user, delivery__is_active=True) |
+                Q(id__in=route_assignment.values_list('route_sheet_id', flat=True))).distinct()
         else:
-            delivery = [delivery.id for delivery in Delivery.objects.filter(in_execution=True,
-                                                                            assignment__volunteer=self.request.user)]
-            return RouteSheet.objects.filter(delivery__id__in=delivery).distinct()
+            return RouteSheet.objects.filter(
+                id__in=route_assignment.values_list('route_sheet_id', flat=True)).distinct()
 
     @action(detail=False, methods=['post'], url_name='assign_route')
     def assign(self, request):

@@ -24,7 +24,7 @@ class Location(models.Model):
     subway = models.CharField(max_length=255, blank=True, null=True, verbose_name='метро')
 
     city = models.ForeignKey(City, on_delete=models.PROTECT, verbose_name='город')
-    curator = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name='куратор',
+    curator = models.ForeignKey(User, on_delete=models.PROTECT, verbose_name='куратор',
                                 blank=True, null=True)
     media_files = models.FileField(blank=True, null=True, verbose_name='файлы', upload_to='location_files')
     description = models.TextField(blank=True, null=True, verbose_name='описание')
@@ -55,7 +55,7 @@ class RouteSheet(models.Model):
         if self.location:
             return self.location.curator
 
-        return None
+        return ''
 
     class Meta:
         verbose_name = 'маршрутный лист'

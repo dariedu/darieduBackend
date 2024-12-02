@@ -134,5 +134,14 @@ class RatingViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = RatingSerializer
 
 
+class CurrentUserViewSet(generics.ListAPIView, viewsets.GenericViewSet):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = User.objects.all()
+
+    def get_queryset(self):
+        return User.objects.filter(id=self.request.user.id)
+
+
 def FlatpageView(request):
     return render(request, 'defaults/default_api.html')

@@ -10,7 +10,7 @@ from .tasks import export_to_google_feedback_user, export_to_google_request_mess
 
 
 @receiver(post_save, sender=RequestMessage)
-def create_feedback(sender, instance, created, **kwargs):
+def create_request_message(sender, instance, created, **kwargs):
     if created:
         notification = Notification.objects.create(
             title=instance.type,
@@ -19,6 +19,17 @@ def create_feedback(sender, instance, created, **kwargs):
             created=timezone.now()
         )
         notification.save()
+
+
+@receiver(post_save, sender=Feedback)
+def create_feedback(sender, instance, created, **kwargs):
+    if created and instance.type == 'support':
+        notification = Notification.objects.create(
+            title="Техническая поддержка",
+            text=f"Новая обратная связь от пользователя {instance.user}",
+            obj_link=instance.get_absolute_url(),
+            created=timezone.now()
+        )
 
 
 @receiver(post_save, sender=Feedback)

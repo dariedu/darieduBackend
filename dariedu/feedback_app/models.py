@@ -22,7 +22,7 @@ class RequestMessage(models.Model):
     about_worktime = models.CharField(max_length=255, verbose_name='график работы', blank=True, null=True,
                                       help_text='Какой у вас график работы/учебы?')
     date = models.DateField(verbose_name='дата', auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name='пользователь', null=True, blank=True)
 
     def __str__(self):
         return str(self.user)
@@ -44,40 +44,23 @@ class Feedback(models.Model):
         ('completed_task', 'Завершенное доброе дело'),
         ('canceled_task', 'Отмененное доброе дело'),
         ('suggestion', 'Вопросы и предложения'),
+        ('support', 'Техническая поддержка'),
     ]
 
     id = models.AutoField(primary_key=True, verbose_name="ID")
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, verbose_name="Тип обратной связи")
     text = models.TextField(verbose_name="Текст обратной связи", max_length=500)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
-    delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, null=True, blank=True,
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Пользователь")
+    delivery = models.ForeignKey(Delivery, on_delete=models.SET_NULL, null=True, blank=True,
                                  verbose_name="Доставка", related_name="feedbacks")
-    promotion = models.ForeignKey(Promotion, on_delete=models.CASCADE, null=True, blank=True,
+    promotion = models.ForeignKey(Promotion, on_delete=models.SET_NULL, null=True, blank=True,
                                   verbose_name="Поощрение", related_name="feedbacks")
-    task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Доброе дело",
+    task = models.ForeignKey(Task, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Доброе дело",
                              related_name="feedbacks")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
-    def clean(self):
-        # Проверка, что обратная связь может быть только о доставке или поощрении, но не о двух одновременно
-        if self.type == 'delivery' and not self.delivery:
-            raise ValidationError("Для обратной связи о доставке необходимо указать доставку.")
-        if self.type == 'promotion' and not self.promotion:
-            raise ValidationError("Для обратной связи о поощрении необходимо указать поощрение.")
-        if self.type == 'task' and not self.task:
-            raise ValidationError("Для обратной связи о доброе дело необходимо указать доброе дело.")
-        if self.delivery and self.promotion:
-            raise ValidationError("Обратная связь может быть связана только с одной моделью: "
-                                  "либо доставка, либо поощрение, либо доброе дело.")
-
     def __str__(self):
-        if self.type == 'delivery':
-            return f"Обратная связь о доставке {self.delivery} от {self.user.name} {self.user.last_name}"
-        elif self.type == 'promotion':
-            return f"Обратная связь о поощрении {self.promotion} от {self.user.name} {self.user.last_name}"
-        elif self.type == 'task':
-            return f"Обратная связь о доброе дело {self.task} от {self.user.name} {self.user.last_name}"
-        return f"Отзыв от {self.user.name} {self.user.last_name}"
+        return f'{self.type}: обратная связь от {self.user.name} {self.user.last_name}, {self.created_at}'
 
     def get_absolute_url(self):
         return reverse('admin:feedback_app_feedback_change', args=[self.pk])

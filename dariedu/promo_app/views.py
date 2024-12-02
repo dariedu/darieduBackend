@@ -80,7 +80,7 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
             return Response({'error': 'Вы уже приобрели этот поощрение'}, status=400)
 
         user.point -= promotion.price
-        user.save()
+        user.save(update_fields=['point'])
 
         serializer = PromotionSerializer(instance=promotion, context={'view': self, 'request': request})
 
@@ -108,12 +108,12 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
             return Response({'error': 'У вас нет этого поощрения'}, status=400)
 
         user.point += promotion.price
-        user.save()
+        user.save(update_fields=['point'])
         participation.delete()
-        serializer = PromotionSerializer(instance=promotion, context={'view': self, 'request': request})
 
         try:
-            return Response({'message': 'Поощрение успешно отменено, баллы возвращены.'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Поощрение успешно отменено, баллы возвращены.'},
+                            status=status.HTTP_200_OK)
         except ValidationError as e:
             return Response({'error': str(e)}, status=400)
         except Exception as e:
