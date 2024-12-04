@@ -43,16 +43,9 @@ ALLOWED_HOSTS = [
     'localhost',
     '0.0.0.0',
     '127.0.0.1',
-    '192.168.0.12',
-    '95.163.185.57',
-    'https://dariedufront.vercel.app/',
-    'https://localhost:5173/',
-    'https://skillfactory.dariedu.site/',
-    'skillfactory.dariedu.site',
 ] + [os.getenv('ALLOWED_HOSTS')]
 
-CURRENT_HOST = 'https://skillfactory.dariedu.site'
-# CURRENT_HOST = '127.0.0.1:8000'
+CURRENT_HOST = [os.getenv('CURRENT_HOST')]
 
 BACKUP_DIR = os.path.join(BASE_DIR, 'backups/')
 
@@ -108,36 +101,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'dariedu.urls'
 
-CORS_ALLOWED_ORIGINS = [
-    'https://skillfactory.dariedu.site',
-    'http://skillfactory.dariedu.site',
-    'https://dariedufront.vercel.app',
-    'https://localhost:5173',
-    'http://localhost:5173',
-    'https://localhost:8000',
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-    'http://127.0.0.1:5173',
-    'https://127.0.0.1:5173',
-    'https://v30ckdx0-5173.euw.devtunnels.ms',
-]
+CORS_ALLOWED_ORIGINS = [] + os.getenv('CORS_ALLOWED_ORIGINS').split()
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = ["*"]
 CORS_ALLOW_HEADERS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://skillfactory.dariedu.site',
-    'http://skillfactory.dariedu.site',
-    'https://dariedufront.vercel.app',
-    'https://localhost:5173',
-    'http://localhost:5173',
-    'https://localhost:8000',
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-    'http://127.0.0.1:5173',
-    'https://127.0.0.1:5173',
-]
+CSRF_TRUSTED_ORIGINS = [] + [os.getenv('CSRF_TRUSTED_ORIGINS')]
 
 TEMPLATES = [
     {
