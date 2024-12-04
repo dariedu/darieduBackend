@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from address_app.models import RouteAssignment
+from dariedu.settings import CURRENT_HOST
 from .models import Task, Delivery, DeliveryAssignment, TaskCategory
 from .permissions import IsAbleCompleteTask, IsCurator, is_confirmed
 from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer, TaskVolunteerSerializer, \
@@ -361,7 +362,7 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
                         "tg_username": volunteer.tg_username,
                         "last_name": volunteer.last_name,
                         "name": volunteer.name,
-                        "photo": volunteer.photo.url if volunteer.photo else None
+                        "photo": (CURRENT_HOST + volunteer.photo.url) if volunteer.photo else None
                     })
 
             executing_deliveries.append({
@@ -383,7 +384,7 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
                         "tg_username": volunteer.tg_username,
                         "last_name": volunteer.last_name,
                         "name": volunteer.name,
-                        "photo": volunteer.photo.url if volunteer.photo else None
+                        "photo": (CURRENT_HOST + volunteer.photo.url) if volunteer.photo else None
                     })
 
             active_deliveries_list.append({
@@ -405,7 +406,7 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
                         "tg_username": volunteer.tg_username,
                         "last_name": volunteer.last_name,
                         "name": volunteer.name,
-                        "photo": volunteer.photo.url if volunteer.photo else None
+                        "photo": (CURRENT_HOST + volunteer.photo.url) if volunteer.photo else None
                     })
 
             complete_deliveries_list.append({

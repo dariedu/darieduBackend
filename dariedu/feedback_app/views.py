@@ -176,7 +176,8 @@ class PhotoReportViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewset
             photo_download=links.get('download'),
             comment=request.data.get('comment'),
             route_sheet_id=route_sheet,
-            delivery_id=delivery
+            delivery_id=delivery,
+            is_absent=request.data.get('is_absent')
         )
 
         photo_report.save()
