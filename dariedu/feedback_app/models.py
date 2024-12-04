@@ -76,6 +76,7 @@ class PhotoReport(models.Model):
     photo_view = models.URLField(max_length=500, verbose_name='показ фотографии', blank=True, null=True)
     photo_download = models.FileField(max_length=500, verbose_name='загрузка фотографии', blank=True, null=True)
     date = models.DateField(verbose_name='дата', auto_now_add=True)
+    is_absent = models.BooleanField(verbose_name='отсутствует', default=False)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name='пользователь', null=True, blank=True)
     delivery_id = models.ForeignKey(Delivery, on_delete=models.SET_NULL, verbose_name='доставка',
                                     blank=True, null=True)

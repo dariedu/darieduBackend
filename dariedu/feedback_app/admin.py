@@ -100,6 +100,7 @@ class PhotoReportAdmin(BaseAdmin):
         "date_format",
         "user",
         'comment',
+        'is_absent'
     )
     list_filter = ('date', 'user', 'address')
     search_fields = ('comment',)
