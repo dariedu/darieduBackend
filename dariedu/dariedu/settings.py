@@ -45,7 +45,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ] + os.getenv('ALLOWED_HOSTS').split()
 
-CURRENT_HOST = [os.getenv('CURRENT_HOST')]
+CURRENT_HOST = os.getenv('CURRENT_HOST')
 
 BACKUP_DIR = os.path.join(BASE_DIR, 'backups/')
 
