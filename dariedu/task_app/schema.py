@@ -196,13 +196,13 @@ class Fix1(OpenApiViewExtension):
                         name='is_active',
                         description='Filter by active tasks',
                         required=False,
-                        type=int
+                        type=str
                     ),
                     OpenApiParameter(
                         name='is_completed',
                         description='Filter by completed tasks',
                         required=False,
-                        type=int
+                        type=str
                     )
                 ],
                 tags=['Tasks']
