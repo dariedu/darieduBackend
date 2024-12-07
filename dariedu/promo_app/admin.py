@@ -95,7 +95,6 @@ class PromotionAdmin(BaseAdmin, ExportActionMixin):
         'ticket_file',
         'about_tickets',
         'picture',
-        'preview',
         'contact_person',
     )
     inlines = [UsersInline, ]

@@ -58,8 +58,12 @@ class TaskViewSet(
                 pass
         if active is not None and active.lower() == 'true':
             queryset = queryset.filter(is_active=True).distinct()
+        elif active is not None and active.lower() == 'false':
+            queryset = queryset.filter(is_active=False).distinct()
         if completed is not None and completed.lower() == 'true':
             queryset = queryset.filter(is_completed=True).distinct()
+        elif completed is not None and completed.lower() == 'false':
+            queryset = queryset.filter(is_completed=False).distinct()
         return queryset
 
     def get_queryset(self):
@@ -141,8 +145,8 @@ class TaskViewSet(
         Returns all user's tasks by default.
         Authenticated only.
         Filters:
-        is_active - filter tasks by active status, for available is true, true or false
-        is_completed - filter tasks by completed status, for history is true, true or false
+        is_active - filter tasks by active status, for available is true or false
+        is_completed - filter tasks by completed status, for history is true or false
         after - filter tasks by start date
         before - filter tasks by end date
         Пример фильтров для календаря: api/tasks/my/?after=2024-10-05&before=2024-10-20
