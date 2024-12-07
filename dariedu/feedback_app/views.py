@@ -1,6 +1,7 @@
 import os
 
 from django.shortcuts import render, get_object_or_404
+from django.utils import timezone
 from rest_framework import viewsets, mixins, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -18,14 +19,14 @@ class FeedbackViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     """
     Пользователи могут создавать отзывы и просматривать только свои, администраторы могут просматривать все.
     """
-    queryset = Feedback.objects.all()
+    queryset = Feedback.objects.filter(created_at__gte=timezone.now() - timezone.timedelta(days=14))
     serializer_class = FeedbackSerializer
 
     def get_queryset(self):
         """Пользователи видят только свои отзывы, администраторы - все"""
         if self.request.user.is_staff:
-            return Feedback.objects.all()
-        return Feedback.objects.filter(user=self.request.user)
+            return self.queryset
+        return self.queryset.filter(user=self.request.user)
 
     @action(detail=False, methods=['post'], url_path='submit')
     def submit_feedback(self, request):
@@ -36,6 +37,7 @@ class FeedbackViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         - `type`: Строка, тип отзыва (delivery или promotion)
         - `text`: Текст отзыва
         - `delivery`: ID доставки (если применимо)
+        - `task`: ID доброго дела (если применимо)
         - `promotion`: ID поощрения (если применимо)
 
         **Ответ:**
