@@ -277,7 +277,7 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         # TODO it works only for list. need to add for volunteers and curators deliveries
         if date:
             try:
-                date = timezone.datetime.strptime(date, '%Y-%m-%d').date()
+                date = timezone.datetime.strptime(date, '%Y-%m-%d')
                 self.queryset = self.queryset.filter(date__date=date)
             except ValueError:
                 pass
@@ -296,12 +296,15 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     @action(detail=False, methods=['get'], url_path='volunteer')
     def volunteer_deliveries(self, request):
         """
-        Пример фильтров для календаря: api/deliveries/volunteer/?after=2024-10-05&before=2024-10-20
+        Пример фильтров для календаря:
+        api/deliveries/volunteer/?after=2024-10-05&before=2024-10-20 - для активных, выполняющихся и завершенных доставок
+        api/deliveries/volunteer/?date=2024-10-20 - для свободных доставок, выбор по конкретной дате. Подойдет для главной страницы
         Формат даты: YYYY-MM-DD
         можно использовать вместе или по отдельности
         """
         after = self.request.query_params.get('after', None)
         before = self.request.query_params.get('before', None)
+        date = self.request.query_params.get('date', None)
 
         free_deliveries = self.get_queryset().filter(is_free=True).exclude(
             assignments__volunteer=request.user).distinct()
@@ -317,7 +320,8 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
                 active_deliveries = active_deliveries.filter(date__date__gte=after_date)
                 completed_deliveries = completed_deliveries.filter(date__date__gte=after_date)
             except ValueError:
-                return Response({'error': 'Invalid date format for "after". Expected format: YYYY-MM-DD'}, status=400)
+                return Response({'error': 'Invalid date format for "after". Expected format: YYYY-MM-DD'},
+                                status=400)
 
         if before:
             try:
@@ -328,6 +332,14 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
                 return Response({
                     'error': 'Invalid date format for "before". Expected format: YYYY-MM-DD'
                 }, status=400)
+
+        if date:
+            try:
+                date = timezone.datetime.strptime(date, '%Y-%m-%d')
+                free_deliveries = free_deliveries.filter(date__date=date)
+            except ValueError:
+                return Response({'error': 'Invalid date format for "date". Expected format: YYYY-MM-DD'},
+                                status=400)
 
         free_serializer = self.get_serializer(free_deliveries, many=True)
         active_serializer = self.get_serializer(active_deliveries, many=True,

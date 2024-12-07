@@ -57,11 +57,10 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
                 except ValueError:
                     pass
             if is_active:
-                try:
-                    is_active = bool(int(is_active))
-                    queryset = queryset.filter(is_active=is_active)
-                except ValueError:
-                    pass
+                if is_active == 'true':
+                    queryset = queryset.filter(is_active=True)
+                elif is_active == 'false':
+                    queryset = queryset.filter(is_active=False)
             return queryset
 
     @action(detail=True, methods=['post'], url_path='redeem')
