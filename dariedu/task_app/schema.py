@@ -196,7 +196,7 @@ class Fix1(OpenApiViewExtension):
                         name='is_active',
                         description='Filter by active tasks',
                         required=False,
-                        type=str
+                        type=str  # TODO: make as in promo
                     ),
                     OpenApiParameter(
                         name='is_completed',
