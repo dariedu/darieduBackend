@@ -6,7 +6,7 @@ from django.conf import settings
 
 load_dotenv(find_dotenv())
 
-SCOPES = os.getenv('SCOPES').split(',')
+SCOPES = os.getenv('SCOPES', '').split(',')
 BASE_DIR = settings.BASE_DIR
 
 SERVICE_ACCOUNT_FILE = os.path.join(BASE_DIR, 'credentials.json')
