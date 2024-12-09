@@ -1,9 +1,8 @@
-FROM python:3.10.5
+FROM python:3.10.5-slim-bullseye
 
 WORKDIR /usr/src/app
 
 COPY requirements.txt ./
-COPY credentials.json ./
 RUN pip install --upgrade pip
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -18,11 +17,9 @@ RUN pip install psycopg2-binary
 RUN pip install --no-cache-dir -r requirements.txt
 RUN apt-get update && apt-get install -y postgresql-client redis-tools
 
-COPY . .
-
 ENV DJANGO_SETTINGS_MODULE=dariedu.settings
 ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/usr/src/app
 
 RUN useradd -ms /bin/bash celeryuser
 RUN mkdir -p /usr/src/app/media && \
