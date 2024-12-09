@@ -8,7 +8,6 @@ service_key.json
 # Google drive
 client_secrets.json
 token.json
-photo_report
 settings.yaml
 
 # User photo
