@@ -19,14 +19,18 @@ class FeedbackViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     """
     Пользователи могут создавать отзывы и просматривать только свои, администраторы могут просматривать все.
     """
-    queryset = Feedback.objects.filter(created_at__gte=timezone.now() - timezone.timedelta(days=14))
+    queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
 
     def get_queryset(self):
         """Пользователи видят только свои отзывы, администраторы - все"""
-        if self.request.user.is_staff:
-            return self.queryset
-        return self.queryset.filter(user=self.request.user)
+        if self.action == 'list':
+            if self.request.user.is_staff:
+                return self.queryset.filter(created_at__gte=(timezone.now() - timezone.timedelta(days=14)))
+            return self.queryset.filter(user=self.request.user,
+                                        created_at__gte=(timezone.now() - timezone.timedelta(days=14)))
+
+        return self.queryset.filter(created_at__gte=(timezone.now() - timezone.timedelta(days=14)))
 
     @action(detail=False, methods=['post'], url_path='submit')
     def submit_feedback(self, request):
