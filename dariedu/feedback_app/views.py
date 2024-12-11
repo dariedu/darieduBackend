@@ -48,15 +48,22 @@ class FeedbackViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         data = request.data
         serializer = FeedbackSerializer(data=data)
         if serializer.is_valid():
+            if data['type'] == 'completed_task_curator' or data['type'] == 'completed_delivery_curator':
+                if not self.request.user.is_staff:
+                    return Response({"error": "Только куратор может оставлять данный тип отзывов."}, status=400)
             # Проверка, что обратная связь может быть только о доставке или поощрении, но не о двух одновременно
-            if (data['type'] == 'canceled_delivery' or data['type'] == 'completed_delivery') and not data['delivery']:
+            if (data['type'] == 'canceled_delivery' or
+                data['type'] == 'completed_delivery' or
+                data['type'] == 'completed_delivery_curator') and not data['delivery']:
                 return Response(
                     {"error": "Для обратной связи о доставке необходимо указать доставку."}, status=400)
             elif ((data['type'] == 'canceled_promotion' or data['type'] == 'completed_promotion')
                   and not data['promotion']):
                 return Response(
                     {"error": "Для обратной связи о поощрении необходимо указать поощрение."}, status=400)
-            elif (data['type'] == 'canceled_task' or data['type'] == 'completed_task') and not data['task']:
+            elif (data['type'] == 'canceled_task' or
+                  data['type'] == 'completed_task' or
+                  data['type'] == 'completed_task_curator') and not data['task']:
                 return Response(
                     {"error": "Для обратной связи о добром деле необходимо указать доброе дело."}, status=400)
             elif ((data['type'] == 'suggestion' or data['type'] == 'support') and
