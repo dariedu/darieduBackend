@@ -66,6 +66,7 @@ class AddressAdmin(BaseAdmin):
     inlines = [BeneficiarInline, ]
     list_display_links = ('address', 'route_sheet', 'location')
     autocomplete_fields = ['location', 'route_sheet']
+    ordering = ('id', )
 
     @action(description='Добавить в маршрутный лист')
     def add_addresses_to_route_sheet(self, request, queryset):
@@ -175,6 +176,7 @@ class BeneficiarAdmin(BaseAdmin):
     list_display_links = ('full_name', 'phone', 'address')
     autocomplete_fields = ['address']
     list_editable = ('presence', )
+    ordering = ('id',)
 
     def get_link(self, obj: Beneficiar):
         if obj.photo_link:

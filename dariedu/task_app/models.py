@@ -51,7 +51,8 @@ class Delivery(models.Model):
 class DeliveryAssignment(models.Model):
     delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, related_name='assignments',
                                  verbose_name='доставка')
-    volunteer = models.ManyToManyField(User, related_name='assignments', verbose_name='волонтёр')
+    volunteer = models.ManyToManyField(User, null=True, blank=True, related_name='assignments',
+                                       verbose_name='волонтёр')
 
     def __str__(self):
         return format_html('<br>'.join([str(volunteer) for volunteer in self.volunteer.all()]))

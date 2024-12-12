@@ -1,9 +1,12 @@
 import datetime
 import zoneinfo
+from typing import Optional
 
 from django.contrib import admin
 from django.conf import settings
-from django.utils.safestring import mark_safe
+from django.db.models import ForeignKey
+from django.forms import ModelChoiceField
+from django.http import HttpRequest
 
 from import_export.admin import ExportActionMixin, ImportExportModelAdmin
 
@@ -12,8 +15,7 @@ from unfold.contrib.import_export.forms import ImportForm, SelectableFieldsExpor
 from unfold.decorators import action
 
 from .export_prom import CombineResourcePromo
-from .models import Promotion, PromoCategory
-
+from .models import Promotion, PromoCategory, User
 
 ZONE = zoneinfo.ZoneInfo(settings.TIME_ZONE)
 
@@ -123,6 +125,7 @@ class PromotionAdmin(BaseAdmin, ExportActionMixin):
                 description=obj.description,
                 city=obj.city,
                 about_tickets=obj.about_tickets,
+                contact_person=obj.contact_person
             )
 
             if obj.ticket_file:
@@ -147,6 +150,13 @@ class PromotionAdmin(BaseAdmin, ExportActionMixin):
             'Копировать'
         )
         return actions
+
+    def formfield_for_foreignkey(
+        self, db_field: ForeignKey, request: HttpRequest, **kwargs
+    ) -> Optional[ModelChoiceField]:
+        if db_field.name == 'contact_person':
+            kwargs["queryset"] = User.objects.filter(is_staff=True)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 @admin.register(PromoCategory)
