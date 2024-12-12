@@ -206,7 +206,7 @@ def activate_delivery(delivery_id):
 def check_activate_delivery():
     deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()))
     for delivery in deliveries:
-        eta = delivery.date - timedelta(hours=0, minutes=30)
+        eta = delivery.date - timedelta(hours=1, minutes=0)
         activate_delivery.apply_async(args=[delivery.id], eta=eta)
 
 
