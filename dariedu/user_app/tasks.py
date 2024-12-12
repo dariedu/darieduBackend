@@ -180,3 +180,11 @@ def delete_cached_gsheets():
     cache.delete(settings.FIRST_ROW_VALUES_CACHE_KEY_3)
     time.sleep(1)
     cache.delete(settings.FIRST_ROW_VALUES_CACHE_KEY_4)
+
+
+@shared_task
+def update_ratings():
+    users = User.objects.all()
+    for user in users:
+        user.update_rating()
+        user.save(update_fields=['rating'])
