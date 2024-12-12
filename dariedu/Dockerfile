@@ -23,8 +23,10 @@ ENV PYTHONPATH=/usr/src/app
 
 RUN useradd -ms /bin/bash celeryuser
 RUN mkdir -p /usr/src/app/media && \
+    mkdir -p /usr/src/app/staticfiles && \
     chown -R celeryuser:celeryuser /usr/src/app && \
-    chmod -R 775 /usr/src/app/
+    chmod -R 775 /usr/src/app/media && \
+    chmod -R 775 /usr/src/app/staticfiles
 # RUN chown -R celeryuser:celeryuser /usr/src/app/media
 
 
