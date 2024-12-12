@@ -77,10 +77,10 @@ def check_promotions():
     # pprint(promotions)
     for promotion in promotions:
         eta = promotion.start_date - timedelta(hours=3)
-        if eta < timezone.now().replace(hour=9, minute=0, second=0, microsecond=0):
-            eta = timezone.now().replace(hour=9, minute=5, second=0, microsecond=0)
+        if eta < timezone.make_aware(datetime.today()).replace(hour=9, minute=0, second=0, microsecond=0):
+            eta = timezone.make_aware(datetime.today()).replace(hour=9, minute=5, second=0, microsecond=0)
         # pprint(eta)
-        if eta >= timezone.now():
+        if eta >= timezone.make_aware(datetime.today()):
             send_promotion_to_telegram.apply_async(args=[promotion.id], eta=eta)
 
 

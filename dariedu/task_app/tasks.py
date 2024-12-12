@@ -66,16 +66,16 @@ def check_tasks():
     tasks = Task.objects.filter(start_date__date=today)
     for task in tasks:
         if task.end_date.date() == today.date():
-            if task.start_date >= timezone.now():
+            if task.start_date >= timezone.make_aware(datetime.today()):
                 eta = task.start_date - timedelta(hours=3)
             else:
-                eta = timezone.now()
-            if eta < timezone.now().replace(hour=9, minute=0, second=0, microsecond=0):
-                eta = timezone.now().replace(hour=9, minute=5, second=0, microsecond=0)
+                eta = timezone.make_aware(datetime.today())
+            if eta < timezone.make_aware(datetime.today()).replace(hour=9, minute=0, second=0, microsecond=0):
+                eta = timezone.make_aware(datetime.today()).replace(hour=9, minute=5, second=0, microsecond=0)
         else:
-            date = task.start_date__date + (task.end_date__date - task.start_date__date) // 2
-            eta = timezone.make_aware(datetime.combine(date, datetime.time(task.start_date__time)))
-        if eta >= timezone.now():
+            date = task.start_date.date + (task.end_date.date - task.start_date.date) // 2
+            eta = timezone.make_aware(datetime.combine(date, datetime.time(task.start_date.time)))
+        if eta >= timezone.make_aware(datetime.today()):
             send_task_to_telegram.apply_async(args=[task.id], eta=eta)
 
 
@@ -116,12 +116,13 @@ def send_delivery_to_telegram(delivery_id):
 
 @shared_task
 def check_deliveries():
-    deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()), date__gte=timezone.now())
+    deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()),
+                                         date__gte=timezone.make_aware(datetime.today()))
     for delivery in deliveries:
         eta = delivery.date - timedelta(hours=3)
-        if eta <= timezone.now().replace(hour=9, minute=0, second=0, microsecond=0):
-            eta = timezone.now().replace(hour=9, minute=5, second=0, microsecond=0)
-        if timezone.now() <= eta:
+        if eta <= timezone.make_aware(datetime.today()).replace(hour=9, minute=0, second=0, microsecond=0):
+            eta = timezone.make_aware(datetime.today()).replace(hour=9, minute=5, second=0, microsecond=0)
+        if timezone.make_aware(datetime.today()) <= eta:
             send_delivery_to_telegram.apply_async(args=[delivery.id], eta=eta)
 
 
@@ -211,7 +212,7 @@ def check_activate_delivery():
 
 @shared_task
 def duplicate_delivery_for_next_week():
-    today = timezone.now().date()
+    today = timezone.make_aware(datetime.today()).date()
     end_of_week = today + timedelta(days=(6 - today.weekday()))
 
     deliveries_to_duplicate = Task.objects.filter(
