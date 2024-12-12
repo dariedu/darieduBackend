@@ -2,17 +2,17 @@
 /venv/
 .idea/
 __pycache__/
-/dariedu/credentials.json
-service_key.json
 
 # Google drive
 client_secrets.json
 token.json
 settings.yaml
+credentials.json
+service_key.json
 
 # User photo
 avatars
-/dariedu/dariedu/.env
-/dariedu/credentials.json
-/dariedu/dariedu/credentials.json
 /media/
+
+#generated files
+/dariedu/staticfiles
