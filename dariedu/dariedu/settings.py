@@ -43,7 +43,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '0.0.0.0',
     '127.0.0.1',
-] + os.getenv('ALLOWED_HOSTS').split()
+] + os.getenv('ALLOWED_HOSTS', '').split()
 
 CURRENT_HOST = os.getenv('CURRENT_HOST')
 
@@ -102,13 +102,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'dariedu.urls'
 
-CORS_ALLOWED_ORIGINS = [] + os.getenv('CORS_ALLOWED_ORIGINS').split()
+CORS_ALLOWED_ORIGINS = [] + os.getenv('CORS_ALLOWED_ORIGINS', '').split()
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = ["*"]
 CORS_ALLOW_HEADERS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = [] + os.getenv('CSRF_TRUSTED_ORIGINS').split()
+CSRF_TRUSTED_ORIGINS = [] + os.getenv('CSRF_TRUSTED_ORIGINS', '').split()
 
 TEMPLATES = [
     {

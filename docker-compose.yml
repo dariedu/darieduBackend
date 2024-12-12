@@ -6,16 +6,17 @@ services:
       db:
         condition: service_healthy
         restart: true
+    image: dariedu-server:latest
     build: ./dariedu
     command: bash -c "
       python manage.py migrate &&
       python manage.py collectstatic --noinput &&
-      gunicorn dariedu.wsgi:application --bind 0.0.0.0:8000 --reload"
+      gunicorn dariedu.wsgi:application --bind 0.0.0.0:8000"
     env_file:
       - .env
     volumes:
       - static_volume:/home/app/web/staticfiles
-      - ./dariedu:/app
+      - ./dariedu:/usr/src/app
       - media_volume:/usr/src/app/media
 #      - ./media:/usr/src/app/media
     ports:
@@ -26,7 +27,7 @@ services:
       - mynetwork
 
   celery-worker:
-    build: ./dariedu
+    image: dariedu-server:latest
     user: celeryuser
     command: celery -A dariedu worker -l info
     env_file:
@@ -35,12 +36,12 @@ services:
       - db
       - redis
     volumes:
-      - ./dariedu:/app
+      - ./dariedu:/usr/src/app
     networks:
       - mynetwork
 
   celery-beat:
-    build: ./dariedu
+    image: dariedu-server:latest
     user: celeryuser
     command: celery -A dariedu beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     env_file:
@@ -49,7 +50,7 @@ services:
       - db
       - redis
     volumes:
-      - ./dariedu:/app
+      - ./dariedu:/usr/src/app
     networks:
       - mynetwork
 
