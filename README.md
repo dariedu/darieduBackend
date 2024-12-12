@@ -46,3 +46,9 @@ docker-compose exec -ti dariedu-server python manage.py createsuperuser
 Сервер с API запустится по адресу http://127.0.0.1:8000/api  
 swagger: http://127.0.0.1:8000/api/swagger  
 админ-панель: http://127.0.0.1:8000/admin здесь нужно ввести данные админа (суперпользователя).
+
+
+Для просмотра логов:
+``` bash
+docker logs dariedubackend-dariedu-server-1
+```

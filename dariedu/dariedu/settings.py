@@ -21,7 +21,7 @@ from pathlib import Path
 from .unfold_config import UNFOLD_CONFIG
 
 load_dotenv(find_dotenv())
-logging.getLogger('django.utils.timezone').setLevel(logging.ERROR)
+# logging.getLogger('django.utils.timezone').setLevel(logging.ERROR)
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -37,7 +37,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG')
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -97,6 +97,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
+    'dariedu.middleware.ErrorHandlerMiddleware',
 ]
 
 ROOT_URLCONF = 'dariedu.urls'
@@ -279,3 +280,28 @@ FIRST_ROW_VALUES_CACHE_KEY = 'first_row_values'
 FIRST_ROW_VALUES_CACHE_KEY_2 = 'first_row_values_2'
 FIRST_ROW_VALUES_CACHE_KEY_3 = 'first_row_values_3'
 FIRST_ROW_VALUES_CACHE_KEY_4 = 'first_row_values_4'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'detailed': {
+            'format': '[{levelname}] {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'WARNING',
+            'class': 'logging.StreamHandler',
+            'formatter': 'detailed'
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+    }
+}
