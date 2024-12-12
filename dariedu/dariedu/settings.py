@@ -101,14 +101,13 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'dariedu.urls'
-#todo add default
+
 CORS_ALLOWED_ORIGINS = [] + os.getenv('CORS_ALLOWED_ORIGINS', '').split()
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = ["*"]
 CORS_ALLOW_HEADERS = ["*"]
 
-#todo add default
 CSRF_TRUSTED_ORIGINS = [] + os.getenv('CSRF_TRUSTED_ORIGINS', '').split()
 
 TEMPLATES = [
