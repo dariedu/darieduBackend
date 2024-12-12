@@ -5,7 +5,7 @@ from import_export.fields import Field
 from import_export.widgets import DateTimeWidget, BooleanWidget, ForeignKeyWidget
 
 from .models import Task, Delivery
-from address_app.models import Location, RouteSheet, Address, Beneficiar
+from address_app.models import Location, RouteSheet, Address, Beneficiar, RouteAssignment
 from feedback_app.models import Feedback, PhotoReport
 
 
@@ -117,7 +117,7 @@ class CombinedResourceDelivery(resources.ModelResource):
     def dehydrate_route(self, delivery):
         if delivery.location:
             route = [route.name for route in delivery.location.route_sheets.all()]
-            return route
+            return '; '.join(route) if route else ''
         return ''
 
     def dehydrate_route_link(self, delivery):
@@ -138,9 +138,9 @@ class CombinedResourceDelivery(resources.ModelResource):
         return '; '.join(beneficiaries_list) if beneficiaries_list else 'Нет благополучателей'
 
     def dehydrate_volunteer_link(self, delivery):
-        if delivery.location.route_sheets:
-            route = delivery.location.route_sheets.first()
-            return f'{route.user.last_name} {route.user.name}'
+        if delivery.route_sheet:
+            route_assignment = RouteAssignment.objects.filter(delivery=delivery).values_list('volunteer', flat=True).distinct()
+            return '; '.join([str(User.objects.get(id=user)) for user in route_assignment])
         return ''
 
     def dehydrate_address_user(self, delivery):
