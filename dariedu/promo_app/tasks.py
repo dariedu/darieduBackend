@@ -105,12 +105,12 @@ def check_complete_promotion():
 def event_start_promotion(promotion_pk):
 
     promotion = Promotion.objects.get(pk=promotion_pk)
-    participants = promotion.users.filter(is_active=True)
+    participants = promotion.participation_set.filter(is_active=True)
     google_promotion = GooglePromotion()
-    links = google_promotion.get_links()  # Если будет ссылка, заменить на show_tickets(link=promotion.ticket_file)
+    links = google_promotion.get_links(promotion.ticket_file)  # Если будет ссылка, заменить на show_tickets(link=promotion.ticket_file)
     for participant, link in zip(participants, links):
         payload = {
-            'chat_id': participant.tg_id,
+            'chat_id': participant.user.tg_id,
             'text': f'Ваша билет: {link}'
         }
         response = requests.post(url, json=payload)

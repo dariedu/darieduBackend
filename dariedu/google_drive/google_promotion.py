@@ -7,6 +7,7 @@ class GooglePromotion(GoogleAuthCustom):
     def get_links(self, link: str = None):
         folder_id = self.get_folder_id(link)
         query = f'"{folder_id}" in parents and trashed=false'
+        self.drive.auth = self.auth()
         files = self.drive.ListFile({'q': query}).GetList()
 
         return [file['embedLink'] for file in files]
