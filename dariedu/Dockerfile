@@ -22,12 +22,10 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/usr/src/app
 
 RUN useradd -ms /bin/bash celeryuser
-RUN chown -R celeryuser:celeryuser /usr/src/app && \
-    mkdir -p /usr/src/app/media && \
-    chmod -R 775 /usr/src/app && \
-    chmod -R 777 /usr/src/app/media && \
-    chown -R celeryuser:celeryuser /usr/src/app/media
-# RUN chown -R celeryuser:celeryuser /usr/src/app/media
+RUN mkdir -p /usr/src/app/media /usr/src/app/staticfiles && \
+    chmod -R 755 /usr/src/app && \
+    chmod g+s /usr/src/app /usr/src/app/media /usr/src/app/staticfiles && \
+    chown -R celeryuser:celeryuser /usr/src/app
 
 
 USER celeryuser
