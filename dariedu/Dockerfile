@@ -17,6 +17,8 @@ RUN pip install psycopg2-binary
 RUN pip install --no-cache-dir -r requirements.txt
 RUN apt-get update && apt-get install -y postgresql-client redis-tools
 
+COPY . .
+
 ENV DJANGO_SETTINGS_MODULE=dariedu.settings
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/usr/src/app
