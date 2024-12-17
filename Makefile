@@ -1,15 +1,15 @@
 build:
 	docker network ls | grep -w mynetwork || docker network create mynetwork #создать сеть, если ее нет
-	docker-compose build
+	docker compose build
 up:
-	mkdir -p ./dariedu/media ./dariedu/staticfiles
-	docker-compose up -d
+	mkdir -p ./media ./staticfiles
+	docker compose up -d
 down:
-	docker-compose down
+	docker compose down
 stop:
-	docker-compose stop
+	docker compose stop
 createsuperuser:
-	docker-compose exec -ti dariedu-server python manage.py createsuperuser
+	docker compose exec -ti dariedu-server python manage.py createsuperuser
 logs:
-	docker-compose logs -f dariedu-server
+	docker compose logs -f dariedu-server
 
