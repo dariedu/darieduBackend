@@ -2,7 +2,7 @@ build:
 	docker network ls | grep -w mynetwork || docker network create mynetwork #создать сеть, если ее нет
 	docker compose build
 up:
-	mkdir -p ./media ./staticfiles
+	mkdir -p ./media ./staticfiles ./dariedu/media ./dariedu/staticfiles
 	docker compose up -d
 down:
 	docker compose down
