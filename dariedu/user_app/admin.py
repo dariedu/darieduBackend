@@ -46,26 +46,26 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
     birthday_format.admin_order_field = 'birthday'
 
     list_display = (
-        'tg_id',
-        'tg_username',
+        'is_confirmed',
+        'rating',
+        'is_adult',
+        'last_name',
         'name',
         'surname',
-        'last_name',
-        'city',
-        'email',
-        'phone',
-        'rating',
+        'tg_username',
         'volunteer_hour',
-        "get_link",
         'point',
-        'is_superuser',
         'is_staff',
-        'is_confirmed',
-        'birthday_format',
-        'is_adult',
+        "get_link",
         'short_interests',
         'metier',
+        'birthday_format',
+        'phone',
+        'email',
         'consent_to_personal_data',
+        'is_superuser',
+        'tg_id',
+        'city',
     )
     list_editable = ('is_confirmed',)
     list_filter = (
@@ -107,9 +107,9 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
 
     def get_link(self, obj):
         if obj.photo_view:
-            return format_html(f'<a href={obj.photo_view}>{obj.photo_view}</a>')
+            return format_html(f'<a href={obj.photo_view}>Ссылка</a>')
 
-    get_link.short_description = 'Ссылка на фотографию'
+    get_link.short_description = 'Фото'
 
 
 @admin.register(Volunteer)
