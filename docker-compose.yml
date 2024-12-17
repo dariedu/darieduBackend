@@ -21,7 +21,7 @@ services:
     volumes:
       - static_volume:/usr/src/app/staticfiles
       - ./dariedu:/usr/src/app
-#      - media_volume:/usr/src/app/media
+      - media_volume:/usr/src/app/media
     ports:
       - "8000:8000"
     environment:
@@ -87,6 +87,7 @@ volumes:
   pg_data:
     driver: local
   static_volume:
+  media_volume:
 
 networks:
   mynetwork:
