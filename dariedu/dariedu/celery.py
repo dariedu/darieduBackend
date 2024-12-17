@@ -17,15 +17,15 @@ app.conf.timezone = 'Europe/Moscow'
 app.conf.beat_schedule = {
     'check_deliveries_and_send_notifications': {
         'task': 'task_app.tasks.check_deliveries',
-        'schedule': crontab(minute='00', hour='09'),
+        'schedule': crontab(minute='00', hour='06'),
     },
     'send-check-tasks-to-telegram': {
         'task': 'task_app.tasks.check_tasks',
-        'schedule': crontab(minute='00', hour='09'),
+        'schedule': crontab(minute='00', hour='06'),
     },
     'send-promotion-to-telegram': {
         'task': 'promo_app.tasks.check_promotions',
-        'schedule': crontab(minute='00', hour='08'),
+        'schedule': crontab(minute='00', hour='06'),
     },
     'complete-task': {
         'task': 'task_app.tasks.check_complete_task',
@@ -45,7 +45,7 @@ app.conf.beat_schedule = {
     },
     'duplicate-delivery-every-friday': {
         'task': 'task_app.tasks.duplicate_deliveries_for_next_week',
-        'schedule': crontab(hour='10', minute='0', day_of_week='fri'),
+        'schedule': crontab(hour='10', minute='0', day_of_week='5'),
     },
     'update-volunteer-stats-weekly': {
         'task': 'statistics_app.tasks.update_volunteer_stats',

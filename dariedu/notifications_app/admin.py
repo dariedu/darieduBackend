@@ -44,7 +44,7 @@ class NotificationAdmin(BaseAdmin):
     get_link.shot_description = 'Ссылка на объект'
 
     list_display = ('title', 'text_short', 'get_link', 'created_format')
-    list_filter = ('created',)
+    list_filter = ('created', 'title')
     readonly_fields = ('title', 'text', 'obj_link', 'created')
     search_fields = ('title', 'text', 'created')
     list_display_links = ('title', 'text_short')

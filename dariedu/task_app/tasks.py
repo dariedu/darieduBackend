@@ -1,4 +1,6 @@
 import json
+import zoneinfo
+
 import requests
 
 from datetime import timedelta, datetime
@@ -13,6 +15,8 @@ from django.utils import timezone
 
 from .keyboard import keyboard_task, keyboard_delivery
 from .models import Task, Delivery
+
+ZONE = zoneinfo.ZoneInfo(settings.TIME_ZONE)
 
 logger = get_task_logger(__name__)
 url = f'https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage'
@@ -43,7 +47,7 @@ def send_task_to_telegram(task_id):
     chat_id = task.curator.tg_id
     volunteer_tg_ids = [tg_id for tg_id in task.volunteers.values_list('tg_id', flat=True)]
     timedate = task.end_date
-    timedate = timedate.strftime('%d.%m.%Y')
+    timedate = timedate.astimezone(ZONE).strftime('%d.%m.%Y')
     data = {
         'task_id': task_id,
         'curator_tg_id': chat_id
@@ -70,8 +74,6 @@ def check_tasks():
                 eta = task.start_date - timedelta(hours=3)
             else:
                 eta = timezone.make_aware(datetime.today())
-            if eta < timezone.make_aware(datetime.today()).replace(hour=9, minute=0, second=0, microsecond=0):
-                eta = timezone.make_aware(datetime.today()).replace(hour=9, minute=5, second=0, microsecond=0)
         else:
             date = task.start_date.date + (task.end_date.date - task.start_date.date) // 2
             eta = timezone.make_aware(datetime.combine(date, datetime.time(task.start_date.time)))
@@ -92,8 +94,8 @@ def send_delivery_to_telegram(delivery_id):
         return
 
     timedate = delivery.date
-    date_str = timedate.strftime('%d.%m.%Y')
-    time_str = timedate.strftime('%H:%M')
+    date_str = timedate.astimezone(ZONE).strftime('%d.%m.%Y')
+    time_str = timedate.astimezone(ZONE).strftime('%H:%M')
     curator_tg_id = delivery.curator.tg_id
     data = {
         'delivery_id': delivery_id,
@@ -120,8 +122,6 @@ def check_deliveries():
                                          date__gte=timezone.make_aware(datetime.today()))
     for delivery in deliveries:
         eta = delivery.date - timedelta(hours=3)
-        if eta <= timezone.make_aware(datetime.today()).replace(hour=9, minute=0, second=0, microsecond=0):
-            eta = timezone.make_aware(datetime.today()).replace(hour=9, minute=5, second=0, microsecond=0)
         if timezone.make_aware(datetime.today()) <= eta:
             send_delivery_to_telegram.apply_async(args=[delivery.id], eta=eta)
 
