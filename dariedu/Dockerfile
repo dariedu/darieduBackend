@@ -22,7 +22,9 @@ ENV DJANGO_SETTINGS_MODULE=dariedu.settings
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/usr/src/app
 
-RUN useradd -ms /bin/bash celeryuser
+ARG HOST_UID
+ARG HOST_GID
+RUN groupadd -g ${HOST_GID} celeryuser && useradd -u ${HOST_UID} -g celeryuser -ms /bin/bash celeryuser
 
 RUN mkdir -p /usr/src/app/media /usr/src/app/staticfiles && \
     chmod -R 755 /usr/src/app && \
