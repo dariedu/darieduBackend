@@ -177,7 +177,7 @@ UNFOLD_CONFIG = {
                             "permission": lambda request: request.user.is_superuser,
                         },
                         {
-                            "title": _("Рейтинг"),
+                            "title": _("Уровень"),
                             "icon": "trending_up",
                             "link": reverse_lazy("admin:user_app_rating_changelist"),
                             # "badge": "admin",

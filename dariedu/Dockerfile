@@ -17,17 +17,17 @@ RUN pip install psycopg2-binary
 RUN pip install --no-cache-dir -r requirements.txt
 RUN apt-get update && apt-get install -y postgresql-client redis-tools
 
+
 ENV DJANGO_SETTINGS_MODULE=dariedu.settings
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/usr/src/app
 
 RUN useradd -ms /bin/bash celeryuser
-RUN mkdir -p /usr/src/app/media && \
-    mkdir -p /usr/src/app/staticfiles && \
-    chown -R celeryuser:celeryuser /usr/src/app && \
-    chmod -R 775 /usr/src/app/media && \
-    chmod -R 775 /usr/src/app/staticfiles
-# RUN chown -R celeryuser:celeryuser /usr/src/app/media
+
+RUN mkdir -p /usr/src/app/media /usr/src/app/staticfiles && \
+    chmod -R 755 /usr/src/app && \
+    chmod g+s /usr/src/app /usr/src/app/media /usr/src/app/staticfiles && \
+    chown -R celeryuser:celeryuser /usr/src/app
 
 
 USER celeryuser
