@@ -12,7 +12,7 @@ service_key.json
 
 # User photo
 avatars
-/media/
+/dariedu/media
 
 #generated files
 /dariedu/staticfiles
