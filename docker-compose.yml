@@ -10,8 +10,8 @@ services:
     build:
       context: ./dariedu
       args:
-        HOST_UID: ${UID}
-        HOST_GID: ${GID}
+        HOST_UID: ${UID:-1000}
+        HOST_GID: ${GID:-1000}
     command: bash -c "
       python manage.py migrate &&
       python manage.py collectstatic --noinput &&
