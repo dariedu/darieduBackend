@@ -118,8 +118,7 @@ def send_delivery_to_telegram(delivery_id):
 
 @shared_task
 def check_deliveries():
-    deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()),
-                                         date__gte=timezone.make_aware(datetime.today()))
+    deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()))
     for delivery in deliveries:
         eta = delivery.date - timedelta(hours=3)
         if timezone.make_aware(datetime.today()) <= eta:
@@ -215,7 +214,7 @@ def duplicate_delivery_for_next_week():
     today = timezone.make_aware(datetime.today()).date()
     end_of_week = today + timedelta(days=(6 - today.weekday()))
 
-    deliveries_to_duplicate = Task.objects.filter(
+    deliveries_to_duplicate = Delivery.objects.filter(
         date__range=(today, end_of_week),
     )
 
