@@ -193,7 +193,7 @@ class DeliveryAdmin(BaseAdmin, ExportActionMixin):
                 is_completed=False,
                 in_execution=False,
                 volunteers_needed=obj.volunteers_needed,
-                volunteers_taken=obj.volunteers_taken,
+                volunteers_taken=0,
             )
             new_obj.route_sheet.add(*obj.route_sheet.all())
             new_obj.save()
