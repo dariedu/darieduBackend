@@ -70,10 +70,10 @@ def check_tasks():
     tasks = Task.objects.filter(start_date__date=today)
     for task in tasks:
         if task.end_date.date() == today.date():
-            if task.start_date >= timezone.make_aware(datetime.today()):
+            if task.start_date >= timezone.now():
                 eta = task.start_date - timedelta(hours=3)
             else:
-                eta = timezone.make_aware(datetime.today())
+                eta = timezone.now()
         else:
             date = task.start_date.date + (task.end_date.date - task.start_date.date) // 2
             eta = timezone.make_aware(datetime.combine(date, datetime.time(task.start_date.time)))
@@ -121,8 +121,7 @@ def check_deliveries():
     deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()))
     for delivery in deliveries:
         eta = delivery.date - timedelta(hours=3)
-        if timezone.make_aware(datetime.today()) <= eta:
-            send_delivery_to_telegram.apply_async(args=[delivery.id], eta=eta)
+        send_delivery_to_telegram.apply_async(args=[delivery.id], eta=eta)
 
 
 @shared_task
