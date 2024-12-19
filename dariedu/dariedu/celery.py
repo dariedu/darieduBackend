@@ -17,7 +17,7 @@ app.conf.timezone = 'Europe/Moscow'
 app.conf.beat_schedule = {
     'check_deliveries_and_send_notifications': {
         'task': 'task_app.tasks.check_deliveries',
-        'schedule': crontab(minute='10', hour='09'),
+        'schedule': crontab(minute='00', hour='06'),
     },
     'send-check-tasks-to-telegram': {
         'task': 'task_app.tasks.check_tasks',
