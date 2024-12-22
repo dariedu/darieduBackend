@@ -34,17 +34,17 @@ class NotificationAdmin(BaseAdmin):
     @admin.display(description="описание")
     def text_short(self, obj):
         if obj.text:
-            return obj.text[:45] + '...' if len(obj.text) > 45 else obj.text
+            return obj.text[:90] + '...' if len(obj.text) > 90 else obj.text
         return None
-
-    def get_link(self, obj):
-        if obj.obj_link:
-            return format_html(f'<a href={obj.obj_link}>{obj.obj_link}</a>')
-
-    get_link.shot_description = 'Ссылка на объект'
 
     list_display = ('title', 'text_short', 'get_link', 'created_format')
     list_filter = ('created', 'title')
     readonly_fields = ('title', 'text', 'obj_link', 'created')
     search_fields = ('title', 'text', 'created')
     list_display_links = ('title', 'text_short')
+
+    def get_link(self, obj):
+        if obj.obj_link:
+            return format_html(f'<a href={obj.obj_link}>Ссылка</a>')
+
+    get_link.short_description = 'Ссылка на объект'

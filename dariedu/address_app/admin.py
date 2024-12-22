@@ -160,7 +160,7 @@ class CityAdmin(BaseAdmin):
 class RouteSheetAdmin(BaseAdmin):
 
     autocomplete_fields = ('location',)
-    list_display = ('name', 'location', 'display_address', 'display_curator')
+    list_display = ('name', 'location', 'display_address', 'display_beneficiars', 'display_curator')
     fields = ('name', 'map', 'location')
     inlines = [AddressInline, ]
     list_filter = ('location',)
@@ -180,6 +180,6 @@ class BeneficiarAdmin(BaseAdmin):
 
     def get_link(self, obj: Beneficiar):
         if obj.photo_link:
-            return format_html(f'<a href={obj.photo_link}>{obj.photo_link}</a>')
+            return format_html(f'<a href={obj.photo_link}>Ссылка на фото</a>')
 
     get_link.short_description = 'Ссылка на фото'

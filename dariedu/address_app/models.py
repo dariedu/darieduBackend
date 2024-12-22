@@ -50,6 +50,10 @@ class RouteSheet(models.Model):
     def display_address(self):
         return format_html('<br>'.join([address.address for address in self.address.all()]))
 
+    @admin.display(description='благополучатели')
+    def display_beneficiaries(self):
+        return format_html('<br>'.join([address.display_beneficiar for address in self.address.all()]))
+
     @admin.display(description='куратор локации')
     def display_curator(self):
         if self.location:

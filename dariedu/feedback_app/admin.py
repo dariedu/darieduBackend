@@ -29,7 +29,7 @@ class FeedbackAdmin(BaseAdmin):
     @admin.display(description="текст заявки")
     def text_short(self, obj):
         if obj.text:
-            return obj.text[:45] + '...' if len(obj.text) > 45 else obj.text
+            return obj.text[:90] + '...' if len(obj.text) > 90 else obj.text
         return None
 
     @admin.display(description="дата")
@@ -111,6 +111,6 @@ class PhotoReportAdmin(BaseAdmin):
 
     def get_link(self, obj: PhotoReport):
         if obj.photo_view:
-            return format_html(f'<a href={obj.photo_view}>{obj.photo_view}</a>')
+            return format_html(f'<a href={obj.photo_view}>Ссылка</a>')
 
-    get_link.short_description = 'Ссылка на фотографию'
+    get_link.short_description = 'Ссылка на фото'
