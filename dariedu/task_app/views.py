@@ -264,6 +264,7 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     queryset = Delivery.objects.all()
     serializer_class = DeliverySerializer
     permission_classes = [IsAuthenticated]
+    ordering_fields = ['date']
 
     def get_queryset(self):
         user = self.request.user

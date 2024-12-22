@@ -47,7 +47,7 @@ def send_task_to_telegram(task_id):
     chat_id = task.curator.tg_id
     volunteer_tg_ids = [tg_id for tg_id in task.volunteers.values_list('tg_id', flat=True)]
     timedate = task.end_date
-    timedate = timedate.astimezone(ZONE).strftime('%d.%m.%Y')
+    # timedate = timedate.astimezone(ZONE).strftime('%d.%m.%Y')
     data = {
         'task_id': task_id,
         'curator_tg_id': chat_id
@@ -70,15 +70,11 @@ def check_tasks():
     tasks = Task.objects.filter(start_date__date=today)
     for task in tasks:
         if task.end_date.date() == today.date():
-            if task.start_date >= timezone.now():
-                eta = task.start_date - timedelta(hours=3)
-            else:
-                eta = timezone.now()
+            eta = task.start_date - timedelta(hours=3)
         else:
             date = task.start_date.date + (task.end_date.date - task.start_date.date) // 2
             eta = timezone.make_aware(datetime.combine(date, datetime.time(task.start_date.time)))
-        if eta >= timezone.make_aware(datetime.today()):
-            send_task_to_telegram.apply_async(args=[task.id], eta=eta)
+        send_task_to_telegram.apply_async(args=[task.id], eta=eta)
 
 
 @shared_task
@@ -94,8 +90,9 @@ def send_delivery_to_telegram(delivery_id):
         return
 
     timedate = delivery.date
-    date_str = timedate.astimezone(ZONE).strftime('%d.%m.%Y')
-    time_str = timedate.astimezone(ZONE).strftime('%H:%M')
+    date_str = timedate.strftime('%d.%m.%Y')
+    time_str = timedate.strftime('%H:%M')
+    # time_str = timedate.astimezone(ZONE).strftime('%H:%M')
     curator_tg_id = delivery.curator.tg_id
     data = {
         'delivery_id': delivery_id,
