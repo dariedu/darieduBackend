@@ -160,7 +160,7 @@ class CityAdmin(BaseAdmin):
 class RouteSheetAdmin(BaseAdmin):
 
     autocomplete_fields = ('location',)
-    list_display = ('name', 'location', 'display_address', 'display_beneficiars', 'display_curator')
+    list_display = ('name', 'location', 'display_address', 'display_beneficiaries', 'display_curator')
     fields = ('name', 'map', 'location')
     inlines = [AddressInline, ]
     list_filter = ('location',)

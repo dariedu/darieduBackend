@@ -48,11 +48,16 @@ class RouteSheet(models.Model):
 
     @admin.display(description='адреса')
     def display_address(self):
-        return format_html('<br>'.join([address.address for address in self.address.all()]))
+        return format_html('<br><br>'.join([address.address for address in self.address.all()]))
 
     @admin.display(description='благополучатели')
     def display_beneficiaries(self):
-        return format_html('<br>'.join([address.display_beneficiar for address in self.address.all()]))
+        addresses = self.address.all()
+        beneficiaries = []
+        for address in addresses:
+            for beneficiary in address.beneficiar.all():
+                beneficiaries.append(beneficiary)
+        return format_html('<br><br>'.join([beneficiary.full_name for beneficiary in beneficiaries]))
 
     @admin.display(description='куратор локации')
     def display_curator(self):
