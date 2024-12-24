@@ -281,6 +281,11 @@ FIRST_ROW_VALUES_CACHE_KEY_2 = 'first_row_values_2'
 FIRST_ROW_VALUES_CACHE_KEY_3 = 'first_row_values_3'
 FIRST_ROW_VALUES_CACHE_KEY_4 = 'first_row_values_4'
 
+CACHE_STATS_WEEK_KEY = 'cache_stats_week'
+CACHE_STATS_MONTH_KEY = 'cache_stats_month'
+CACHE_STATS_YEAR_KEY = 'cache_stats_year'
+CACHE_STATS_QUERYSET_KEY = 'cache_stats_queryset'
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

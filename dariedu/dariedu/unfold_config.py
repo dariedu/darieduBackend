@@ -256,9 +256,30 @@ UNFOLD_CONFIG = {
                     "collapsible": True,
                     "items": [
                         {
-                            "title": _("Статистика по волонтерам"),
+                            "title": _("Статистика volunteers"),  # TODO: Удалить перед слиянием в main
                             "icon": "request_quote",
-                            "link": reverse_lazy("admin:statistics_app_volunteerstats_changelist"),
+                            "link": reverse_lazy("admin:statistics_app_statistics_changelist"),
+                            # "badge": "main admin",
+                            "permission": lambda request: request.user.is_superuser,
+                        },
+                        {
+                            "title": _("Статистика за неделю"),
+                            "icon": "request_quote",
+                            "link": reverse_lazy("admin:statistics_app_statisticsbyweek_changelist"),
+                            # "badge": "main admin",
+                            "permission": lambda request: request.user.is_superuser,
+                        },
+                        {
+                            "title": _("Статистика за месяц"),
+                            "icon": "request_quote",
+                            "link": reverse_lazy("admin:statistics_app_statisticsbymonth_changelist"),
+                            # "badge": "main admin",
+                            "permission": lambda request: request.user.is_superuser,
+                        },
+                        {
+                            "title": _("Статистика за год"),
+                            "icon": "request_quote",
+                            "link": reverse_lazy("admin:statistics_app_statisticsbyyear_changelist"),
                             # "badge": "main admin",
                             "permission": lambda request: request.user.is_superuser,
                         },

@@ -47,14 +47,6 @@ app.conf.beat_schedule = {
         'task': 'task_app.tasks.duplicate_deliveries_for_next_week',
         'schedule': crontab(hour='10', minute='0', day_of_week='5'),
     },
-    'update-volunteer-stats-weekly': {
-        'task': 'statistics_app.tasks.update_volunteer_stats',
-        'schedule': crontab(day_of_week='0', hour='0', minute='0'),  # Каждое воскресенье в полночь
-    },
-    'update-volunteer-stats-monthly': {
-        'task': 'statistics_app.tasks.update_volunteer_stats',
-        'schedule': crontab(day_of_month='1', hour='0', minute='0'),  # Первое число каждого месяца в полночь
-    },
     'backup-database-every-day': {
         'task': 'user_app.tasks.backup_database',
         'schedule': crontab(hour='20', minute='52'),
@@ -66,5 +58,9 @@ app.conf.beat_schedule = {
     'update-ratings': {
         'task': 'user_app.tasks.update_ratings',
         'schedule': crontab(hour='02', minute='00'),
+    },
+    'update-volunteer-stats-minutely': {
+        'task': 'statistics_app.tasks.update_statistics',
+        'schedule': crontab('*'),
     },
 }

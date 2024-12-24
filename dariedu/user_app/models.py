@@ -72,6 +72,16 @@ class User(AbstractBaseUser, PermissionsMixin):
             self.rating = new_rating
             self.save(update_fields=['rating'])
 
+    def save(self, *args, **kwargs):
+        if self.pk:  # Если объект уже существует
+            old_instance = User.objects.get(pk=self.pk)
+            self.old_point = old_instance.point
+            self.old_volunteer_hour = old_instance.volunteer_hour
+        else:
+            self.old_point = self.point
+            self.old_volunteer_hour = self.volunteer_hour
+        super().save(*args, **kwargs)
+
     class Meta:
         verbose_name = 'пользователь'
         verbose_name_plural = 'пользователи'

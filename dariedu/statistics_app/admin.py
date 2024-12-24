@@ -3,7 +3,7 @@ from import_export.admin import ImportExportModelAdmin
 from unfold.admin import ModelAdmin
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
-from .models import VolunteerStats
+from .models import Statistics, StatisticsByWeek, StatisticsByMonth, StatisticsByYear
 
 
 class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
@@ -14,10 +14,37 @@ class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
     list_filter_submit = True
     list_fullwidth = True
 
-
-@admin.register(VolunteerStats)
-class VolunteerStatsAdmin(BaseAdmin):
-    list_display = ('volunteer', 'week', 'month', 'year', 'hours', 'points')
-    list_filter = ('year', 'month', 'week', 'volunteer')
+# TODO: Удалить перед слиянием в main
+@admin.register(Statistics)
+class StatsAdmin(BaseAdmin):
+    list_display = ('volunteer', 'volunteer_hours', 'period', 'points')
+    list_filter = ('period', 'volunteer')
     search_fields = ('volunteer__username',)
-    ordering = ('-hours',)  # Сортировка по убыванию часов
+    ordering = ('-volunteer_hours',)
+
+
+@admin.register(StatisticsByWeek)
+class StatsByWeekAdmin(BaseAdmin):
+    list_display = ('user', 'hours', 'points')
+    list_filter = ('user',)
+    search_fields = ('user__username',)
+    readonly_fields = ('user', 'hours', 'points')
+    ordering = ('-hours',)
+
+
+@admin.register(StatisticsByMonth)
+class StatsByMonthAdmin(BaseAdmin):
+    list_display = ('user', 'hours', 'points')
+    list_filter = ('user',)
+    search_fields = ('user__username',)
+    readonly_fields = ('user', 'hours', 'points')
+    ordering = ('-hours',)
+
+
+@admin.register(StatisticsByYear)
+class StatsByYearAdmin(BaseAdmin):
+    list_display = ('user', 'hours', 'points')
+    list_filter = ('user',)
+    search_fields = ('user__username',)
+    readonly_fields = ('user', 'hours', 'points')
+    ordering = ('-hours',)

@@ -1,62 +1,79 @@
-from django.utils import timezone
-from django.db.models import Sum
 from celery import shared_task
-from .models import VolunteerStats
-from datetime import timedelta
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
+
+from statistics_app.models import Statistics, StatisticsByWeek, StatisticsByMonth, StatisticsByYear
 
 User = get_user_model()
 
+
 @shared_task
-def update_volunteer_stats():
-    today = timezone.now()
-    current_week = today.isocalendar()[1]
-    current_year = today.year
-    current_month = today.month
+def update_statistics():
+    stats_queryset = cache.get(settings.CACHE_STATS_QUERYSET_KEY)
+    print('stats_queryset', stats_queryset)
 
-    for volunteer in User.objects.filter(is_staff=False):  # Фильтр для выбора только волонтеров
-        # Часы за текущую неделю из Task
-        weekly_task_hours = volunteer.tasks.filter(
-            is_completed=True,
-            end_date__gte=today - timedelta(days=7)
-        ).aggregate(total_hours=Sum('volunteer_price'))['total_hours'] or 0
+    if stats_queryset is None:
+        stats_queryset = Statistics.objects.all()
+        cache.set(settings.CACHE_STATS_QUERYSET_KEY, stats_queryset, timeout=3600)
 
-        # Часы за текущую неделю из Delivery
-        weekly_delivery_hours = volunteer.assignments.filter(
-            delivery__is_completed=True,
-            delivery__date__gte=today - timedelta(days=7)
-        ).aggregate(total_hours=Sum('delivery__price'))['total_hours'] or 0
+    for stats in stats_queryset:
+        # статистика за неделю
+        cached_stats_week = cache.get(f"{settings.CACHE_STATS_WEEK_KEY}_{stats.volunteer.id}")
 
-        weekly_hours = weekly_task_hours + weekly_delivery_hours
+        if cached_stats_week is None:
+            cached_stats_week = stats.save_weekly_statistics()
+            cache.set(f"{settings.CACHE_STATS_WEEK_KEY}_{stats.volunteer.id}", cached_stats_week, timeout=3600)
 
-        # Часы за текущий месяц из Task
-        monthly_task_hours = volunteer.tasks.filter(
-            is_completed=True,
-            end_date__month=current_month,
-            end_date__year=current_year
-        ).aggregate(total_hours=Sum('volunteer_price'))['total_hours'] or 0
-
-        # Часы за текущий месяц из Delivery
-        monthly_delivery_hours = volunteer.assignments.filter(
-            delivery__is_completed=True,
-            delivery__date__month=current_month,
-            delivery__date__year=current_year
-        ).aggregate(total_hours=Sum('delivery__price'))['total_hours'] or 0
-
-        monthly_hours = monthly_task_hours + monthly_delivery_hours
-
-        # Обновляем статистику за неделю
-        VolunteerStats.objects.update_or_create(
-            volunteer=volunteer,
-            week=current_week,
-            year=current_year,
-            defaults={'hours': weekly_hours, 'points': volunteer.point}
+        weekly_stats_record, _ = StatisticsByWeek.objects.get_or_create(
+            user=stats.volunteer,
+            defaults={
+                'points': cached_stats_week['total_points'],
+                'hours': cached_stats_week['total_volunteer_hours']
+            }
         )
 
-        # Обновляем статистику за месяц
-        VolunteerStats.objects.update_or_create(
-            volunteer=volunteer,
-            month=current_month,
-            year=current_year,
-            defaults={'hours': monthly_hours, 'points': volunteer.point}
+        if not _:
+            weekly_stats_record.points = cached_stats_week['total_points']
+            weekly_stats_record.hours = cached_stats_week['total_volunteer_hours']
+            weekly_stats_record.save()
+
+        # статистика за месяц
+        cached_stats_month = cache.get(f"{settings.CACHE_STATS_MONTH_KEY}_{stats.volunteer.id}")
+
+        if cached_stats_month is None:
+            cached_stats_month = stats.save_monthly_statistics()
+            cache.set(f"{settings.CACHE_STATS_MONTH_KEY}_{stats.volunteer.id}", cached_stats_month, timeout=3600)
+
+        month_stats_record, _ = StatisticsByMonth.objects.get_or_create(
+            user=stats.volunteer,
+            defaults={
+                'points': cached_stats_month['total_points'],
+                'hours': cached_stats_month['total_volunteer_hours']
+            }
         )
+
+        if not _:
+            month_stats_record.points = cached_stats_month['total_points']
+            month_stats_record.hours = cached_stats_month['total_volunteer_hours']
+            month_stats_record.save()
+
+        # статистика за год
+        cached_stats_year = cache.get(f"{settings.CACHE_STATS_YEAR_KEY}_{stats.volunteer.id}")
+
+        if cached_stats_year is None:
+            cached_stats_year = stats.save_yearly_statistics()
+            cache.set(f"{settings.CACHE_STATS_YEAR_KEY}_{stats.volunteer.id}", cached_stats_year, timeout=3600)
+
+        year_stats_record, _ = StatisticsByYear.objects.get_or_create(
+            user=stats.volunteer,
+            defaults={
+                'points': cached_stats_year['total_points'],
+                'hours': cached_stats_year['total_volunteer_hours']
+            }
+        )
+
+        if not _:
+            year_stats_record.points = cached_stats_year['total_points']
+            year_stats_record.hours = cached_stats_year['total_volunteer_hours']
+            year_stats_record.save()
