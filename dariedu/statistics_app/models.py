@@ -29,12 +29,12 @@ class Statistics(models.Model):
         return result
 
     def save_monthly_statistics(self):
-        result = last_month_statistics(self.volunteer)
+        result = last_month_statistics(self)
 
         return result
 
     def save_yearly_statistics(self):
-        result = last_year_statistics(self.volunteer)
+        result = last_year_statistics(self)
 
         return result
 
@@ -86,3 +86,16 @@ class StatisticsByYear(models.Model):
 
     def __str__(self):
         return f'{self.user} - {self.points}/{self.hours}'
+
+
+class AllStatistics(models.Model):
+    points_week = models.PositiveIntegerField(default=0, verbose_name="Всего баллов потраченных за неделю")
+    hours_week = models.PositiveIntegerField(default=0, verbose_name="Заработанные часы за неделю")
+    points_month = models.PositiveIntegerField(default=0, verbose_name="Всего баллов потраченных за месяц")
+    hours_month = models.PositiveIntegerField(default=0, verbose_name="Заработанные часы за месяц")
+    points_year = models.PositiveIntegerField(default=0, verbose_name="Всего баллов потраченных за год")
+    hours_year = models.PositiveIntegerField(default=0, verbose_name="Заработанные часы за год")
+
+    class Meta:
+        verbose_name = "Общая статистика"
+        verbose_name_plural = "Общая статистика"

@@ -63,4 +63,8 @@ app.conf.beat_schedule = {
         'task': 'statistics_app.tasks.update_statistics',
         'schedule': crontab('*'),
     },
+    'update-all-statistics': {
+        'task': 'statistics_app.tasks.all_statistics',
+        'schedule': crontab('*'),
+    },
 }

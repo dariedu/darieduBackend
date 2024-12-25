@@ -283,6 +283,13 @@ UNFOLD_CONFIG = {
                             # "badge": "main admin",
                             "permission": lambda request: request.user.is_superuser,
                         },
+                        {
+                            "title": _("Статистика баллов и часов"),
+                            "icon": "request_quote",
+                            "link": reverse_lazy("admin:statistics_app_allstatistics_changelist"),
+                            # "badge": "main admin",
+                            "permission": lambda request: request.user.is_superuser,
+                        },
                     ]
                 }
             ],

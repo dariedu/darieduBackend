@@ -3,7 +3,7 @@ from import_export.admin import ImportExportModelAdmin
 from unfold.admin import ModelAdmin
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
-from .models import Statistics, StatisticsByWeek, StatisticsByMonth, StatisticsByYear
+from .models import Statistics, StatisticsByWeek, StatisticsByMonth, StatisticsByYear, AllStatistics
 
 
 class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
@@ -48,3 +48,15 @@ class StatsByYearAdmin(BaseAdmin):
     search_fields = ('user__username',)
     readonly_fields = ('user', 'hours', 'points')
     ordering = ('-hours',)
+
+
+@admin.register(AllStatistics)
+class AllStatsAdmin(BaseAdmin):
+    list_display = ('points_week', 'hours_week', 'points_month', 'hours_month', 'points_year',
+                    'hours_year')
+    # list_filter = ('user',)
+    search_fields = ('points_week', 'hours_week', 'points_month', 'hours_month', 'points_year',
+                     'hours_year',)
+    readonly_fields = ('points_week', 'hours_week', 'points_month', 'hours_month', 'points_year',
+                       'hours_year')
+    ordering = ('-hours_week', '-points_week')

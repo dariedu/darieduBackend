@@ -285,6 +285,7 @@ CACHE_STATS_WEEK_KEY = 'cache_stats_week'
 CACHE_STATS_MONTH_KEY = 'cache_stats_month'
 CACHE_STATS_YEAR_KEY = 'cache_stats_year'
 CACHE_STATS_QUERYSET_KEY = 'cache_stats_queryset'
+CACHE_STATS_ALL_KEY = 'cache_stats_all'
 
 LOGGING = {
     'version': 1,
