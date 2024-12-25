@@ -44,6 +44,7 @@ class Statistics(models.Model):
         cache.delete(settings.CACHE_STATS_WEEK_KEY)
         cache.delete(settings.CACHE_STATS_MONTH_KEY)
         cache.delete(settings.CACHE_STATS_YEAR_KEY)
+        cache.delete(settings.CACHE_STATS_ALL_KEY)
 
 
 class StatisticsByWeek(models.Model):
