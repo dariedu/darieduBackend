@@ -3,7 +3,7 @@ import os
 from celery import Celery
 from celery.schedules import crontab
 
-from dariedu import settings
+# from dariedu.settings import TIME_ZONE
 
 logging.basicConfig(level=logging.INFO)
 
@@ -15,7 +15,7 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 app.conf.broker_connection_retry_on_startup = True
 app.autodiscover_tasks()
 
-app.conf.timezone = settings.TIME_ZONE
+app.conf.timezone = 'Europe/Moscow'
 app.conf.beat_schedule = {
     'check_deliveries_and_send_notifications': {
         'task': 'task_app.tasks.check_deliveries',

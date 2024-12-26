@@ -12,16 +12,16 @@ from celery.utils.log import get_task_logger
 from django.db.models import F
 from django.utils import timezone
 
-from dariedu import settings
+from dariedu.settings import TELEGRAM_BOT_TOKEN, TIME_ZONE
 from .keyboard import keyboard_task, keyboard_delivery
 
 
 from .models import Task, Delivery
 
-ZONE = zoneinfo.ZoneInfo(settings.TIME_ZONE)
+ZONE = zoneinfo.ZoneInfo(TIME_ZONE)
 
 logger = get_task_logger(__name__)
-url = f'https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage'
+url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
 
 
 @shared_task
