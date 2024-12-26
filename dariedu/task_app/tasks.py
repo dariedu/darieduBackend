@@ -12,7 +12,7 @@ from celery.utils.log import get_task_logger
 from django.db.models import F
 from django.utils import timezone
 
-from ..dariedu import settings
+from dariedu import settings
 from .keyboard import keyboard_task, keyboard_delivery
 
 

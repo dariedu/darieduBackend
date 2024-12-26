@@ -3,7 +3,7 @@ import os
 from celery import Celery
 from celery.schedules import crontab
 
-from . import settings
+from dariedu import settings
 
 logging.basicConfig(level=logging.INFO)
 
