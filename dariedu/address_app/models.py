@@ -66,6 +66,18 @@ class RouteSheet(models.Model):
 
         return ''
 
+    def get_beneficiaries_quantity(self):
+        addresses = self.address.all()
+        beneficiaries = []
+        for address in addresses:
+            for beneficiary in address.beneficiar.all():
+                beneficiaries.append(beneficiary)
+        return len(beneficiaries)
+
+    @admin.display(description='обедов')
+    def diners_quantity(self):
+        return self.get_beneficiaries_quantity()
+
     class Meta:
         verbose_name = 'маршрутный лист'
         verbose_name_plural = 'маршрутные листы'

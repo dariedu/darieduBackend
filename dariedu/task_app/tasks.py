@@ -8,18 +8,20 @@ from datetime import timedelta, datetime
 from pprint import pprint
 
 from celery import shared_task
-from django.conf import settings
 from celery.utils.log import get_task_logger
 from django.db.models import F
 from django.utils import timezone
 
+from dariedu.settings import TELEGRAM_BOT_TOKEN, TIME_ZONE
 from .keyboard import keyboard_task, keyboard_delivery
+
+
 from .models import Task, Delivery
 
-ZONE = zoneinfo.ZoneInfo(settings.TIME_ZONE)
+ZONE = zoneinfo.ZoneInfo(TIME_ZONE)
 
 logger = get_task_logger(__name__)
-url = f'https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage'
+url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
 
 
 @shared_task
@@ -74,6 +76,7 @@ def check_tasks():
         else:
             date = task.start_date.date + (task.end_date.date - task.start_date.date) // 2
             eta = timezone.make_aware(datetime.combine(date, datetime.time(task.start_date.time)))
+        send_task_to_telegram.revoke(task.id, terminate=True)
         send_task_to_telegram.apply_async(args=[task.id], eta=eta)
 
 
@@ -91,7 +94,7 @@ def send_delivery_to_telegram(delivery_id):
 
     timedate = delivery.date
     date_str = timedate.strftime('%d.%m.%Y')
-    time_str = timedate.strftime('%H:%M')
+    time_str = timedate.astimezone(ZONE).strftime('%H:%M')
     # time_str = timedate.astimezone(ZONE).strftime('%H:%M')
     curator_tg_id = delivery.curator.tg_id
     data = {
@@ -118,6 +121,7 @@ def check_deliveries():
     deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()))
     for delivery in deliveries:
         eta = delivery.date - timedelta(hours=3)
+        send_delivery_to_telegram.revoke(delivery.id, terminate=True)
         send_delivery_to_telegram.apply_async(args=[delivery.id], eta=eta)
 
 
