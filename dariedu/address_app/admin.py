@@ -59,7 +59,7 @@ class RouteSheetInline(TabularInline):
 @admin.register(Address)
 class AddressAdmin(BaseAdmin):
 
-    list_display = ('route_sheet', 'location', 'address', 'display_beneficiar', 'display_comment')
+    list_display = ('route_sheet', 'location', 'address', 'display_comment', 'display_beneficiar')
     fields = ('address', 'link', 'location', 'route_sheet')
     list_filter = ('location__city', 'location', 'route_sheet')
     search_fields = ('address', )
