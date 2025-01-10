@@ -189,7 +189,7 @@ def complete_delivery(delivery_id):
 def check_complete_delivery():
     deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()))
     for delivery in deliveries:
-        eta = delivery.date + timedelta(hours=3)
+        eta = delivery.date + timedelta(hours=6)
         complete_delivery.apply_async(args=[delivery.id], eta=eta)
 
 

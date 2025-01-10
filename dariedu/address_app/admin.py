@@ -173,6 +173,7 @@ class RouteSheetAdmin(BaseAdmin):
     list_filter = ('location',)
     search_fields = ('name', 'location__address')
     list_display_links = ('name', 'location')
+    ordering = ('name',)
 
 
 @admin.register(Beneficiar)
