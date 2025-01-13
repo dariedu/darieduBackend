@@ -2,10 +2,23 @@ import pytest
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.test import Client
-from address_app.models import City, Address, Location, RouteSheet
+
+from dariedu import settings
+from ..models import City, Address, Location, RouteSheet
 
 
 User = get_user_model()
+
+
+@pytest.fixture(autouse=True)
+def disable_celery(settings):
+    settings.CELERY_BROKER_URL = 'memory://'
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+    settings.CELERY_TASK_EAGER_PROPAGATES = True
+    yield
+    settings.CELERY_BROKER_URL = 'redis://redis:6379'
+    settings.CELERY_TASK_ALWAYS_EAGER = False
+    settings.CELERY_TASK_EAGER_PROPAGATES = False
 
 
 @pytest.fixture
@@ -36,8 +49,8 @@ def route_sheet(db):
 
 
 @pytest.fixture
-def address(db, city):
-    return Address.objects.create(address='ул. Ленина, 2', city=city)
+def address(db):
+    return Address.objects.create(address='ул. Ленина, 2')
 
 
 def test_addresses_to_route_sheet(client, address, route_sheet):
@@ -45,7 +58,8 @@ def test_addresses_to_route_sheet(client, address, route_sheet):
     response = client.post(url, {
         'action': 'add_addresses_to_route_sheet',
         '_selected_action': [address.id],
-        'route_sheet': route_sheet.id
+        'route_sheet': route_sheet.id,
+        'apply': 'Применить'
     })
     assert response.status_code == 302
     address.refresh_from_db()
@@ -57,7 +71,8 @@ def test_addresses_to_location(client, address, location):
     response = client.post(url, {
         'action': 'add_addresses_to_location',
         '_selected_action': [address.id],
-        'location': location.id
+        'location': location.id,
+        'apply': 'Применить'
     })
     assert response.status_code == 302
     address.refresh_from_db()
