@@ -178,9 +178,9 @@ class RouteSheetAdmin(BaseAdmin):
 
 @admin.register(Beneficiar)
 class BeneficiarAdmin(BaseAdmin):
-    list_display = ('full_name', 'address', 'phone', 'second_phone', 'get_link', 'presence', 'category', 'comment')
+    list_display = ('full_name', 'address', 'phone', 'second_phone', 'get_link', 'presence', 'comment')
     search_fields = ('full_name', 'phone', 'comment')
-    list_filter = ('address', 'category', 'presence')
+    list_filter = ('address', 'presence')
     list_display_links = ('full_name', 'phone', 'address')
     autocomplete_fields = ['address']
     list_editable = ('presence', )
