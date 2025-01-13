@@ -41,7 +41,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
         task = data.get('task')
 
         # Валидация: отзыв может быть о доставке или поощрении, но не о двух одновременно
-        if feedback_type == 'delivery' and not delivery:
+        if feedback_type in 'сompleted_delivery' and not delivery:
             raise serializers.ValidationError("Для отзыва о доставке необходимо выбрать доставку.")
         if feedback_type == 'promotion' and not promotion:
             raise serializers.ValidationError("Для отзыва о поощрении необходимо выбрать поощрение.")
