@@ -95,6 +95,7 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
 
     def perform_update(self, serializer: UserSerializer):
         import re
+        import copy
 
         serializer.validated_data.pop('last_name', None)
         serializer.validated_data.pop('name', None)
@@ -111,8 +112,9 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
             return
 
         instance_photo = serializer.instance.photo
+        copy_instance_photo = copy.copy(instance_photo)
 
-        if instance_photo:
+        if copy_instance_photo:
             file_id = serializer.instance.photo_view.split('/')[-2]
             photo_name = instance_photo.name.split(os.sep)[-1]
             instance_photo.delete()
@@ -127,7 +129,7 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
 
         data = serializer.save()
 
-        if instance_photo:
+        if copy_instance_photo:
             gdrive.update_file(file_id=file_id, file=data.photo)
         else:
             link = gdrive.get_link_view(data.photo)
