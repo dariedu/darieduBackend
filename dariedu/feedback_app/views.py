@@ -32,7 +32,7 @@ class FeedbackViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
 
         return self.queryset.filter(created_at__gte=(timezone.now() - timezone.timedelta(days=14)))
 
-    @action(detail=False, methods=['post'], url_path='submit')
+    @action(detail=False, methods=['post'], url_path='submit', name='submit_feedback')
     def submit_feedback(self, request):
         """
         Отправка отзыва

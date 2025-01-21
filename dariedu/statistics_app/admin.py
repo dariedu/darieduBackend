@@ -14,14 +14,6 @@ class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
     list_filter_submit = True
     list_fullwidth = True
 
-# TODO: Удалить перед слиянием в main
-@admin.register(Statistics)
-class StatsAdmin(BaseAdmin):
-    list_display = ('volunteer', 'volunteer_hours', 'period', 'points')
-    list_filter = ('period', 'volunteer')
-    search_fields = ('volunteer__username',)
-    ordering = ('-volunteer_hours',)
-
 
 @admin.register(StatisticsByWeek)
 class StatsByWeekAdmin(BaseAdmin):

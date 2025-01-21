@@ -59,7 +59,7 @@ class RouteSheetInline(TabularInline):
 @admin.register(Address)
 class AddressAdmin(BaseAdmin):
 
-    list_display = ('route_sheet', 'location', 'address', 'display_beneficiar', 'display_comment')
+    list_display = ('route_sheet', 'location', 'address', 'display_comment', 'display_beneficiar')
     fields = ('address', 'link', 'location', 'route_sheet')
     list_filter = ('location__city', 'location', 'route_sheet')
     search_fields = ('address', )
@@ -160,19 +160,27 @@ class CityAdmin(BaseAdmin):
 class RouteSheetAdmin(BaseAdmin):
 
     autocomplete_fields = ('location',)
-    list_display = ('name', 'location', 'display_address', 'display_curator')
+    list_display = (
+        'name',
+        'location',
+        'display_address',
+        'display_beneficiaries',
+        'display_curator',
+        'diners_quantity'
+    )
     fields = ('name', 'map', 'location')
     inlines = [AddressInline, ]
     list_filter = ('location',)
     search_fields = ('name', 'location__address')
     list_display_links = ('name', 'location')
+    ordering = ('name',)
 
 
 @admin.register(Beneficiar)
 class BeneficiarAdmin(BaseAdmin):
-    list_display = ('full_name', 'address', 'phone', 'second_phone', 'get_link', 'presence', 'category', 'comment')
+    list_display = ('full_name', 'address', 'phone', 'second_phone', 'get_link', 'presence', 'comment')
     search_fields = ('full_name', 'phone', 'comment')
-    list_filter = ('address', 'category', 'presence')
+    list_filter = ('address', 'presence')
     list_display_links = ('full_name', 'phone', 'address')
     autocomplete_fields = ['address']
     list_editable = ('presence', )
@@ -180,6 +188,6 @@ class BeneficiarAdmin(BaseAdmin):
 
     def get_link(self, obj: Beneficiar):
         if obj.photo_link:
-            return format_html(f'<a href={obj.photo_link}>{obj.photo_link}</a>')
+            return format_html(f'<a href={obj.photo_link}>Ссылка на фото</a>')
 
     get_link.short_description = 'Ссылка на фото'

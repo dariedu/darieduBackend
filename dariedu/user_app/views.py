@@ -94,6 +94,9 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
     ordering_fields = ['id']
 
     def perform_update(self, serializer: UserSerializer):
+        import re
+        import copy
+
         serializer.validated_data.pop('last_name', None)
         serializer.validated_data.pop('name', None)
         serializer.validated_data.pop('surname', None)
@@ -109,16 +112,29 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
             return
 
         instance_photo = serializer.instance.photo
-        file_id = serializer.instance.photo_view.split('/')[-2]
-        photo_name = instance_photo.name.split(os.sep)[-1]
-        instance_photo.delete()
+        copy_instance_photo = copy.copy(instance_photo)
+
+        if copy_instance_photo:
+            file_id = serializer.instance.photo_view.split('/')[-2]
+            photo_name = instance_photo.name.split(os.sep)[-1]
+            instance_photo.delete()
+        else:
+            regex = re.compile(r'\.\w*')
+            prefix = regex.search(val_photo.name).group()
+            full_name = serializer.instance.last_name + serializer.instance.name + serializer.instance.surname
+            photo_name = f'{full_name}_{serializer.instance.tg_id}{prefix}'
 
         val_photo.name = photo_name
         serializer.validated_data['photo'] = val_photo
 
         data = serializer.save()
 
-        gdrive.update_file(file_id=file_id, file=data.photo)
+        if copy_instance_photo:
+            gdrive.update_file(file_id=file_id, file=data.photo)
+        else:
+            link = gdrive.get_link_view(data.photo)
+            data.photo_view = link
+            data.save()
 
     def get_queryset(self):
         queryset = User.objects.all()

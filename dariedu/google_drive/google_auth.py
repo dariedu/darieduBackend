@@ -5,7 +5,7 @@ from pydrive2.drive import GoogleDrive
 
 
 class GoogleAuthCustom:
-    CREDENTIAL_NAME = 'service_key.json'
+    CREDENTIAL_NAME = 'credentials.json'
     SETTINGS = {
         'client_config_backend': 'service',
         'service_config': {

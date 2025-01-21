@@ -76,7 +76,8 @@ class Task(models.Model):
     is_completed = models.BooleanField(default=False, verbose_name='завершена')
 
     city = models.ForeignKey(City, on_delete=models.PROTECT, verbose_name='город')
-    curator = models.ForeignKey(User, on_delete=models.PROTECT, related_name='task_curator', verbose_name='куратор')
+    curator = models.ForeignKey(User, on_delete=models.PROTECT, related_name='task_curator',
+                                verbose_name='ответственный')
     volunteers = models.ManyToManyField(User, blank=True, related_name='tasks', verbose_name='волонтёры')
 
     def __str__(self):

@@ -43,7 +43,7 @@ class CityViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
 
 class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-    queryset = RouteSheet.objects.all()
+    queryset = RouteSheet.objects.all().order_by('name')
     serializer_class = RouteSheetSerializer
     permission_classes = [IsAuthenticated]
 
@@ -58,10 +58,10 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
             # logging.info(RouteSheet.objects.filter(location__curator=self.request.user))
             return RouteSheet.objects.filter(
                 Q(location__curator=self.request.user, delivery__is_active=True) |
-                Q(id__in=route_assignment.values_list('route_sheet_id', flat=True))).distinct()
+                Q(id__in=route_assignment.values_list('route_sheet_id', flat=True))).distinct().order_by('name')
         else:
             return RouteSheet.objects.filter(
-                id__in=route_assignment.values_list('route_sheet_id', flat=True)).distinct()
+                id__in=route_assignment.values_list('route_sheet_id', flat=True)).distinct().order_by('name')
 
     @action(detail=False, methods=['post'], url_name='assign_route')
     def assign(self, request):

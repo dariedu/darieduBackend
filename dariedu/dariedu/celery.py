@@ -3,6 +3,8 @@ import os
 from celery import Celery
 from celery.schedules import crontab
 
+# from dariedu.settings import TIME_ZONE
+
 logging.basicConfig(level=logging.INFO)
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dariedu.settings')

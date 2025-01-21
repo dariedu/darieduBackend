@@ -94,10 +94,11 @@ class TaskAdmin(BaseAdmin, ExportActionMixin):
                 is_active=False,
                 city=obj.city,
                 volunteers_needed=obj.volunteers_needed,
-                volunteers_taken=obj.volunteers_taken,
+                volunteers_taken=0,
                 curator=obj.curator,
                 is_completed=False,
             )
+            # new_obj.volunteers = None
             new_obj.save()
 
     def get_actions(self, request):

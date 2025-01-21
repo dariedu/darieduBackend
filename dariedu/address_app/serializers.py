@@ -69,6 +69,10 @@ class RouteSheetSerializer(serializers.ModelSerializer):
     # TODO we should promote some logic here
     location = LocationSerializer(read_only=True)
     address = AddressSerializer(many=True, read_only=True)
+    diners = serializers.SerializerMethodField(read_only=True)
+
+    def get_diners(self, obj):
+        return obj.get_beneficiaries_quantity()
 
     class Meta:
         model = RouteSheet

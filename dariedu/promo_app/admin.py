@@ -111,7 +111,7 @@ class PromotionAdmin(BaseAdmin, ExportActionMixin):
         """Copy creates for next week, not active"""
         for obj in queryset:
             new_obj = Promotion.objects.create(
-                name=obj.name,
+                name=obj.name + '_copy',
                 category=obj.category,
                 address=obj.address,
                 price=obj.price,
@@ -141,6 +141,7 @@ class PromotionAdmin(BaseAdmin, ExportActionMixin):
                     obj.picture,
                     save=True
                 )
+            new_obj.save()
 
     def get_actions(self, request):
         actions = super().get_actions(request)

@@ -98,6 +98,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
     'dariedu.middleware.ErrorHandlerMiddleware',
+    'dariedu.middleware.RequestResponseLoggingMiddleware',
 ]
 
 ROOT_URLCONF = 'dariedu.urls'
