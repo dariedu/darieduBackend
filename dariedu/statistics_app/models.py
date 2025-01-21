@@ -100,3 +100,4 @@ class AllStatistics(models.Model):
     class Meta:
         verbose_name = "Общая статистика"
         verbose_name_plural = "Общая статистика"
+        unique_together = (('points_week', 'hours_week', 'points_month', 'hours_month', 'points_year', 'hours_year'),)
