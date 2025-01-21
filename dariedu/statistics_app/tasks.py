@@ -16,7 +16,7 @@ def update_statistics():
 
     if stats_queryset is None:
         stats_queryset = Statistics.objects.all()
-        cache.set(settings.CACHE_STATS_QUERYSET_KEY, stats_queryset, timeout=3600)
+        cache.set(settings.CACHE_STATS_QUERYSET_KEY, stats_queryset, timeout=60)
 
     for stats in stats_queryset:
         # статистика за неделю
@@ -24,9 +24,9 @@ def update_statistics():
 
         if cached_stats_week is None:
             cached_stats_week = stats.save_weekly_statistics()
-            cache.set(f"{settings.CACHE_STATS_WEEK_KEY}_{stats.volunteer.id}", cached_stats_week, timeout=3600)
+            cache.set(f"{settings.CACHE_STATS_WEEK_KEY}_{stats.volunteer.id}", cached_stats_week, timeout=60)
 
-        weekly_stats_record, _ = StatisticsByWeek.objects.get_or_create(
+        weekly_stats_record, _ = StatisticsByWeek.objects.update_or_create(
             user=stats.volunteer,
             defaults={
                 'points': cached_stats_week['total_points'],
@@ -44,9 +44,9 @@ def update_statistics():
 
         if cached_stats_month is None:
             cached_stats_month = stats.save_monthly_statistics()
-            cache.set(f"{settings.CACHE_STATS_MONTH_KEY}_{stats.volunteer.id}", cached_stats_month, timeout=3600)
+            cache.set(f"{settings.CACHE_STATS_MONTH_KEY}_{stats.volunteer.id}", cached_stats_month, timeout=60)
 
-        month_stats_record, _ = StatisticsByMonth.objects.get_or_create(
+        month_stats_record, _ = StatisticsByMonth.objects.update_or_create(
             user=stats.volunteer,
             defaults={
                 'points': cached_stats_month['total_points'],
@@ -66,7 +66,7 @@ def update_statistics():
             cached_stats_year = stats.save_yearly_statistics()
             cache.set(f"{settings.CACHE_STATS_YEAR_KEY}_{stats.volunteer.id}", cached_stats_year, timeout=3600)
 
-        year_stats_record, _ = StatisticsByYear.objects.get_or_create(
+        year_stats_record, _ = StatisticsByYear.objects.update_or_create(
             user=stats.volunteer,
             defaults={
                 'points': cached_stats_year['total_points'],
@@ -87,18 +87,20 @@ def all_statistics():
     if all_stats is None:
         all_stats = all_statistics_week()
 
-        cache.set(settings.CACHE_STATS_ALL_KEY, all_stats, timeout=3600)
+        cache.set(settings.CACHE_STATS_ALL_KEY, all_stats, timeout=60)
 
-    all_statistic, _ = AllStatistics.objects.get_or_create(
-        points_week=all_stats['week_points'],
-        hours_week=all_stats['week_hours'],
-        points_month=all_stats['month_points'],
-        hours_month=all_stats['month_hours'],
-        points_year=all_stats['year_points'],
-        hours_year=all_stats['year_hours']
+    all_statistic, _ = AllStatistics.objects.update_or_create(
+        defaults={
+            'points_week': all_stats['week_points'],
+            'hours_week': all_stats['week_hours'],
+            'points_month': all_stats['month_points'],
+            'hours_month': all_stats['month_hours'],
+            'points_year': all_stats['year_points'],
+            'hours_year': all_stats['year_hours']
+        }
     )
 
-    if not _:
+    if _:
         all_statistic.points_week = all_stats['week_points']
         all_statistic.hours_week = all_stats['week_hours']
         all_statistic.points_month = all_stats['month_points']
