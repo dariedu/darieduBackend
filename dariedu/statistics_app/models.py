@@ -48,7 +48,8 @@ class Statistics(models.Model):
 
 
 class StatisticsByWeek(models.Model):
-    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name='stats_by_week', verbose_name="Волонтер")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
+                             related_name='stats_by_week', verbose_name="Волонтер")
     points = models.PositiveIntegerField(default=0, verbose_name="Баллы потраченные за неделю")
     hours = models.PositiveIntegerField(default=0, verbose_name="Заработанные часы за неделю")
 
@@ -62,7 +63,8 @@ class StatisticsByWeek(models.Model):
 
 
 class StatisticsByMonth(models.Model):
-    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name='stats_by_month', verbose_name="Волонтер")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='stats_by_month',
+                             verbose_name="Волонтер")
     points = models.PositiveIntegerField(default=0, verbose_name="Баллы потраченные за месяц")
     hours = models.PositiveIntegerField(default=0, verbose_name="Заработанные часы за месяц")
 
@@ -76,7 +78,8 @@ class StatisticsByMonth(models.Model):
 
 
 class StatisticsByYear(models.Model):
-    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name='stats_by_year', verbose_name="Волонтер")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='stats_by_year',
+                             verbose_name="Волонтер")
     points = models.PositiveIntegerField(default=0, verbose_name="Баллы потраченные за год")
     hours = models.PositiveIntegerField(default=0, verbose_name="Заработанные часы за год")
 
