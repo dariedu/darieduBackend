@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-
+import logging
 from import_export import resources
 from import_export.fields import Field
 from import_export.widgets import DateWidget
@@ -9,6 +9,8 @@ from feedback_app.models import RequestMessage, Feedback
 
 
 User = get_user_model()
+
+logger = logging.getLogger('google.sheets')
 
 
 class CombineResource(resources.ModelResource):
@@ -32,39 +34,59 @@ class CombineResource(resources.ModelResource):
     request = Field(attribute='request', column_name='Заявка на кураторство')
 
     def dehydrate_deliveries(self, user):
-        delivery_data = []
-        assignments = DeliveryAssignment.objects.filter(volunteer=user)
-        print(assignments)
-        for assignment in assignments:
-            delivery = assignment.delivery  # This should be a single Delivery instance
-            delivery_info = f'{delivery.date.strftime("%d.%m.%Y %H:%M")} - {delivery.location.subway}; '
-            print(delivery_info)
-            delivery_data.append(delivery_info)
-        return '\n'.join(delivery_data) if delivery_data else "Нет доставок"
+        try:
+            delivery_data = []
+            assignments = DeliveryAssignment.objects.filter(volunteer=user)
+            logger.debug(f'Number of assignments: {len(assignments)}')
+
+            for assignment in assignments:
+                delivery = assignment.delivery  # This should be a single Delivery instance
+                delivery_info = f'{delivery.date.strftime("%d.%m.%Y %H:%M")} - {delivery.location.subway}; '
+                logger.debug(f'Delivery info: {delivery_info}')
+                delivery_data.append(delivery_info)
+            return '\n'.join(delivery_data) if delivery_data else "Нет доставок"
+        except Exception as e:
+            logger.error(f'Error occurred while processing deliveries: {e}')
+            return "Нет доставок"
 
     def dehydrate_tasks(self, user):
-        task_data = []
-        tasks = Task.objects.filter(volunteers=user)
-        for task in tasks:
-            task_info = f'{task.name} - {task.end_date.strftime("%d.%m.%Y %H:%M")}; '
-            task_data.append(task_info)
-        return '\n'.join(task_data) if task_data else "Нет задач"
+        try:
+            task_data = []
+            tasks = Task.objects.filter(volunteers=user)
+            logger.debug(f'Number of tasks: {len(tasks)}')
+            for task in tasks:
+                task_info = f'{task.name} - {task.end_date.strftime("%d.%m.%Y %H:%M")}; '
+                task_data.append(task_info)
+            return '\n'.join(task_data) if task_data else "Нет задач"
+        except Exception as e:
+            logger.error(f'Error occurred while processing tasks: {e}')
+            return "Нет задач"
 
     def dehydrate_request(self, user):
-        requests_data = []
-        requests = RequestMessage.objects.filter(user=user)
-        for request in requests:
-            request_info = f'{request.date.strftime("%d.%m.%Y")} - {request.type}; '
-            requests_data.append(request_info)
-        return '\n'.join(requests_data) if requests_data else "Нет заявок"
+        try:
+            requests_data = []
+            requests = RequestMessage.objects.filter(user=user)
+            logger.debug(f'Number of requests: {len(requests)}')
+            for request in requests:
+                request_info = f'{request.date.strftime("%d.%m.%Y")} - {request.type}; '
+                requests_data.append(request_info)
+            return '\n'.join(requests_data) if requests_data else "Нет заявок"
+        except Exception as e:
+            logger.error(f'Error occurred while processing requests: {e}')
+            return "Нет заявок"
 
     def dehydrate_handling(self, user):
-        handling_data = []
-        handling = Feedback.objects.filter(user=user)
-        for feedback in handling:
-            handling_info = f'{feedback.created_at.strftime("%d.%m.%Y")} : {feedback.text};   '
-            handling_data.append(handling_info)
-        return '\n'.join(handling_data) if handling_data else "Нет обращений"
+        try:
+            handling_data = []
+            handling = Feedback.objects.filter(user=user)
+            logger.debug(f'Number of handling: {len(handling)}')
+            for feedback in handling:
+                handling_info = f'{feedback.created_at.strftime("%d.%m.%Y")} : {feedback.text};   '
+                handling_data.append(handling_info)
+            return '\n'.join(handling_data) if handling_data else "Нет обращений"
+        except Exception as e:
+            logger.error(f'Error occurred while processing handling: {e}')
+            return "Нет обращений"
 
     class Meta:
         model = User

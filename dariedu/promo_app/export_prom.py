@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-
+import logging
 from import_export import resources
 from import_export.fields import Field
 from import_export.widgets import DateTimeWidget, ForeignKeyWidget, ManyToManyWidget
@@ -9,6 +9,8 @@ from feedback_app.models import RequestMessage, Feedback
 
 
 User = get_user_model()
+
+logger = logging.getLogger('google.sheets')
 
 
 class CombineResourcePromo(resources.ModelResource):
@@ -31,40 +33,63 @@ class CombineResourcePromo(resources.ModelResource):
     request = Field(attribute='request', column_name='Обратная связь от пользователя после использования поощрения')
 
     def dehydrate_start_time(self, promo):
-        start_time = promo.start_date.time()
-        return start_time.strftime('%H:%M')
+        try:
+            start_time = promo.start_date.time()
+            return start_time.strftime('%H:%M')
+        except AttributeError:
+            return ''
 
     def dehydrate_end_time(self, promo):
-        if promo.end_date is None:
+        try:
+            if promo.end_date is None:
+                return ''
+            end_time = promo.end_date.time()
+            logger.debug('end_time', end_time)
+            return end_time.strftime('%H:%M')
+        except AttributeError:
             return ''
-        end_time = promo.end_date.time()
-        return end_time.strftime('%H:%M')
 
     def dehydrate_period(self, promo):
-        if promo.is_permanent:
-            return 'Бессрочное'
-        return 'Срочное'
+        try:
+            if promo.is_permanent:
+                return 'Бессрочное'
+            return 'Срочное'
+        except AttributeError:
+            return ''
 
     def dehydrate_is_active(self, promo):
-        if promo.is_active:
-            return 'Доступно'
-        return 'Завершено'
+        try:
+            if promo.is_active:
+                return 'Доступно'
+            return 'Завершено'
+        except AttributeError:
+            return ''
 
     def dehydrate_for_curators_only(self, promo):
-        if promo.for_curators_only:
-            return 'Всем, кроме волонтёров'
-        return 'Всем'
+        try:
+            if promo.for_curators_only:
+                return 'Всем, кроме волонтёров'
+            return 'Всем'
+        except AttributeError:
+            return ''
 
     def dehydrate_users(self, promo):
-        return ', '.join([f"{user.last_name} {user.name}" for user in promo.users.all()])
+        try:
+            return ', '.join([f"{user.last_name} {user.name}" for user in promo.users.all()])
+        except AttributeError:
+            return ''
 
     def dehydrate_request(self, promo):
-        feedback_data = []
-        feedbacks = Feedback.objects.filter(promotion=promo)
-        for feedback in feedbacks:
-            feedback_info = f'{feedback.user.last_name} {feedback.user.name} - {feedback.text}; '
-            feedback_data.append(feedback_info)
-        return '\n'.join(feedback_data) if feedback_data else "Нет обратной связи"
+        try:
+            feedback_data = []
+            feedbacks = Feedback.objects.filter(promotion=promo)
+            logger.debug('feedbacks', feedbacks)
+            for feedback in feedbacks:
+                feedback_info = f'{feedback.user.last_name} {feedback.user.name} - {feedback.text}; '
+                feedback_data.append(feedback_info)
+            return '\n'.join(feedback_data) if feedback_data else "Нет обратной связи"
+        except AttributeError:
+            return ''
 
     class Meta:
         model = User
