@@ -12,7 +12,7 @@ class ErrorHandlerMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        self.logger = logging.getLogger('api.requests')
+        self.logger = logging.getLogger('api.request')
         start_time = time.time()
 
         self.logger.info(f"Request: {request.method} {request.get_full_path()}")
@@ -78,10 +78,10 @@ class RequestResponseLoggingMiddleware:
 class SecurityLoggingMiddleware:
     def __init__(self, get_response=None):
         self.get_response = get_response
+        self.logger = logging.getLogger('middleware.security')
 
     def __call__(self, request):
         self.log_request(request)
-        self.logger = logging.getLogger('middleware.security')
 
         response = self.get_response(request)
 
@@ -91,7 +91,7 @@ class SecurityLoggingMiddleware:
 
     def log_request(self, request):
         if request.user.is_authenticated:
-            self.logger.info(f"User  {request.user.username} accessed {request.path}")
+            self.logger.info(f"User  {request.user.name} accessed {request.path}")
         else:
             self.logger.info(f"Anonymous user accessed {request.path}")
 
@@ -100,10 +100,10 @@ class SecurityLoggingMiddleware:
 
         if response.status_code == 403:
             self.logger.warning(f"Access denied for {request.path} - "
-                                f"User: {request.user.username if request.user.is_authenticated else 'Anonymous'}")
+                                f"User: {request.user.name if request.user.is_authenticated else 'Anonymous'}")
         elif response.status_code == 401:
             self.logger.warning(f"Unauthorized access attempt for {request.path} -"
-                                f" User: {request.user.username if request.user.is_authenticated else 'Anonymous'}")
+                                f" User: {request.user.name if request.user.is_authenticated else 'Anonymous'}")
 
 
 class SchemaLoggingMiddleware:
