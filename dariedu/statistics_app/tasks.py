@@ -102,18 +102,9 @@ def all_statistics():
 
         cache.set(settings.CACHE_STATS_ALL_KEY, all_stats, timeout=60)
 
-    all_statistic, _ = AllStatistics.objects.update_or_create(
-        defaults={
-            'points_week': all_stats['week_points'],
-            'hours_week': all_stats['week_hours'],
-            'points_month': all_stats['month_points'],
-            'hours_month': all_stats['month_hours'],
-            'points_year': all_stats['year_points'],
-            'hours_year': all_stats['year_hours']
-        }
-    )
-
-    if _:
+    try:
+        all_statistic = AllStatistics.objects.get()
+        logger.info('All statistic object', all_statistic)
         all_statistic.points_week = all_stats['week_points']
         all_statistic.hours_week = all_stats['week_hours']
         all_statistic.points_month = all_stats['month_points']
@@ -121,6 +112,13 @@ def all_statistics():
         all_statistic.points_year = all_stats['year_points']
         all_statistic.hours_year = all_stats['year_hours']
         all_statistic.save()
-        logger.info("All statistics is from database: %s", all_stats)
-
+    except AllStatistics.DoesNotExist:
+        AllStatistics.objects.create(
+            points_week=all_stats['week_points'],
+            hours_week=all_stats['week_hours'],
+            points_month=all_stats['month_points'],
+            hours_month=all_stats['month_hours'],
+            points_year=all_stats['year_points'],
+            hours_year=all_stats['year_hours']
+        )
     logger.info("All statistics updated")

@@ -69,6 +69,10 @@ app.conf.beat_schedule = {
         'task': 'statistics_app.tasks.all_statistics',
         'schedule': crontab('*'),
     },
+    'check-users': {
+        'task': 'user_app.tasks.check_users_task',
+        'schedule': crontab('*'),  # TODO: изменить периодичность выполнения
+    },
 }
 
 
