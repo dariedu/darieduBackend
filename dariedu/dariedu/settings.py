@@ -100,6 +100,7 @@ MIDDLEWARE = [
     'dariedu.middleware.ErrorHandlerMiddleware',
     'dariedu.middleware.RequestResponseLoggingMiddleware',
     'dariedu.middleware.SecurityLoggingMiddleware',
+    'dariedu.middleware.SchemaLoggingMiddleware',
 ]
 
 ROOT_URLCONF = 'dariedu.urls'
@@ -289,31 +290,6 @@ CACHE_STATS_YEAR_KEY = 'cache_stats_year'
 CACHE_STATS_QUERYSET_KEY = 'cache_stats_queryset'
 CACHE_STATS_ALL_KEY = 'cache_stats_all'
 
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'formatters': {
-#         'detailed': {
-#             'format': '[{levelname}] {asctime} {module} {message}',
-#             'style': '{',
-#         },
-#     },
-#     'handlers': {
-#         'console': {
-#             'level': 'WARNING',
-#             'class': 'logging.StreamHandler',
-#             'formatter': 'detailed'
-#         },
-#     },
-#     'loggers': {
-#         'django.request': {
-#             'handlers': ['console'],
-#             'level': 'WARNING',
-#             'propagate': False,
-#         },
-#     }
-# }
-
 
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -430,46 +406,3 @@ LOGGING = {
         },
     },
 }
-
-# logger.error(f'Ошибка в классе {self.__class__.__name__}: {str(e)}', exc_info=True)
-
-# 'user': {
-        #     'handlers': ['console', 'user_file'],
-        #     'level': logging.DEBUG,
-        #     'propagate': False,
-        # },
-        # 'task': {
-        #     'handlers': ['console', 'task_file'],
-        #     'level': logging.DEBUG,
-        #     'propagate': False,
-        # },
-        # 'stories': {
-        #     'handlers': ['console', 'stories_file'],
-        #     'level': logging.DEBUG,
-        #     'propagate': False,
-        # },
-        # 'statistics': {
-        #     'handlers': ['console', 'statistics_file'],
-        #     'level': logging.DEBUG,
-        #     'propagate': False,
-        # },
-        # 'promo': {
-        #     'handlers': ['console', 'promo_file'],
-        #     'level': logging.DEBUG,
-        #     'propagate': False,
-        # },
-        # 'notifications': {
-        #     'handlers': ['console', 'notifications_file'],
-        #     'level': logging.DEBUG,
-        #     'propagate': False,
-        # },
-        # 'feedback': {
-        #     'handlers': ['console', 'feedback_file'],
-        #     'level': logging.DEBUG,
-        #     'propagate': False,
-        # },
-        # 'address': {
-        #     'handlers': ['console', 'address_file'],
-        #     'level': logging.DEBUG,
-        #     'propagate': False,
-        # },
