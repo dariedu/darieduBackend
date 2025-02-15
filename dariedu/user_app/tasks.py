@@ -6,10 +6,55 @@ import time
 from gspread.exceptions import GSpreadException
 from django.core.cache import cache
 from requests.exceptions import SSLError
+import asyncio
+import httpx
+import logging
 
 from dariedu.gspread_config import gs
 from user_app.models import User
 from django.conf import settings
+
+
+logger = logging.getLogger(__name__)
+
+
+async def async_send_message(chat_id, message):
+    url = f'https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage'
+    payload = {'chat_id': chat_id, 'text': message}
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, json=payload)
+    return response
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=10)
+def send_messages_user(self, chat_id, message):
+    try:
+        response = asyncio.run(async_send_message(chat_id, message))
+
+        if response.status_code == 200:
+            logger.info(f'Message sent to {chat_id}: {message}')
+        else:
+            logger.error(f'Failed to send message to {chat_id}: {response.text}')
+            raise Exception(f'Error from Telegram API: {response.text}')
+    except Exception as e:
+        logger.error(f'An error occurred while sending message to {chat_id}: {str(e)}')
+        raise self.retry(exc=e)
+
+
+@shared_task
+def check_users_task():
+    """
+    Sending notifications to users who do not have tg_username
+    """
+    try:
+        users = User.objects.filter(tg_username__isnull=True)
+
+        for user in users:
+            message = f'Пользователь {user} не имеет никнэйм!'  # TODO: изменить текст
+            send_messages_user.apply_async((user.tg_id, message))
+    except Exception as e:
+        logger.error(f'An error occurred: {str(e)}', exc_info=True)
+        return str(e)
 
 
 METIERS = (
