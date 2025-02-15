@@ -5,7 +5,7 @@ from celery.schedules import crontab
 
 # from dariedu.settings import TIME_ZONE
 
-logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('celery_log.beat')
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dariedu.settings')
 
@@ -70,3 +70,8 @@ app.conf.beat_schedule = {
         'schedule': crontab('*'),
     },
 }
+
+
+@app.task(bind=True)
+def debug_task(self):
+    logger.debug(f'Request: {self.request!r}')

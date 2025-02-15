@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-
+import logging
 from import_export import resources
 from import_export.fields import Field
 from import_export.widgets import DateTimeWidget, BooleanWidget, ForeignKeyWidget
@@ -10,6 +10,8 @@ from feedback_app.models import Feedback, PhotoReport
 
 
 User = get_user_model()
+
+logger = logging.getLogger('google.sheets')
 
 
 class CombinedResource(resources.ModelResource):
@@ -36,12 +38,22 @@ class CombinedResource(resources.ModelResource):
         export_order = fields
 
     def dehydrate_volunteers(self, task):
-        return ', '.join([str(volunteer) for volunteer in task.volunteers.all()])
+        logger.info(f'Volunteers: {task.volunteers.all()}')
+        try:
+            return ', '.join([str(volunteer) for volunteer in task.volunteers.all()])
+        except Exception as e:
+            logger.error(f'Error fetching volunteers: {e}')
+            return ''
 
     def clean_status(self, task):
-        if task.is_active:
-            return 'Активная'
-        return 'Завершена'
+        logger.info(f'Status: {task.is_active}')
+        try:
+            if task.is_active:
+                return 'Активная'
+            return 'Завершена'
+        except Exception as e:
+            logger.error(f'Error fetching status: {e}')
+            return ''
 
 
 class CombinedResourceDelivery(resources.ModelResource):
@@ -73,122 +85,207 @@ class CombinedResourceDelivery(resources.ModelResource):
                                widget=ForeignKeyWidget(Feedback, 'delivery'))
 
     def dehydrate_status(self, delivery):
-        if delivery.is_active:
-            return 'Активная'
-        if delivery.in_execution:
-            return 'В работе'
-        if delivery.is_active and delivery.in_execution:
-            return 'Активная/В работе'
-        return 'Завершена'
+        logger.info(f'Status: {delivery.is_active} {delivery.in_execution}')
+        try:
+            if delivery.is_active:
+                return 'Активная'
+            if delivery.in_execution:
+                return 'В работе'
+            if delivery.is_active and delivery.in_execution:
+                return 'Активная/В работе'
+            return 'Завершена'
+        except Exception as e:
+            logger.error(f'Error fetching status: {e}')
+            return ''
 
     def dehydrate_date_time(self, delivery):
-        if delivery.date:
-            return delivery.date.strftime('%H:%M')
-        return ''
+        logger.info(f'Date: {delivery.date}')
+        try:
+            if delivery.date:
+                return delivery.date.strftime('%H:%M')
+            return ''
+        except Exception as e:
+            logger.error(f'Error fetching date: {e}')
+            return ''
 
     def dehydrate_city(self, delivery):
-        if delivery.location:
-            return delivery.location.city.city
-        return ''
+        logger.info(f'City: {delivery.location}')
+        try:
+            if delivery.location:
+                return delivery.location.city.city
+            return ''
+        except Exception as e:
+            logger.error(f'Error fetching city: {e}')
+            return ''
 
     def dehydrate_subway(self, delivery):
-        if delivery.location:
-            return delivery.location.subway
-        return ''
+        logger.info(f'Subway: {delivery.location}')
+        try:
+            if delivery.location:
+                return delivery.location.subway
+            return ''
+        except Exception as e:
+            logger.error(f'Error fetching subway: {e}')
 
     def dehydrate_address(self, delivery):
-        if delivery.location:
-            return delivery.location.address
-        return ''
+        logger.info(f'Address: {delivery.location}')
+        try:
+            if delivery.location:
+                return delivery.location.address
+            return ''
+        except Exception as e:
+            logger.error(f'Error fetching address: {e}')
 
     def dehydrate_link(self, delivery):
-        if delivery.location:
-            print(delivery.location.link)
-            return delivery.location.link
-        return ''
+        logger.info(f'Link: {delivery.location}')
+        try:
+            if delivery.location:
+                print(delivery.location.link)
+                return delivery.location.link
+            return ''
+        except Exception as e:
+            logger.error(f'Error fetching link: {e}')
 
     def dehydrate_curator(self, delivery):
-        if delivery.location:
-            curator = delivery.location.curator
-            if curator:
-                return f'{curator.last_name} {curator.name}'
-        return ''
+        logger.info(f'Curator: {delivery.location}')
+        try:
+            if delivery.location:
+                curator = delivery.location.curator
+                if curator:
+                    return f'{curator.last_name} {curator.name}'
+            return ''
+        except Exception as e:
+            logger.error(f'Error fetching curator: {e}')
 
     def dehydrate_route(self, delivery):
-        if delivery.location:
-            route = [route.name for route in delivery.location.route_sheets.all()]
-            return '; '.join(route) if route else ''
-        return ''
+        logger.info(f'Route: {delivery.location}')
+        try:
+            if delivery.location:
+                route = [route.name for route in delivery.location.route_sheets.all()]
+                return '; '.join(route) if route else ''
+            return ''
+        except Exception as e:
+            logger.error(f'Error fetching route: {e}')
 
     def dehydrate_route_link(self, delivery):
-        if delivery.location:
-            maps = [route.map for route in delivery.location.route_sheets.all() if route.map]
-            return ' ;  '.join(maps) if maps else 'Нет доступных карт'
-        return ''
+        logger.info(f'Route link: {delivery.location}')
+        try:
+            if delivery.location:
+                maps = [route.map for route in delivery.location.route_sheets.all() if route.map]
+                return ' ;  '.join(maps) if maps else 'Нет доступных карт'
+            return ''
+        except Exception as e:
+            logger.error(f'Error fetching route link: {e}')
 
     def dehydrate_user(self, delivery):
-        routes = delivery.location.route_sheets.all()
-        beneficiaries_list = []
-        for route in routes:
-            addresses = route.address.all()
-            for address in addresses:
-                beneficiaries = address.beneficiar.all()  # Получаем благополучателей для каждого адреса
-                beneficiaryes = [beneficiary.full_name for beneficiary in beneficiaries]
-                beneficiaries_list.extend([str(beneficiary) for beneficiary in beneficiaryes])
-        return '; '.join(beneficiaries_list) if beneficiaries_list else 'Нет благополучателей'
+        logger.info(f'User: {delivery.location}')
+        try:
+            routes = delivery.location.route_sheets.all()
+            logger.debug(f'Routes: {routes}')
+
+            beneficiaries_list = []
+            for route in routes:
+                addresses = route.address.all()
+                for address in addresses:
+                    beneficiaries = address.beneficiar.all()  # Получаем благополучателей для каждого адреса
+                    beneficiaryes = [beneficiary.full_name for beneficiary in beneficiaries]
+                    beneficiaries_list.extend([str(beneficiary) for beneficiary in beneficiaryes])
+                    logger.debug(f'Beneficiaries: {beneficiaryes}')
+            return '; '.join(beneficiaries_list) if beneficiaries_list else 'Нет благополучателей'
+        except Exception as e:
+            logger.error(f'Error fetching user: {e}')
 
     def dehydrate_volunteer_link(self, delivery):
-        if delivery.route_sheet:
-            route_assignment = RouteAssignment.objects.filter(delivery=delivery).values_list('volunteer', flat=True).distinct()
-            return '; '.join([str(User.objects.get(id=user)) for user in route_assignment])
-        return ''
+        logger.info(f'Volunteer link: {delivery.location}')
+        try:
+            if delivery.route_sheet:
+                try:
+                    route_assignment = (RouteAssignment.objects.filter(delivery=delivery).values_list
+                                        ('volunteer', flat=True).distinct())
+                    return '; '.join([str(User.objects.get(id=user)) for user in route_assignment])
+                except Exception as e:
+                    logger.error(f'Error fetching route assignment: {e}')
+            return ''
+        except Exception as e:
+            logger.error(f'Error fetching volunteer link: {e}')
 
     def dehydrate_address_user(self, delivery):
-        routes = delivery.location.route_sheets.all()
-        address_list = []
-        for route in routes:
-            addresses = route.address.all()
-            for address in addresses:
-                beneficiaries = address.beneficiar.all()
-                address_list.extend([str(beneficiary.address) for beneficiary in beneficiaries])
-        return '; '.join(address_list) if address_list else 'Нет адресов'
+        logger.info(f'Address user: {delivery.location}')
+        try:
+            routes = delivery.location.route_sheets.all()
+            logger.debug(f'Routes: {routes}')
+
+            address_list = []
+            for route in routes:
+                addresses = route.address.all()
+                for address in addresses:
+                    beneficiaries = address.beneficiar.all()
+                    logger.debug(f'Beneficiaries: {beneficiaries}')
+                    address_list.extend([str(beneficiary.address) for beneficiary in beneficiaries])
+            return '; '.join(address_list) if address_list else 'Нет адресов'
+        except Exception as e:
+            logger.error(f'Error fetching address user: {e}')
 
     def dehydrate_phone_user(self, delivery):
-        routes = delivery.location.route_sheets.all()
-        phone_list = []
-        for route in routes:
-            addresses = route.address.all()
-            for address in addresses:
-                beneficiaries = address.beneficiar.all()
-                phone_list.extend([str(beneficiary.phone) for beneficiary in beneficiaries])
-        return '; '.join(phone_list) if phone_list else 'Нет телефонов'
+        logger.info(f'Phone user: {delivery.location}')
+        try:
+            routes = delivery.location.route_sheets.all()
+            logger.debug(f'Routes: {routes}')
+            phone_list = []
+            for route in routes:
+                addresses = route.address.all()
+                logger.debug(f'Addresses: {addresses}')
+                for address in addresses:
+                    beneficiaries = address.beneficiar.all()
+                    logger.debug(f'Beneficiaries: {beneficiaries}')
+                    phone_list.extend([str(beneficiary.phone) for beneficiary in beneficiaries])
+            return '; '.join(phone_list) if phone_list else 'Нет телефонов'
+        except Exception as e:
+            logger.error(f'Error fetching phone user: {e}')
 
     def dehydrate_volunteer_feedback(self, delivery):
-        feedbacks = Feedback.objects.filter(delivery=delivery)
-        if feedbacks:
-            return '\n'.join([feedback.text for feedback in feedbacks])
-        return 'not'
+        logger.info(f'Volunteer feedback: {delivery.location}')
+        try:
+            feedbacks = Feedback.objects.filter(delivery=delivery)
+            if feedbacks:
+                return '\n'.join([feedback.text for feedback in feedbacks])
+            return 'not'
+        except Exception as e:
+            logger.error(f'Error fetching volunteer feedback: {e}')
 
     def dehydrate_photo(self, delivery):
-        photos = delivery.location.route_sheets.all()
-        for route in photos:
-            addresses = route.address.all()
-            for address in addresses:
-                photos = address.photoreport_set.all()
-                photo = [photo.photo_view for photo in photos]
-                if photo:
-                    return 'Да'
-        return 'Нет'
+        logger.info(f'Photo: {delivery.location}')
+        try:
+            photos = delivery.location.route_sheets.all()
+            logger.debug(f'Photos: {photos}')
+            for route in photos:
+                addresses = route.address.all()
+                for address in addresses:
+                    photos = address.photoreport_set.all()
+                    photo = [photo.photo_view for photo in photos]
+                    logger.debug(f'Photo: {photo}')
+                    if photo:
+                        return 'Да'
+            return 'Нет'
+        except Exception as e:
+            logger.error(f'Error fetching photo: {e}')
 
     def dehydrate_comment(self, delivery):
-        routes = delivery.location.route_sheets.all()
-        comment_list = []
-        for route in routes:
-            addresses = route.address.all()
-            for address in addresses:
-                beneficiaries = address.beneficiar.all()
-                comment_list.extend([str(beneficiary.comment) for beneficiary in beneficiaries])
-        return '; '.join(comment_list) if comment_list else 'Нет комментариев'
+        logger.info(f'Comment: {delivery.location}')
+        try:
+            routes = delivery.location.route_sheets.all()
+            logger.debug(f'Routes: {routes}')
+            comment_list = []
+            for route in routes:
+                addresses = route.address.all()
+                logger.debug(f'Addresses: {addresses}')
+                for address in addresses:
+                    beneficiaries = address.beneficiar.all()
+                    logger.debug(f'Beneficiaries: {beneficiaries}')
+                    comment_list.extend([str(beneficiary.comment) for beneficiary in beneficiaries])
+            return '; '.join(comment_list) if comment_list else 'Нет комментариев'
+        except Exception as e:
+            logger.error(f'Error fetching comment: {e}')
 
     class Meta:
         model = Delivery

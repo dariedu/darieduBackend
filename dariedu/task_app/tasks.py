@@ -1,27 +1,21 @@
 import json
 import zoneinfo
-
 import requests
-
 from datetime import timedelta, datetime
-
-from pprint import pprint
-
 from celery import shared_task
 from celery.utils.log import get_task_logger
-from django.db.models import F
 from django.utils import timezone
 
-from dariedu.settings import TELEGRAM_BOT_TOKEN, TIME_ZONE
+from django.conf import settings
 from .keyboard import keyboard_task, keyboard_delivery
-
-
 from .models import Task, Delivery
 
-ZONE = zoneinfo.ZoneInfo(TIME_ZONE)
 
-logger = get_task_logger(__name__)
-url = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage'
+ZONE = zoneinfo.ZoneInfo(settings.TIME_ZONE)
+
+logger = get_task_logger('celery_log')
+
+url = f'https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage'
 
 
 @shared_task
@@ -29,15 +23,26 @@ def send_message_to_telegram(task_id):
     """
     Notification to the supervisor about a volunteer taking on a task.
     """
-    task = Task.objects.get(id=task_id)
+    logger.info(f'Starting send_message_to_telegram for task_id: {task_id}')
+    try:
+        task = Task.objects.get(id=task_id)
+    except Task.DoesNotExist:
+        logger.error(f"Task with id {task_id} does not exist.")
+        return
+
     curator = task.curator
     chat_id = curator.tg_id
     volunteers = task.volunteers
     name = volunteers.first().tg_username
     message = f'Волонтер {name} записался на выполнение Доброго дела "{task.name}"!'
     payload = {'chat_id': chat_id, 'text': message}
-    response = requests.post(url, json=payload)
-    return response.json()
+
+    try:
+        response = requests.post(url, json=payload)
+        logger.info(f'Message sent to Telegram chat_id {chat_id}: {message}')
+        return response.json()
+    except Exception as e:
+        logger.error(f'Error sending message to Telegram: {e}')
 
 
 @shared_task
@@ -45,39 +50,67 @@ def send_task_to_telegram(task_id):
     """
     Notification of confirmation of participation in task.
     """
-    task = Task.objects.get(id=task_id)
-    chat_id = task.curator.tg_id
-    volunteer_tg_ids = [tg_id for tg_id in task.volunteers.values_list('tg_id', flat=True)]
-    timedate = task.end_date
-    # timedate = timedate.astimezone(ZONE).strftime('%d.%m.%Y')
-    data = {
-        'task_id': task_id,
-        'curator_tg_id': chat_id
-    }
-    messages = f'Подтвердите выполнение Доброго дела "{task.name}", срок выполнения {timedate}!'
-    keyboard = keyboard_task(data)
-    reply_markup = json.dumps(keyboard)
-    for volunteer_tg_id in volunteer_tg_ids:
-        payload = {
-            'chat_id': volunteer_tg_id,
-            'text': messages,
-            'reply_markup': reply_markup
+    logger.info(f'Starting send_task_to_telegram for task_id: {task_id}')
+    try:
+        try:
+            task = Task.objects.get(id=task_id)
+        except Task.DoesNotExist:
+            logger.error(f"Task with id {task_id} does not exist.")
+            return
+
+        chat_id = task.curator.tg_id
+        volunteer_tg_ids = [tg_id for tg_id in task.volunteers.values_list('tg_id', flat=True)]
+        timedate = task.end_date
+        data = {
+            'task_id': task_id,
+            'curator_tg_id': chat_id
         }
-        response = requests.post(url, json=payload)
-        pprint(response.json())
+        messages = f'Подтвердите выполнение Доброго дела "{task.name}", срок выполнения {timedate}!'
+        keyboard = keyboard_task(data)
+        reply_markup = json.dumps(keyboard)
+
+        for volunteer_tg_id in volunteer_tg_ids:
+            payload = {
+                'chat_id': volunteer_tg_id,
+                'text': messages,
+                'reply_markup': reply_markup
+            }
+            try:
+                requests.post(url, json=payload)
+                logger.info(f'Message sent to volunteer {volunteer_tg_id}: {messages}')
+            except Exception as e:
+                logger.error(f'Error sending message to volunteer {volunteer_tg_id}: {e}')
+
+    except Exception as e:
+        logger.error(f'Error sending task to Telegram: {e}')
+
 
 @shared_task
 def check_tasks():
-    today = timezone.make_aware(datetime.today())
-    tasks = Task.objects.filter(start_date__date=today)
-    for task in tasks:
-        if task.end_date.date() == today.date():
-            eta = task.start_date - timedelta(hours=3)
-        else:
-            date = task.start_date.date + (task.end_date.date - task.start_date.date) // 2
-            eta = timezone.make_aware(datetime.combine(date, datetime.time(task.start_date.time)))
-        send_task_to_telegram.revoke(task.id, terminate=True)
-        send_task_to_telegram.apply_async(args=[task.id], eta=eta)
+    logger.info('Checking tasks')
+    try:
+        today = timezone.make_aware(datetime.today())
+        logger.info(f'Checking tasks for date: {today.date()}')
+
+        tasks = Task.objects.filter(start_date__date=today)
+        for task in tasks:
+            logger.info(f'Processing task: {task.id} - {task.name}')
+
+            if task.end_date.date() == today.date():
+                eta = task.start_date - timedelta(hours=3)
+                logger.info(f'Setting ETA for task {task.id} to {eta}')
+            else:
+                date = task.start_date.date() + (task.end_date.date() - task.start_date.date()) // 2
+                eta = timezone.make_aware(datetime.combine(date, datetime.time(task.start_date.time)))
+                logger.info(f'Setting ETA for task {task.id} to {eta}')
+
+            send_task_to_telegram.revoke(task.id, terminate=True)
+            logger.info(f'Revoked previous task for task_id: {task.id}')
+            send_task_to_telegram.apply_async(args=[task.id], eta=eta)
+            logger.info(f'Scheduled send_task_to_telegram for task_id: {task.id} with ETA: {eta}')
+
+    except Exception as e:
+        logger.error(f'Error checking tasks: {e}')
 
 
 @shared_task
@@ -85,151 +118,254 @@ def send_delivery_to_telegram(delivery_id):
     """
     Notification of confirmation of participation in delivery.
     """
-    delivery = Delivery.objects.get(id=delivery_id)
-    volunteer_tg_ids = [volunteer.tg_id for assignment in delivery.assignments.all() for volunteer in
-                        assignment.volunteer.all()]
+    logger.info(f'Starting send_delivery_to_telegram for delivery_id: {delivery_id}')
 
-    if not volunteer_tg_ids:
-        return
+    try:
+        try:
+            delivery = Delivery.objects.get(id=delivery_id)
+        except Delivery.DoesNotExist:
+            logger.error(f'Delivery with id {delivery_id} does not exist.')
+            return
 
-    timedate = delivery.date
-    date_str = timedate.strftime('%d.%m.%Y')
-    time_str = timedate.astimezone(ZONE).strftime('%H:%M')
-    # time_str = timedate.astimezone(ZONE).strftime('%H:%M')
-    curator_tg_id = delivery.curator.tg_id
-    data = {
-        'delivery_id': delivery_id,
-        'curator_tg_id': curator_tg_id
-    }
+        volunteer_tg_ids = [volunteer.tg_id for assignment in delivery.assignments.all() for volunteer in
+                            assignment.volunteer.all()]
 
-    keyboard = keyboard_delivery(data)
-    messages = f'Подтвердите участие в Благотворительной доставке {date_str} в {time_str}!'
-    reply_markup = json.dumps(keyboard)
+        if not volunteer_tg_ids:
+            logger.warning(f'No volunteers found for delivery_id: {delivery_id}')
+            return
 
-    for volunteer_tg_id in volunteer_tg_ids:
-        payload = {
-            'chat_id': volunteer_tg_id,
-            'text': messages,
-            'reply_markup': reply_markup
+        timedate = delivery.date
+        date_str = timedate.strftime('%d.%m.%Y')
+        time_str = timedate.astimezone(ZONE).strftime('%H:%M')
+        curator_tg_id = delivery.curator.tg_id
+        data = {
+            'delivery_id': delivery_id,
+            'curator_tg_id': curator_tg_id
         }
-        response = requests.post(url, json=payload)
-        pprint(response.json())
+
+        keyboard = keyboard_delivery(data)
+        messages = f'Подтвердите участие в Благотворительной доставке {date_str} в {time_str}!'
+        reply_markup = json.dumps(keyboard)
+
+        for volunteer_tg_id in volunteer_tg_ids:
+            payload = {
+                'chat_id': volunteer_tg_id,
+                'text': messages,
+                'reply_markup': reply_markup
+            }
+            try:
+                requests.post(url, json=payload)
+                logger.info(f'Message sent to volunteer {volunteer_tg_id}: {messages}')
+            except Exception as e:
+                logger.error(f'Error sending message to volunteer {volunteer_tg_id}: {e}')
+
+    except Exception as e:
+        logger.error(f'Error sending delivery to Telegram: {e}')
 
 
-@shared_task
 def check_deliveries():
-    deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()))
-    for delivery in deliveries:
-        eta = delivery.date - timedelta(hours=3)
-        send_delivery_to_telegram.revoke(delivery.id, terminate=True)
-        send_delivery_to_telegram.apply_async(args=[delivery.id], eta=eta)
+    logger.info(f'Checking deliveries for date: {datetime.today()}')
+    try:
+        try:
+            deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()))
+            logger.info(f'Found {len(deliveries)} deliveries for today.')
+        except Exception as e:
+            logger.error(f'Error fetching deliveries: {e}')
+            return
+
+        for delivery in deliveries:
+            eta = delivery.date - timedelta(hours=3)
+            logger.info(f'Revoking previous task for delivery_id: {delivery.id}')
+            send_delivery_to_telegram.revoke(delivery.id, terminate=True)
+            logger.info(f'Scheduling send_delivery_to_telegram for delivery_id: {delivery.id} with ETA: {eta}')
+            send_delivery_to_telegram.apply_async(args=[delivery.id], eta=eta)
+
+    except Exception as e:
+        logger.error(f'Error checking deliveries: {e}')
 
 
 @shared_task
 def complete_task(task_id):
-    task = Task.objects.get(id=task_id)
-    if task.is_completed:
-        task.is_active = False
-        task.save(update_fields=['is_active'])
-    else:
-        task.is_active = False
-        task.is_completed = True
-        for volunteer in task.volunteers.all():
-            volunteer.update_volunteer_hours(
-                hours=volunteer.volunteer_hour + task.volunteer_price,
-                point=volunteer.point + task.volunteer_price
-            )
-            volunteer.save(update_fields=['volunteer_hour', 'point'])
+    logger.info(f'Completing task with id: {task_id}')
+    try:
+        try:
+            task = Task.objects.get(id=task_id)
+        except Task.DoesNotExist:
+            logger.error(f'Task with id {task_id} does not exist.')
+            return
 
-        curator = task.curator
-        curator.update_volunteer_hours(
-            hours=curator.volunteer_hour + task.curator_price,
-            point=curator.point + task.curator_price
-        )
-        curator.save(update_fields=['volunteer_hour', 'point'])
-        task.save(update_fields=['is_completed', 'is_active'])
+        if task.is_completed:
+            task.is_active = False
+            task.save(update_fields=['is_active'])
+            logger.info(f'Task {task_id} is already completed. Marking as inactive.')
+        else:
+            task.is_active = False
+            task.is_completed = True
+            for volunteer in task.volunteers.all():
+                volunteer.update_volunteer_hours(
+                    hours=volunteer.volunteer_hour + task.volunteer_price,
+                    point=volunteer.point + task.volunteer_price
+                )
+                volunteer.save(update_fields=['volunteer_hour', 'point'])
+                logger.info(f'Updated volunteer {volunteer.id} hours and points.')
+
+            curator = task.curator
+            curator.update_volunteer_hours(
+                hours=curator.volunteer_hour + task.curator_price,
+                point=curator.point + task.curator_price
+            )
+            curator.save(update_fields=['volunteer_hour', 'point'])
+            logger.info(f'Updated curator {curator.id} hours and points.')
+            task.save(update_fields=['is_completed', 'is_active'])
+            logger.info(f'Task {task_id} marked as completed.')
+
+    except Exception as e:
+        logger.error(f'Error completing task: {e}')
 
 
 @shared_task
 def check_complete_task():
-    tasks = Task.objects.filter(end_date__date=timezone.make_aware(datetime.today()))
-    for task in tasks:
-        eta = task.end_date + timedelta(hours=1)
-        complete_task.apply_async(args=[task.id], eta=eta)
+    logger.info('Checking for tasks to complete.')
+    try:
+        tasks = Task.objects.filter(end_date__date=timezone.make_aware(datetime.today()))
+        logger.info(f'Found {len(tasks)} tasks to check for completion.')
+
+        for task in tasks:
+            eta = task.end_date + timedelta(hours=1)
+            logger.info(f'Scheduling complete_task for task_id: {task.id} with ETA: {eta}')
+            complete_task.apply_async(args=[task.id], eta=eta)
+
+    except Exception as e:
+        logger.error(f'Error checking for tasks to complete: {e}')
 
 
 @shared_task
 def complete_delivery(delivery_id):
-    delivery = Delivery.objects.get(id=delivery_id)
-    if delivery.is_completed:
-        delivery.is_active = False
-        delivery.is_free = False
-        delivery.in_execution = False
-        delivery.save(update_fields=['is_active', 'is_free', 'in_execution'])
-    else:
-        delivery.is_active = False
-        delivery.is_completed = True
-        delivery.in_execution = False
-        delivery.is_free = False
-        curator = delivery.curator
-        curator.update_volunteer_hours(hours=curator.volunteer_hour + 4,
-                                       point=curator.point + 4)
-        curator.save(update_fields=['volunteer_hour', 'point'])
-        for assignment in delivery.assignments.all():
-            for volunteer in assignment.volunteer.all():
-                volunteer.update_volunteer_hours(
-                    hours=volunteer.volunteer_hour + delivery.price,
-                    point=volunteer.point + delivery.price
-                )
-                volunteer.save(update_fields=['volunteer_hour', 'point'])
-        delivery.save(update_fields=['is_completed', 'is_active', 'in_execution', 'is_free'])
+    logger.info(f'Completing delivery with id: {delivery_id}')
+    try:
+        try:
+            delivery = Delivery.objects.get(id=delivery_id)
+        except Delivery.DoesNotExist:
+            logger.error(f'Delivery with id {delivery_id} does not exist.')
+            return
+
+        if delivery.is_completed:
+            delivery.is_active = False
+            delivery.is_free = False
+            delivery.in_execution = False
+            delivery.save(update_fields=['is_active', 'is_free', 'in_execution'])
+            logger.info(f'Delivery {delivery_id} is already completed. Marking as inactive.')
+        else:
+            delivery.is_active = False
+            delivery.is_completed = True
+            delivery.in_execution = False
+            delivery.is_free = False
+            curator = delivery.curator
+
+            curator.update_volunteer_hours(hours=curator.volunteer_hour + 4,
+                                           point=curator.point + 4)
+            logger.info(f'Updated curator {curator.id} hours and points.')
+
+            curator.save(update_fields=['volunteer_hour', 'point'])
+            logger.info(f'Updated curator {curator.id} hours and points.')
+
+            for assignment in delivery.assignments.all():
+                for volunteer in assignment.volunteer.all():
+                    volunteer.update_volunteer_hours(
+                        hours=volunteer.volunteer_hour + delivery.price,
+                        point=volunteer.point + delivery.price
+                    )
+                    volunteer.save(update_fields=['volunteer_hour', 'point'])
+                    logger.info(f'Updated volunteer {volunteer.id} hours and points.')
+
+            delivery.save(update_fields=['is_completed', 'is_active', 'in_execution', 'is_free'])
+            logger.info(f'Delivery {delivery_id} marked as completed.')
+
+    except Exception as e:
+        logger.error(f'Error completing delivery: {e}')
 
 
 @shared_task
 def check_complete_delivery():
-    deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()))
-    for delivery in deliveries:
-        eta = delivery.date + timedelta(hours=6)
-        complete_delivery.apply_async(args=[delivery.id], eta=eta)
+    logger.info('Checking for deliveries to complete.')
+    try:
+        deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()))
+        logger.info(f'Found {len(deliveries)} deliveries to check for completion.')
+
+        for delivery in deliveries:
+            eta = delivery.date + timedelta(hours=6)
+            logger.info(f'Scheduling complete_delivery for delivery_id: {delivery.id} with ETA: {eta}')
+            complete_delivery.apply_async(args=[delivery.id], eta=eta)
+
+    except Exception as e:
+        logger.error(f'Error fetching deliveries: {e}')
+        return
 
 
 @shared_task
 def activate_delivery(delivery_id):
-    delivery = Delivery.objects.get(id=delivery_id)
-    if delivery.is_active:
-        delivery.in_execution = True
-        delivery.save(update_fields=['in_execution'])
+    logger.info(f'Activating delivery with id: {delivery_id}')
+    try:
+        delivery = Delivery.objects.get(id=delivery_id)
+        if delivery.is_active:
+            delivery.in_execution = True
+            delivery.save(update_fields=['in_execution'])
+            logger.info(f'Delivery {delivery_id} is now in execution.')
+        else:
+            logger.warning(f'Delivery {delivery_id} is not active.')
+    except Delivery.DoesNotExist:
+        logger.error(f'Delivery with id {delivery_id} does not exist.')
 
 
 @shared_task
 def check_activate_delivery():
-    deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()))
-    for delivery in deliveries:
-        eta = delivery.date - timedelta(hours=1, minutes=0)
-        activate_delivery.apply_async(args=[delivery.id], eta=eta)
+    logger.info('Checking for deliveries to activate.')
+    try:
+        deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()))
+        logger.info(f'Found {len(deliveries)} deliveries to check for activation.')
+
+        for delivery in deliveries:
+            eta = delivery.date - timedelta(hours=1, minutes=0)
+            logger.info(f'Scheduling activate_delivery for delivery_id: {delivery.id} with ETA: {eta}')
+            activate_delivery.apply_async(args=[delivery.id], eta=eta)
+
+    except Exception as e:
+        logger.error(f'Error fetching deliveries: {e}')
+        return
 
 
 @shared_task
 def duplicate_delivery_for_next_week():
+    logger.info('Starting duplication of deliveries for the next week.')
+
     today = timezone.make_aware(datetime.today()).date()
     end_of_week = today + timedelta(days=(6 - today.weekday()))
 
-    deliveries_to_duplicate = Delivery.objects.filter(
-        date__range=(today, end_of_week),
-    )
-
-    for delivery in deliveries_to_duplicate:
-        new_delivery = Delivery.objects.create(
-            curator=delivery.curator,
-            location=delivery.location,
-            price=delivery.price,
-            date=delivery.date + timedelta(weeks=1),
-            is_active=False,
-            is_completed=False,
-            in_execution=False,
-            is_free=True,
-            volunteers_needed=delivery.volunteers_needed,
-            volunteers_taken=0,
+    try:
+        deliveries_to_duplicate = Delivery.objects.filter(
+            date__range=(today, end_of_week),
         )
-        new_delivery.route_sheet.add(*delivery.route_sheet.all())
-        new_delivery.save()
+        logger.info(f'Found {len(deliveries_to_duplicate)} deliveries to duplicate.')
+
+        for delivery in deliveries_to_duplicate:
+            new_delivery = Delivery.objects.create(
+                curator=delivery.curator,
+                location=delivery.location,
+                price=delivery.price,
+                date=delivery.date + timedelta(weeks=1),
+                is_active=False,
+                is_completed=False,
+                in_execution=False,
+                is_free=True,
+                volunteers_needed=delivery.volunteers_needed,
+                volunteers_taken=0,
+            )
+            new_delivery.route_sheet.add(*delivery.route_sheet.all())
+            logger.info(f'Duplicated delivery {delivery.id} to new delivery {new_delivery.id}.')
+            new_delivery.save()
+
+    except Exception as e:
+        logger.error(f'Error during duplication process: {e}')
+        return
+
+    logger.info('All deliveries duplicated for the next week.')

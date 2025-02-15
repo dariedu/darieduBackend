@@ -99,6 +99,7 @@ MIDDLEWARE = [
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
     'dariedu.middleware.ErrorHandlerMiddleware',
     'dariedu.middleware.RequestResponseLoggingMiddleware',
+    'dariedu.middleware.SecurityLoggingMiddleware',
 ]
 
 ROOT_URLCONF = 'dariedu.urls'
@@ -288,27 +289,187 @@ CACHE_STATS_YEAR_KEY = 'cache_stats_year'
 CACHE_STATS_QUERYSET_KEY = 'cache_stats_queryset'
 CACHE_STATS_ALL_KEY = 'cache_stats_all'
 
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         'detailed': {
+#             'format': '[{levelname}] {asctime} {module} {message}',
+#             'style': '{',
+#         },
+#     },
+#     'handlers': {
+#         'console': {
+#             'level': 'WARNING',
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'detailed'
+#         },
+#     },
+#     'loggers': {
+#         'django.request': {
+#             'handlers': ['console'],
+#             'level': 'WARNING',
+#             'propagate': False,
+#         },
+#     }
+# }
+
+
+LOG_DIR = os.path.join(BASE_DIR, 'logs')
+os.makedirs(LOG_DIR, exist_ok=True)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process} {threadName} {message}',
+            'style': '{',
+        },
         'detailed': {
-            'format': '[{levelname}] {asctime} {module} {message}',
+            'format': '{levelname} {asctime} {module} {filename} {funcName} '
+                      '{pathname} {lineno} {process} {thread} {message}',
             'style': '{',
         },
     },
     'handlers': {
         'console': {
-            'level': 'WARNING',
             'class': 'logging.StreamHandler',
-            'formatter': 'detailed'
+            'formatter': 'verbose',
+            'level': logging.INFO,
+        },
+        'django_request': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'django_request.log'),
+            'formatter': 'detailed',
+            'level': logging.WARNING,
+        },
+        'django_db': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'django_db.log'),
+            'formatter': 'detailed',
+            'level': logging.WARNING,
+        },
+        'django_server': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'django_server.log'),
+            'formatter': 'detailed',
+            'level': logging.WARNING,
+        },
+        'django_security': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'django_security.log'),
+            'formatter': 'detailed',
+            'level': logging.WARNING,
+        },
+        'google_photo': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'google_photo.log'),
+            'formatter': 'detailed',
+            'level': logging.WARNING,
+        },
+        'google_sheet': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'google_sheet.log'),
+            'formatter': 'detailed',
+            'level': logging.WARNING,
+        },
+        'celery_logs': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'celery_logs.log'),
+            'formatter': 'detailed',
+            'level': logging.DEBUG,
+        },
+        'celery_beat_log': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, 'celery_beat.log'),
+            'formatter': 'detailed',
+            'level': logging.DEBUG,
         },
     },
     'loggers': {
-        'django.request': {
-            'handlers': ['console'],
-            'level': 'WARNING',
+        'api.request': {
+            'handlers': ['console', 'django_request'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'django.db.backends.schema': {
+            'handlers': ['django_db'],
+            'level': 'DEBUG',
             'propagate': False,
         },
-    }
+        'django.server': {
+            'handlers': ['console', 'django_server'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'middleware.security': {
+            'handlers': ['console', 'django_security'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'google.photos': {
+            'handlers': ['console', 'google_photo'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'google.sheets': {
+            'handlers': ['console', 'google_sheet'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'celery_log': {
+            'handlers': ['console', 'celery_logs'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'celery_log.beat': {
+            'handlers': ['console', 'celery_beat_log'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
 }
+
+# logger.error(f'Ошибка в классе {self.__class__.__name__}: {str(e)}', exc_info=True)
+
+# 'user': {
+        #     'handlers': ['console', 'user_file'],
+        #     'level': logging.DEBUG,
+        #     'propagate': False,
+        # },
+        # 'task': {
+        #     'handlers': ['console', 'task_file'],
+        #     'level': logging.DEBUG,
+        #     'propagate': False,
+        # },
+        # 'stories': {
+        #     'handlers': ['console', 'stories_file'],
+        #     'level': logging.DEBUG,
+        #     'propagate': False,
+        # },
+        # 'statistics': {
+        #     'handlers': ['console', 'statistics_file'],
+        #     'level': logging.DEBUG,
+        #     'propagate': False,
+        # },
+        # 'promo': {
+        #     'handlers': ['console', 'promo_file'],
+        #     'level': logging.DEBUG,
+        #     'propagate': False,
+        # },
+        # 'notifications': {
+        #     'handlers': ['console', 'notifications_file'],
+        #     'level': logging.DEBUG,
+        #     'propagate': False,
+        # },
+        # 'feedback': {
+        #     'handlers': ['console', 'feedback_file'],
+        #     'level': logging.DEBUG,
+        #     'propagate': False,
+        # },
+        # 'address': {
+        #     'handlers': ['console', 'address_file'],
+        #     'level': logging.DEBUG,
+        #     'propagate': False,
+        # },
