@@ -71,7 +71,7 @@ app.conf.beat_schedule = {
     },
     'check-users': {
         'task': 'user_app.tasks.check_users_task',
-        'schedule': crontab('*'),  # TODO: изменить периодичность выполнения
+        'schedule': crontab(hour=17, minute=00, day_of_week='tue'),  # TODO: изменить периодичность выполнения
     },
 }
 

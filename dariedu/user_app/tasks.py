@@ -49,7 +49,8 @@ def check_users_task():
         users = User.objects.filter(tg_username__isnull=True)
 
         for user in users:
-            message = f'Пользователь {user} не имеет никнэйм!'  # TODO: изменить текст
+            message = (f'Пожалуйста, создайте никнейм (имя пользователя) в Telegram, '
+                       f'для доступа  к полному функционалу приложения).')  # TODO: изменить текст
             send_messages_user.apply_async((user.tg_id, message))
     except Exception as e:
         logger.error(f'An error occurred: {str(e)}', exc_info=True)
