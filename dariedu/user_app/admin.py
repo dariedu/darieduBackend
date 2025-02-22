@@ -102,7 +102,7 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
         ]}),
         ("Уровень доступа", {"fields": ["is_staff", "is_superuser"]}),
     ]
-    search_fields = ('tg_id', 'name', 'surname', 'last_name', 'email', 'phone')
+    search_fields = ('tg_id', 'name', 'surname', 'last_name', 'email', 'phone', 'tg_username')
     list_display_links = ('tg_id', 'tg_username', 'last_name', 'name', 'surname')
 
     def get_link(self, obj):

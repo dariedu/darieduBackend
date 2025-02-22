@@ -16,14 +16,14 @@ class Delivery(models.Model):
     curator = models.ForeignKey(User, on_delete=models.PROTECT, related_name='delivery',
                                 blank=True, null=True, verbose_name='куратор',)
     location = models.ForeignKey(Location, on_delete=models.PROTECT, related_name='delivery', verbose_name='Локация')
-    is_free = models.BooleanField(default=True, verbose_name='свободная')
-    is_active = models.BooleanField(default=True, verbose_name='активная')
-    is_completed = models.BooleanField(default=False, verbose_name='завершена')
-    in_execution = models.BooleanField(default=False, verbose_name='выполняется')
-    volunteers_needed = models.PositiveIntegerField(verbose_name='требуется волонтёров', default=1)
-    volunteers_taken = models.PositiveIntegerField(verbose_name='волонтёров взяли', default=0)
+    is_free = models.BooleanField(default=True, verbose_name='своб.')
+    is_active = models.BooleanField(default=True, verbose_name='актив.')
+    is_completed = models.BooleanField(default=False, verbose_name='завер.')
+    in_execution = models.BooleanField(default=False, verbose_name='выпол.')
+    volunteers_needed = models.PositiveIntegerField(verbose_name='нужно', default=1)
+    volunteers_taken = models.PositiveIntegerField(verbose_name='взяли', default=0)
 
-    route_sheet = models.ManyToManyField(RouteSheet, related_name='delivery', verbose_name='маршрутный лист')
+    route_sheet = models.ManyToManyField(RouteSheet, related_name='delivery', verbose_name='маршрут')
 
     def clean(self):
         if self.is_completed:
@@ -35,7 +35,7 @@ class Delivery(models.Model):
         self.clean()
         super().save(*args, **kwargs)
 
-    @admin.display(description="Маршрутный лист")
+    @admin.display(description="Маршрут")
     def display_route_sheet(self):
         return format_html('<br>'.join([str(route_sheet) for route_sheet in self.route_sheet.all()]))
 
