@@ -135,7 +135,7 @@ class RequestMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, view
 
 class PhotoReportViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
     """API to manage photo reports"""
-    queryset = PhotoReport.objects.filter(date_gte=datetime.now() - timedelta(days=14))
+    queryset = PhotoReport.objects.filter(date__gte=datetime.now() - timedelta(days=14))
     serializer_class = PhotoReportSerializer
     permission_classes = [IsAuthenticated]
     filterset_fields = ['route_sheet_id', 'delivery_id']
