@@ -78,17 +78,10 @@ UNFOLD_CONFIG = {
                 },
                 {
 
-                    "title": _("Доставки и добрые дела"),
+                    "title": _("Добрые дела"),
                     "separator": True,
                     "collapsible": True,
                     "items": [
-                        {
-                            "title": _("Доставки"),
-                            "icon": "local_shipping",
-                            "link": reverse_lazy("admin:task_app_delivery_changelist"),
-                            # "badge": "main admin",
-                            "permission": lambda request: request.user.is_superuser,
-                        },
                         {
                             "title": _("Добрые дела"),
                             "icon": "task",
@@ -102,15 +95,15 @@ UNFOLD_CONFIG = {
                     ],
                 },
                 {
-                    "title": _("Адреса"),
+                    "title": _("Доставки"),
                     "separator": True,
                     "collapsible": True,
                     "items": [
                         {
-                            "title": _("Города"),
-                            "icon": "location_city",
-                            "link": reverse_lazy("admin:address_app_city_changelist"),
-                            # "badge": "admin",
+                            "title": _("Доставки"),
+                            "icon": "local_shipping",
+                            "link": reverse_lazy("admin:task_app_delivery_changelist"),
+                            # "badge": "main admin",
                             "permission": lambda request: request.user.is_superuser,
                         },
                         {
@@ -128,7 +121,7 @@ UNFOLD_CONFIG = {
                             "permission": lambda request: request.user.is_superuser,
                         },
                         {
-                            "title": _("Адреса"),
+                            "title": _("Адреса БП"),
                             "icon": "dns",
                             "link": reverse_lazy("admin:address_app_address_changelist"),
                             # "badge": "admin",
@@ -138,6 +131,13 @@ UNFOLD_CONFIG = {
                             "title": _("Благополучатели"),
                             "icon": "loyalty",
                             "link": reverse_lazy("admin:address_app_beneficiar_changelist"),
+                            # "badge": "admin",
+                            "permission": lambda request: request.user.is_superuser,
+                        },
+                        {
+                            "title": _("Города"),
+                            "icon": "location_city",
+                            "link": reverse_lazy("admin:address_app_city_changelist"),
                             # "badge": "admin",
                             "permission": lambda request: request.user.is_superuser,
                         },
@@ -155,27 +155,27 @@ UNFOLD_CONFIG = {
                             # "badge": 'admin',
                             "permission": lambda request: request.user.is_superuser,
                         },
-{
-                            "title": _("Волонтёры"),
-                            "icon": "manage_accounts",
-                            "link": reverse_lazy("admin:user_app_volunteer_changelist"),
-                            # "badge": 'admin',
-                            "permission": lambda request: request.user.is_superuser,
-                        },
-{
-                            "title": _("Кураторы"),
-                            "icon": "manage_accounts",
-                            "link": reverse_lazy("admin:user_app_curator_changelist"),
-                            # "badge": 'admin',
-                            "permission": lambda request: request.user.is_superuser,
-                        },
-{
-                            "title": _("Сотрудники"),
-                            "icon": "manage_accounts",
-                            "link": reverse_lazy("admin:user_app_employee_changelist"),
-                            # "badge": 'admin',
-                            "permission": lambda request: request.user.is_superuser,
-                        },
+# {
+#                             "title": _("Волонтёры"),
+#                             "icon": "manage_accounts",
+#                             "link": reverse_lazy("admin:user_app_volunteer_changelist"),
+#                             # "badge": 'admin',
+#                             "permission": lambda request: request.user.is_superuser,
+#                         },
+# {
+#                             "title": _("Кураторы"),
+#                             "icon": "manage_accounts",
+#                             "link": reverse_lazy("admin:user_app_curator_changelist"),
+#                             # "badge": 'admin',
+#                             "permission": lambda request: request.user.is_superuser,
+#                         },
+# {
+#                             "title": _("Сотрудники"),
+#                             "icon": "manage_accounts",
+#                             "link": reverse_lazy("admin:user_app_employee_changelist"),
+#                             # "badge": 'admin',
+#                             "permission": lambda request: request.user.is_superuser,
+#                         },
                         {
                             "title": _("Уровень"),
                             "icon": "trending_up",
@@ -213,7 +213,7 @@ UNFOLD_CONFIG = {
                     # "collapsible": True,
                     "items": [
                         {
-                            "title": _("Сторисы"),
+                            "title": _("Stories"),
                             "icon": "request_quote",
                             "link": reverse_lazy("admin:stories_app_stories_changelist"),
                             # "badge": "main admin",

@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timedelta
 
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
@@ -134,9 +135,10 @@ class RequestMessageViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, view
 
 class PhotoReportViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
     """API to manage photo reports"""
-    queryset = PhotoReport.objects.all()
+    queryset = PhotoReport.objects.filter(date_gte=datetime.now() - timedelta(days=14))
     serializer_class = PhotoReportSerializer
     permission_classes = [IsAuthenticated]
+    filterset_fields = ['route_sheet_id', 'delivery_id']
 
     def create(self, request, *args, **kwargs):
         """
