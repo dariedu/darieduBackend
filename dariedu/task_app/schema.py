@@ -173,6 +173,16 @@ class Fix2(OpenApiViewExtension):
             def cancel_delivery(self, request, pk):
                 return super().cancel_delivery(request, pk)
 
+            @extend_schema(
+                tags=['Deliveries'],
+                summary="Delivery activation",
+                operation_id="deliveryActivation",
+                methods=['post'],
+                request=OpenApiTypes.NONE,
+            )
+            def delivery_activation(self, request, pk):
+                return super().delivery_activation(request, pk)
+
         return Fixed
 
       

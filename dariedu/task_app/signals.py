@@ -1,11 +1,15 @@
-from django.db.models.signals import m2m_changed
+from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
+import logging
 
-from .models import DeliveryAssignment, Task
+from .models import DeliveryAssignment, Task, Delivery
 from .tasks import send_message_to_telegram
 from notifications_app.models import Notification
 from .export_gs_tasks import export_to_google_tasks, cancel_task_in_google_tasks, export_to_google_delivery, \
     cancel_task_in_google_delivery
+
+
+logger = logging.getLogger('django.server')
 
 
 @receiver(m2m_changed, sender=DeliveryAssignment.volunteer.through)
@@ -27,6 +31,27 @@ def update_delivery_status(sender, instance, action, **kwargs):
             # delivery.in_execution = False
             delivery.is_free = True
         delivery.save()
+
+
+@receiver(post_save, sender=Delivery)
+def update_points_hours(sender, instance, created, **kwargs):
+    try:
+        if instance.is_completed:
+            curator = instance.curator
+            curator.update_volunteer_hours(hours=curator.volunteer_hour + 4,
+                                           point=curator.point + 4)
+            curator.save(update_fields=['volunteer_hour', 'point'])
+
+            assignments = DeliveryAssignment.objects.filter(delivery=instance)
+            for assignment in assignments:
+                for volunteer in assignment.volunteer.all():
+                    volunteer.update_volunteer_hours(
+                        hours=volunteer.volunteer_hour + instance.price,
+                        point=volunteer.point + instance.price
+                    )
+                    volunteer.save(update_fields=['volunteer_hour', 'point'])
+    except Exception as e:
+        logger.error(f'Error updating points and hours: {e}')
 
 
 @receiver(m2m_changed, sender=Task.volunteers.through)
