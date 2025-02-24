@@ -54,6 +54,25 @@ def update_points_hours(sender, instance, created, **kwargs):
         logger.error(f'Error updating points and hours: {e}')
 
 
+@receiver(post_save, sender=Task)
+def update_points_hours_task(sender, instance, created, **kwargs):
+    try:
+        if instance.is_completed:
+            curator = instance.curator
+            curator.update_volunteer_hours(hours=curator.volunteer_hour + instance.volunteer_price,
+                                           point=curator.point + instance.volunteer_price)
+            curator.save(update_fields=['volunteer_hour', 'point'])
+
+            for volunteer in instance.volunteers.all():
+                volunteer.update_volunteer_hours(
+                    hours=volunteer.volunteer_hour + instance.volunteer_price,
+                    point=volunteer.point + instance.volunteer_price
+                )
+                volunteer.save(update_fields=['volunteer_hour', 'point'])
+    except Exception as e:
+        logger.error(f'Error updating points and hours: {e}')
+
+
 @receiver(m2m_changed, sender=Task.volunteers.through)
 def send_message_to_telegram_on_volunteer_signup(sender, instance, action, **kwargs):
     if action == 'post_add':

@@ -219,21 +219,6 @@ class TaskViewSet(
         task.is_completed = True
         task.is_active = False
         task.save(update_fields=['is_completed', 'is_active'])
-
-        for volunteer in task.volunteers.all():
-            volunteer.update_volunteer_hours(
-                hours=volunteer.volunteer_hour + task.volunteer_price,
-                point=volunteer.point + task.volunteer_price
-            )
-            volunteer.save(update_fields=['volunteer_hour', 'point'])
-
-        curator = task.curator
-        curator.update_volunteer_hours(
-            hours=curator.volunteer_hour + task.curator_price,
-            point=curator.point + task.curator_price
-        )
-        curator.save(update_fields=['volunteer_hour', 'point'])
-
         task.refresh_from_db()
         serializer = self.get_serializer(task)
         return Response(serializer.data, status=status.HTTP_200_OK)
