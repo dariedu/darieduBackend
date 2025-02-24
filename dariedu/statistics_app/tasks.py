@@ -32,17 +32,20 @@ def update_statistics():
             logger.info("Statistics week is from database: %s", cached_stats_week)
             cache.set(f"{settings.CACHE_STATS_WEEK_KEY}_{stats.volunteer.id}", cached_stats_week, timeout=60)
 
+        total_points = cached_stats_week.get('total_points', 0) or 0
+        total_volunteer_hours = cached_stats_week.get('total_volunteer_hours', 0) or 0
+
         weekly_stats_record, _ = StatisticsByWeek.objects.update_or_create(
             user=stats.volunteer,
             defaults={
-                'points': cached_stats_week['total_points'],
-                'hours': cached_stats_week['total_volunteer_hours']
+                'points': total_points,
+                'hours': total_volunteer_hours
             }
         )
 
         if not _:
-            weekly_stats_record.points = cached_stats_week['total_points']
-            weekly_stats_record.hours = cached_stats_week['total_volunteer_hours']
+            weekly_stats_record.points = total_points
+            weekly_stats_record.hours = total_volunteer_hours
             weekly_stats_record.save()
             logger.info("Statistics week is from database: %s", cached_stats_week)
 
