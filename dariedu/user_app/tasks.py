@@ -50,9 +50,7 @@ def check_users_task():
 
         for user in users:
             message = (f'Пожалуйста, создайте никнейм (имя пользователя) в Telegram, '
-                       f'для доступа  к полному функционалу приложения «Дари еду». '
-                       f'После обновления никнейм, для активации вашего профиля в приложении,'
-                       f' пожалуйста, напишите сюда: @volunteers_dari_edu')
+                       f'для доступа  к полному функционалу приложения).')  # TODO: изменить текст
             send_messages_user.apply_async((user.tg_id, message))
     except Exception as e:
         logger.error(f'An error occurred: {str(e)}', exc_info=True)
