@@ -33,9 +33,17 @@ app.conf.beat_schedule = {
         'task': 'task_app.tasks.check_complete_task',
         'schedule': crontab(minute='00', hour='12'),
     },
+    'complete-delivery': {
+        'task': 'task_app.tasks.check_complete_delivery',
+        'schedule': crontab(minute='00', hour='12'),
+    },
     'complete-promotion': {
         'task': 'promo_app.tasks.check_complete_promotion',
         'schedule': crontab(minute='00', hour='12'),
+    },
+    'activate-delivery': {
+        'task': 'task_app.tasks.check_activate_delivery',
+        'schedule': crontab(minute='00', hour='09'),
     },
     'duplicate-delivery-every-friday': {
         'task': 'task_app.tasks.duplicate_deliveries_for_next_week',
@@ -63,7 +71,7 @@ app.conf.beat_schedule = {
     },
     'check-users': {
         'task': 'user_app.tasks.check_users_task',
-        'schedule': crontab(hour=17, minute=00, day_of_week='tue'),
+        'schedule': crontab(hour=17, minute=00, day_of_week='tue'),  # TODO: изменить периодичность выполнения
     },
 }
 

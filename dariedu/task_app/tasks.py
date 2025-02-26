@@ -240,6 +240,101 @@ def check_complete_task():
 
 
 @shared_task
+def complete_delivery(delivery_id):
+    logger.info(f'Completing delivery with id: {delivery_id}')
+    try:
+        try:
+            delivery = Delivery.objects.get(id=delivery_id)
+        except Delivery.DoesNotExist:
+            logger.error(f'Delivery with id {delivery_id} does not exist.')
+            return
+
+        if delivery.is_completed:
+            delivery.is_active = False
+            delivery.is_free = False
+            delivery.in_execution = False
+            delivery.save(update_fields=['is_active', 'is_free', 'in_execution'])
+            logger.info(f'Delivery {delivery_id} is already completed. Marking as inactive.')
+        else:
+            delivery.is_active = False
+            delivery.is_completed = True
+            delivery.in_execution = False
+            delivery.is_free = False
+            curator = delivery.curator
+
+            curator.update_volunteer_hours(hours=curator.volunteer_hour + 4,
+                                           point=curator.point + 4)
+            logger.info(f'Updated curator {curator.id} hours and points.')
+
+            curator.save(update_fields=['volunteer_hour', 'point'])
+            logger.info(f'Updated curator {curator.id} hours and points.')
+
+            for assignment in delivery.assignments.all():
+                for volunteer in assignment.volunteer.all():
+                    volunteer.update_volunteer_hours(
+                        hours=volunteer.volunteer_hour + delivery.price,
+                        point=volunteer.point + delivery.price
+                    )
+                    volunteer.save(update_fields=['volunteer_hour', 'point'])
+                    logger.info(f'Updated volunteer {volunteer.id} hours and points.')
+
+            delivery.save(update_fields=['is_completed', 'is_active', 'in_execution', 'is_free'])
+            logger.info(f'Delivery {delivery_id} marked as completed.')
+
+    except Exception as e:
+        logger.error(f'Error completing delivery: {e}')
+
+
+@shared_task
+def check_complete_delivery():
+    logger.info('Checking for deliveries to complete.')
+    try:
+        deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()))
+        logger.info(f'Found {len(deliveries)} deliveries to check for completion.')
+
+        for delivery in deliveries:
+            eta = delivery.date + timedelta(hours=6)
+            logger.info(f'Scheduling complete_delivery for delivery_id: {delivery.id} with ETA: {eta}')
+            complete_delivery.apply_async(args=[delivery.id], eta=eta)
+
+    except Exception as e:
+        logger.error(f'Error fetching deliveries: {e}')
+        return
+
+
+@shared_task
+def activate_delivery(delivery_id):
+    logger.info(f'Activating delivery with id: {delivery_id}')
+    try:
+        delivery = Delivery.objects.get(id=delivery_id)
+        if delivery.is_active:
+            delivery.in_execution = True
+            delivery.save(update_fields=['in_execution'])
+            logger.info(f'Delivery {delivery_id} is now in execution.')
+        else:
+            logger.warning(f'Delivery {delivery_id} is not active.')
+    except Delivery.DoesNotExist:
+        logger.error(f'Delivery with id {delivery_id} does not exist.')
+
+
+@shared_task
+def check_activate_delivery():
+    logger.info('Checking for deliveries to activate.')
+    try:
+        deliveries = Delivery.objects.filter(date__date=timezone.make_aware(datetime.today()))
+        logger.info(f'Found {len(deliveries)} deliveries to check for activation.')
+
+        for delivery in deliveries:
+            eta = delivery.date - timedelta(hours=1, minutes=0)
+            logger.info(f'Scheduling activate_delivery for delivery_id: {delivery.id} with ETA: {eta}')
+            activate_delivery.apply_async(args=[delivery.id], eta=eta)
+
+    except Exception as e:
+        logger.error(f'Error fetching deliveries: {e}')
+        return
+
+
+@shared_task
 def duplicate_delivery_for_next_week():
     logger.info('Starting duplication of deliveries for the next week.')
 

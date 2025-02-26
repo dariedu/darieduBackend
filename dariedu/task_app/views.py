@@ -486,23 +486,16 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
                 delivery.in_execution = False
                 delivery.is_active = False
                 delivery.is_free = False
-
+                curator = delivery.curator
+                curator.update_volunteer_hours(hours=curator.volunteer_hour + 4,
+                                               point=curator.point + 4)
+                curator.save(update_fields=['volunteer_hour', 'point'])
+                for assignment in delivery.assignments.all():
+                    for volunteer in assignment.volunteer.all():
+                        volunteer.update_volunteer_hours(
+                            hours=volunteer.volunteer_hour + delivery.price,
+                            point=volunteer.point + delivery.price
+                        )
+                        volunteer.save(update_fields=['volunteer_hour', 'point'])
                 delivery.save(update_fields=['is_completed', 'in_execution', 'is_active', 'is_free'])
-
                 return Response({'message': 'Delivery completed successfully'}, status=200)
-
-    @action(detail=True, methods=['post'], url_path='delivery_activation')
-    @is_confirmed
-    def delivery_activation(self, request, pk):
-        try:
-            delivery = self.get_object()
-            if self.request.user != delivery.curator:
-                return Response({'error': 'You are not authorized to complete this delivery'}, status=403)
-            if delivery.in_execution is True:
-                return Response({'error': 'Delivery is already in execution'}, status=400)
-            else:
-                delivery.in_execution = True
-                delivery.save(update_fields=['in_execution'])
-                return Response({'message': 'Delivery is in execution'}, status=200)
-        except Exception as e:
-            return Response({'error': str(e)}, status=400)
