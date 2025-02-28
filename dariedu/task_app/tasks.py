@@ -6,6 +6,8 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+import httpx
+import asyncio
 
 from django.conf import settings
 from .keyboard import keyboard_task, keyboard_delivery
@@ -21,8 +23,16 @@ logger = get_task_logger('celery_log')
 url = f'https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendMessage'
 
 
-@shared_task
-def send_message_to_telegram(task_id, user):
+async def async_send_message(chat_id, message):
+    payload = {'chat_id': chat_id, 'text': message}
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, json=payload)
+    return response
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=10)
+def send_message_to_telegram(self, task_id, user):
     """
     Notification to the supervisor about a volunteer taking on a task.
     """
@@ -44,14 +54,58 @@ def send_message_to_telegram(task_id, user):
     chat_id = curator.tg_id
     name = user.tg_username if user.tg_username else user.name
     message = f'Волонтер {name} записался на выполнение Доброго дела "{task.name}"!'
-    payload = {'chat_id': chat_id, 'text': message}
 
     try:
-        response = requests.post(url, json=payload)
-        logger.info(f'Message sent to Telegram chat_id {chat_id}: {message}')
-        return response.json()
+        loop = asyncio.get_event_loop()
+        response = loop.run_until_complete(async_send_message(chat_id, message))
+
+        if response.status_code == 200:
+            logger.info(f'Message sent to {chat_id}: {message}')
+        else:
+            logger.error(f'Failed to send message to {chat_id}: {response.text}')
+            raise Exception(f'Error from Telegram API: {response.text}')
     except Exception as e:
-        logger.error(f'Error sending message to Telegram: {e}')
+        logger.error(f'An error occurred while sending message to {chat_id}: {str(e)}')
+        raise self.retry(exc=e)
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=10)
+def send_massage_to_telegram_delivery(self, delivery_id, user):
+    """
+    Notification to the supervisor about a volunteer taking on a delivery.
+    """
+    logger.info(f'Starting send_message_to_telegram for task_id: {delivery_id}')
+
+    try:
+        delivery = Delivery.objects.get(id=delivery_id)
+    except Delivery.DoesNotExist:
+        logger.error(f"Delivery with id {delivery_id} does not exist.")
+        return
+
+    try:
+        user = User.objects.get(id=user)
+    except User.DoesNotExist:
+        logger.error(f"User  with id {user} does not exist.")
+        return
+
+    chat_id = delivery.curator.tg_id
+    name = user.tg_username if user.tg_username else user.name
+    date = delivery.date.strftime('%d.%m.%Y')
+    location = delivery.location.address
+    message = f'Волонтер {name} записался на доставку дата: {date}, локация: {location}!'
+
+    try:
+        loop = asyncio.get_event_loop()
+        response = loop.run_until_complete(async_send_message(chat_id, message))
+
+        if response.status_code == 200:
+            logger.info(f'Message sent to {chat_id}: {message}')
+        else:
+            logger.error(f'Failed to send message to {chat_id}: {response.text}')
+            raise Exception(f'Error from Telegram API: {response.text}')
+    except Exception as e:
+        logger.error(f'An error occurred while sending message to {chat_id}: {str(e)}')
+        raise self.retry(exc=e)
 
 
 @shared_task
