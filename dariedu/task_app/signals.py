@@ -4,7 +4,7 @@ import logging
 
 from .export_delivery import export_deliveries
 from .models import DeliveryAssignment, Task, Delivery
-from .tasks import send_message_to_telegram
+from .tasks import send_message_to_telegram, send_massage_to_telegram_delivery
 from notifications_app.models import Notification
 from .export_gs_tasks import export_to_google_tasks, cancel_task_in_google_tasks, export_to_google_delivery, \
     cancel_task_in_google_delivery
@@ -91,6 +91,14 @@ def send_message_to_telegram_on_volunteer_signup(sender, instance, action, **kwa
                 obj_link=instance.get_absolute_url(),
             )
             notification.save()
+
+
+@receiver(m2m_changed, sender=DeliveryAssignment.volunteer.through)
+def send_message_to_telegram_on_volunteer_signup_delivery(sender, instance, action, **kwargs):
+    if action == 'post_add':
+        volunteer_ids = kwargs.get('pk_set', [])
+        for volunteer_id in volunteer_ids:
+            send_massage_to_telegram_delivery.apply_async(args=[instance.delivery.id, volunteer_id], countdown=15)
 
 
 @receiver(m2m_changed, sender=Task.volunteers.through)
