@@ -2,6 +2,7 @@ from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 import logging
 
+from .export_delivery import export_deliveries
 from .models import DeliveryAssignment, Task, Delivery
 from .tasks import send_message_to_telegram
 from notifications_app.models import Notification
@@ -112,3 +113,16 @@ def create_delivery_assignment(sender, instance, action, **kwargs):
         for user_id in removed_volunteers:
             delivery_id = instance.delivery.id
             cancel_task_in_google_delivery.apply_async(args=[user_id, delivery_id], countdown=30)
+
+
+@receiver(post_save, sender=Delivery)
+def export_delivery_to_gs(sender, instance, created, **kwargs):
+    """
+    Функция для экспорта данных о доставке в Google Sheets
+    """
+    try:
+        if instance.is_completed:
+            delivery_id = instance.id
+            export_deliveries.apply_async(args=[delivery_id], countdown=30)
+    except Exception as e:
+        logger.error(f'Error exporting delivery to Google Sheets: {e}')
