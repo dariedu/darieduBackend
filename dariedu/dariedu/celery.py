@@ -55,11 +55,11 @@ app.conf.beat_schedule = {
     },
     'update-volunteer-stats-minutely': {
         'task': 'statistics_app.tasks.update_statistics',
-        'schedule': crontab('*'),
+        'schedule': crontab(minute=0),
     },
     'update-all-statistics': {
         'task': 'statistics_app.tasks.all_statistics',
-        'schedule': crontab('*'),
+        'schedule': crontab(minute=0),
     },
     'check-users': {
         'task': 'user_app.tasks.check_users_task',
