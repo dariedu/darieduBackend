@@ -77,16 +77,21 @@ def update_points_hours_task(sender, instance, created, **kwargs):
 @receiver(m2m_changed, sender=Task.volunteers.through)
 def send_message_to_telegram_on_volunteer_signup(sender, instance, action, **kwargs):
     if action == 'post_add':
-        task_id = instance.id
-        send_message_to_telegram.delay(task_id)
-        user = instance.volunteers.first()
-        notification = Notification.objects.create(
-            title='Запись на выполнение Доброго дела',
-            text=f'Волонтер {user.tg_username} записался на выполнение Доброго дела '
-                 f'"{instance.name}"!',
-            obj_link=instance.get_absolute_url(),
-        )
-        notification.save()
+
+        volunteer_ids = kwargs.get('pk_set', [])
+        for volunteer_id in volunteer_ids:
+            send_message_to_telegram.apply_async(args=[instance.id, volunteer_id], countdown=15)
+
+            volunteer = instance.volunteers.get(id=volunteer_id)
+
+            notification = Notification.objects.create(
+                title='Запись на выполнение Доброго дела',
+                text=f'Волонтер {volunteer.tg_username if volunteer.tg_username else volunteer.name} '
+                     f'записался на выполнение Доброго дела "{instance.name}"!',
+                obj_link=instance.get_absolute_url(),
+            )
+            notification.save()
+
 
 @receiver(m2m_changed, sender=Task.volunteers.through)
 def create_task(sender, instance, action, **kwargs):
