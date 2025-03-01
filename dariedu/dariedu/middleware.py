@@ -91,7 +91,7 @@ class SecurityLoggingMiddleware:
 
     def log_request(self, request):
         if request.user.is_authenticated:
-            self.logger.info(f"User  {request.user.name} accessed {request.path}")
+            self.logger.info(f"User  {request.user.tg_id} accessed {request.path}")
         else:
             self.logger.info(f"Anonymous user accessed {request.path}")
 
@@ -100,10 +100,10 @@ class SecurityLoggingMiddleware:
 
         if response.status_code == 403:
             self.logger.warning(f"Access denied for {request.path} - "
-                                f"User: {request.user.name if request.user.is_authenticated else 'Anonymous'}")
+                                f"User: {request.user.tg_id if request.user.is_authenticated else 'Anonymous'}")
         elif response.status_code == 401:
             self.logger.warning(f"Unauthorized access attempt for {request.path} -"
-                                f" User: {request.user.name if request.user.is_authenticated else 'Anonymous'}")
+                                f" User: {request.user.tg_id if request.user.is_authenticated else 'Anonymous'}")
 
 
 class SchemaLoggingMiddleware:
