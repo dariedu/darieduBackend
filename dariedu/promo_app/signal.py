@@ -32,7 +32,6 @@ def signal_for_promo_tickets(sender, instance, created, **kwargs):
 def signal_for_promo_users(sender, instance, created, **kwargs):
     if created:
         user = instance.user
-        print(user)
         name = instance.promotion.name
         notification = Notification.objects.create(
             title='Запись на Поощрение',
@@ -41,5 +40,5 @@ def signal_for_promo_users(sender, instance, created, **kwargs):
             obj_link=instance.promotion.get_absolute_url(),
         )
         notification.save()
-        if instance.promotion.contact_person:
-            send_message_to_telegrams.apply_async(args=[instance.promotion.id])
+
+        send_message_to_telegrams.apply_async(args=[instance.promotion.id, user.id], countdown=10)
