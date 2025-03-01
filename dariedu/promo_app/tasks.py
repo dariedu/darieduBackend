@@ -30,7 +30,7 @@ async def async_send_message(chat_id, message):
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=10)
-def send_message_to_telegrams(self, promotion_id, user):
+def send_message_to_telegrams(self, promotion_id, message):
     """
     Notifying the manager about the volunteer’s registration for incentives.
     """
@@ -41,17 +41,8 @@ def send_message_to_telegrams(self, promotion_id, user):
         logger.error(f'Promotion with id {promotion_id} does not exist.')
         return
 
-    try:
-        user = User.objects.get(id=user)
-    except Exception as e:
-        logger.error(f'Error getting user: {e}')
-        return
-
-    name = user.tg_username if user.tg_username else user.name
     contact_person = promo.contact_person
     chat_id = contact_person.tg_id
-
-    message = f'Волонтер {name} записался на поощрение "{promo.name}"!'
 
     try:
         loop = asyncio.get_event_loop()
