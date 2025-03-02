@@ -81,6 +81,17 @@ class RouteSheetSerializer(serializers.ModelSerializer):
             'id': {'read_only': True},
         }
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        if representation['address']:
+            representation['address'] = sorted(
+                representation['address'],
+                key=lambda addr: addr['number']
+            )
+
+        return representation
+
 
 class RouteAssignmentSerializer(serializers.ModelSerializer):
     class Meta:

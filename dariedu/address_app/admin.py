@@ -59,14 +59,15 @@ class RouteSheetInline(TabularInline):
 @admin.register(Address)
 class AddressAdmin(BaseAdmin):
 
-    list_display = ('route_sheet', 'location', 'address', 'display_comment', 'display_beneficiar')
-    fields = ('address', 'link', 'location', 'route_sheet')
+    list_display = ('number', 'route_sheet', 'location', 'address', 'display_comment', 'display_beneficiar', 'dinners', )
+    fields = ('number', 'address', 'link', 'location', 'route_sheet', 'dinners')
     list_filter = ('location__city', 'location', 'route_sheet')
     search_fields = ('address', )
     inlines = [BeneficiarInline, ]
     list_display_links = ('address', 'route_sheet', 'location')
     autocomplete_fields = ['location', 'route_sheet']
-    ordering = ('id', )
+    ordering = ('route_sheet', 'number')
+    list_editable = ('number', 'dinners')
 
     @action(description='Добавить в маршрутный лист')
     def add_addresses_to_route_sheet(self, request, queryset):
