@@ -32,7 +32,7 @@ async def async_send_message(chat_id, message):
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=10)
-def send_message_to_telegram(self, task_id, user):
+def send_message_to_telegram(self, task_id, message):
     """
     Notification to the supervisor about a volunteer taking on a task.
     """
@@ -44,16 +44,8 @@ def send_message_to_telegram(self, task_id, user):
         logger.error(f"Task with id {task_id} does not exist.")
         return
 
-    try:
-        user = User.objects.get(id=user)
-    except User.DoesNotExist:
-        logger.error(f"User  with id {user} does not exist.")
-        return
-
     curator = task.curator
     chat_id = curator.tg_id
-    name = user.tg_username if user.tg_username else user.name
-    message = f'Волонтер {name} записался на выполнение Доброго дела "{task.name}"!'
 
     try:
         loop = asyncio.get_event_loop()
@@ -70,7 +62,7 @@ def send_message_to_telegram(self, task_id, user):
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=10)
-def send_massage_to_telegram_delivery(self, delivery_id, user):
+def send_massage_to_telegram_delivery(self, delivery_id, message):
     """
     Notification to the supervisor about a volunteer taking on a delivery.
     """
@@ -82,17 +74,7 @@ def send_massage_to_telegram_delivery(self, delivery_id, user):
         logger.error(f"Delivery with id {delivery_id} does not exist.")
         return
 
-    try:
-        user = User.objects.get(id=user)
-    except User.DoesNotExist:
-        logger.error(f"User  with id {user} does not exist.")
-        return
-
     chat_id = delivery.curator.tg_id
-    name = user.tg_username if user.tg_username else user.name
-    date = delivery.date.strftime('%d.%m.%Y')
-    location = delivery.location.address
-    message = f'Волонтер {name} записался на доставку дата: {date}, локация: {location}!'
 
     try:
         loop = asyncio.get_event_loop()
