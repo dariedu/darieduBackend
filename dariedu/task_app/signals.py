@@ -1,6 +1,7 @@
 from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 import logging
+from django.contrib.auth import get_user_model
 
 from .export_delivery import export_deliveries
 from .models import DeliveryAssignment, Task, Delivery
@@ -9,6 +10,8 @@ from notifications_app.models import Notification
 from .export_gs_tasks import export_to_google_tasks, cancel_task_in_google_tasks, export_to_google_delivery, \
     cancel_task_in_google_delivery
 
+
+User = get_user_model()
 
 logger = logging.getLogger('django.server')
 
@@ -80,7 +83,17 @@ def send_message_to_telegram_on_volunteer_signup(sender, instance, action, **kwa
 
         volunteer_ids = kwargs.get('pk_set', [])
         for volunteer_id in volunteer_ids:
-            send_message_to_telegram.apply_async(args=[instance.id, volunteer_id], countdown=15)
+
+            try:
+                user = User.objects.get(id=volunteer_id)
+            except User.DoesNotExist:
+                logger.error(f"User  with id {volunteer_id} does not exist.")
+                return
+
+            message = (f'Волонтер {user.tg_username if user.tg_username else user.name}'
+                       f' записался на выполнение Доброго дела "{instance.name}"!')
+
+            send_message_to_telegram.apply_async(args=[instance.id, message], countdown=15)
 
             volunteer = instance.volunteers.get(id=volunteer_id)
 
@@ -92,13 +105,64 @@ def send_message_to_telegram_on_volunteer_signup(sender, instance, action, **kwa
             )
             notification.save()
 
+    if action == 'post_remove':
+        removed_volunteers = kwargs.get('pk_set', set())
+
+        for user_id in removed_volunteers:
+            try:
+                user = User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                logger.error(f"User  with id {user_id} does not exist.")
+                return
+
+            message = (f'Волонтер {user.tg_username if user.tg_username else user.name} '
+                       f'отказался от выполнения Доброго дела "{instance.name}"!')
+            send_message_to_telegram.apply_async(args=[instance.id, message], countdown=15)
+
+            notification = Notification.objects.create(
+                title='Отказ от выполнения Доброго дела',
+                text=f'Волонтер {user.tg_username if user.tg_username else user.name} '
+                     f'отказался от выполнения Доброго дела "{instance.name}"!',
+                obj_link=instance.get_absolute_url(),
+            )
+            notification.save()
+
 
 @receiver(m2m_changed, sender=DeliveryAssignment.volunteer.through)
 def send_message_to_telegram_on_volunteer_signup_delivery(sender, instance, action, **kwargs):
     if action == 'post_add':
         volunteer_ids = kwargs.get('pk_set', [])
+
         for volunteer_id in volunteer_ids:
-            send_massage_to_telegram_delivery.apply_async(args=[instance.delivery.id, volunteer_id], countdown=15)
+
+            try:
+                user = User.objects.get(id=volunteer_id)
+            except User.DoesNotExist:
+                logger.error(f'User  with id {volunteer_id} does not exist.')
+                continue
+
+            date = instance.delivery.date.strftime('%d.%m.%Y')
+            location = instance.delivery.location.address
+            message = (f'Волонтер {user.tg_username if user.tg_username else user.name} '
+                       f'записался на доставку дата: {date}, локация: {location}!')
+            send_massage_to_telegram_delivery.apply_async(args=[instance.delivery.id, message], countdown=15)
+
+    if action == 'post_remove':
+        removed_volunteers = kwargs.get('pk_set', set())
+
+        for user_id in removed_volunteers:
+
+            try:
+                user = User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                logger.error(f'User  with id {user_id} does not exist.')
+                continue
+
+            date = instance.delivery.date.strftime('%d.%m.%Y')
+            location = instance.delivery.location.address
+            message = (f'Волонтер {user.tg_username if user.tg_username else user.name} '
+                       f'отказался от доставки дата: {date}, локация: {location}!')
+            send_massage_to_telegram_delivery.apply_async(args=[instance.delivery.id, message], countdown=15)
 
 
 @receiver(m2m_changed, sender=Task.volunteers.through)
