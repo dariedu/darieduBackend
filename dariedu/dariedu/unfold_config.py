@@ -77,24 +77,6 @@ UNFOLD_CONFIG = {
                     ],
                 },
                 {
-
-                    "title": _("Добрые дела"),
-                    "separator": True,
-                    "collapsible": True,
-                    "items": [
-                        {
-                            "title": _("Добрые дела"),
-                            "icon": "task",
-                            "link": reverse_lazy("admin:task_app_task_changelist"),
-                        },
-                        {
-                            "title": _("Категории добрых дел"),
-                            "icon": "task",
-                            "link": reverse_lazy("admin:task_app_taskcategory_changelist"),
-                        },
-                    ],
-                },
-                {
                     "title": _("Доставки"),
                     "separator": True,
                     "collapsible": True,
@@ -184,6 +166,24 @@ UNFOLD_CONFIG = {
                             "permission": lambda request: request.user.is_superuser,
                         },
 
+                    ],
+                },
+                {
+
+                    "title": _("Добрые дела"),
+                    "separator": True,
+                    "collapsible": True,
+                    "items": [
+                        {
+                            "title": _("Добрые дела"),
+                            "icon": "task",
+                            "link": reverse_lazy("admin:task_app_task_changelist"),
+                        },
+                        {
+                            "title": _("Категории добрых дел"),
+                            "icon": "task",
+                            "link": reverse_lazy("admin:task_app_taskcategory_changelist"),
+                        },
                     ],
                 },
                 {
