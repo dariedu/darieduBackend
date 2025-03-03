@@ -241,6 +241,25 @@ class TaskViewSet(
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=False, methods=['get'], url_name='list_not_confirmed')
+    @is_confirmed
+    def list_not_confirmed(self, request):
+        """
+        Get a list of not confirmed tasks of a particular volunteer.
+        """
+        try:
+            user = request.user
+            tasks = TaskParticipation.objects.filter(volunteer=user, confirmed=False, task__is_active=True).all()
+
+            if tasks is None:
+                return Response({"error": "No tasks found"}, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = TaskParticipationSerializer(tasks, many=True)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
     @action(detail=True, methods=['post'], url_name='task_complete')
     @is_confirmed
     def complete(self, request, pk=None):
@@ -519,6 +538,21 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
                 return Response({'message': 'Delivery confirmed successfully'}, status=200)
             else:
                 return Response({'error': 'You are not assigned to this delivery.'}, status=400)
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
+
+    @action(detail=False, methods=['get'], url_path='list_not_confirm')
+    @is_confirmed
+    def list_not_confirm(self, request):
+        try:
+            deliveries = DeliveryAssignment.objects.filter(confirm=False, volunteer=request.user,
+                                                           delivery__is_active=True).all()
+
+            if deliveries is None:
+                return Response({'error': 'No deliveries found'}, status=400)
+
+            serializer = DeliveryAssignmentSerializer(deliveries, many=True)
+            return Response(serializer.data, status=200)
         except Exception as e:
             return Response({'error': str(e)}, status=400)
 

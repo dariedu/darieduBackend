@@ -53,7 +53,7 @@ class TaskParticipationSerializer(serializers.ModelSerializer):
 class DeliveryAssignmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeliveryAssignment
-        fields = ['id', 'delivery', 'volunteer']
+        fields = ['id', 'delivery', 'volunteer', 'confirm']
 
 
 class LocationShortSerializer(serializers.ModelSerializer):
