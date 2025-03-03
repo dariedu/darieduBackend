@@ -2,9 +2,10 @@ from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 import logging
 from django.contrib.auth import get_user_model
-
+# from django.dispatch import Signal
+import django.dispatch
 from .export_delivery import export_deliveries
-from .models import DeliveryAssignment, Task, Delivery
+from .models import DeliveryAssignment, Task, Delivery, TaskParticipation
 from .tasks import send_message_to_telegram, send_massage_to_telegram_delivery
 from notifications_app.models import Notification
 from .export_gs_tasks import export_to_google_tasks, cancel_task_in_google_tasks, export_to_google_delivery, \
@@ -163,6 +164,36 @@ def send_message_to_telegram_on_volunteer_signup_delivery(sender, instance, acti
             message = (f'Волонтер {user.tg_username if user.tg_username else user.name} '
                        f'отказался от доставки дата: {date}, локация: {location}!')
             send_massage_to_telegram_delivery.apply_async(args=[instance.delivery.id, message], countdown=15)
+
+
+volunteer_confirmed = django.dispatch.Signal()
+
+@receiver(volunteer_confirmed)
+def notify_curator_on_confirmation(volunteer, assignment, **kwargs):
+    delivery = assignment.delivery
+    curator = delivery.curator
+
+    if curator:
+        message = (
+            f'Волонтер {volunteer.tg_username if volunteer.tg_username else volunteer.username} '
+            f'подтвердил участие в доставке на дату {delivery.date.strftime("%d.%m.%Y")}, '
+            f'локация: {delivery.location.address}.'
+        )
+
+        send_massage_to_telegram_delivery.apply_async(args=[delivery.id, message], countdown=15)
+
+
+@receiver(post_save, sender=TaskParticipation)
+def notify_volunteer_on_confirmation_task(sender, instance, created, **kwargs):
+
+    if instance.confirmed:
+        message = (
+            f'Волонтер '
+            f'{instance.volunteer.tg_username if instance.volunteer.tg_username else instance.volunteer.username} '
+            f'подтвердил участие в Добром деле "{instance.task.name}".'
+        )
+
+        send_message_to_telegram.apply_async(args=[instance.task.id, message], countdown=15)
 
 
 @receiver(m2m_changed, sender=Task.volunteers.through)

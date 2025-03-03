@@ -7,10 +7,11 @@ from rest_framework.response import Response
 
 from address_app.models import RouteAssignment
 from dariedu.settings import CURRENT_HOST
-from .models import Task, Delivery, DeliveryAssignment, TaskCategory
+from .models import Task, Delivery, DeliveryAssignment, TaskCategory, TaskParticipation
 from .permissions import IsAbleCompleteTask, IsCurator, is_confirmed
 from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer, TaskVolunteerSerializer, \
-    TaskCategorySerializer
+    TaskCategorySerializer, TaskParticipationSerializer
+from .signals import volunteer_confirmed
 
 
 class TaskViewSet(
@@ -177,6 +178,8 @@ class TaskViewSet(
         Task.objects.filter(pk=task.pk).update(volunteers_taken=F('volunteers_taken') + 1)
         task.volunteers.add(request.user)
 
+        TaskParticipation.objects.create(task=task, volunteer=request.user)
+
         task.refresh_from_db()
         serializer = self.get_serializer(task)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -194,6 +197,13 @@ class TaskViewSet(
 
         if request.user not in task.volunteers.all():
             return Response({"error": "You haven't taken this task!"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            participation = task.task_part.get(volunteer=request.user)
+            participation.delete()
+        except TaskParticipation.DoesNotExist:
+            return Response({"error": "Participation record not found."}, status=status.HTTP_400_BAD_REQUEST)
+
         Task.objects.filter(pk=task.pk).update(volunteers_taken=F('volunteers_taken') - 1)
 
         task.volunteers.remove(request.user)
@@ -201,6 +211,35 @@ class TaskViewSet(
         task.refresh_from_db()
         serializer = self.get_serializer(task)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_name='task_confirm')
+    @is_confirmed
+    def confirm(self, request, pk):
+        """
+        Confirm the task.
+        Can only confirm an active uncompleted task.
+        Post request body should be empty. Will be ignored anyway.
+        Curators only.
+        """
+        try:
+            task = self.get_object()
+
+            volunteer_participation = task.task_part.get(volunteer=request.user)
+
+            if volunteer_participation is not None:
+                if volunteer_participation.confirmed:
+                    return Response({"error": "Вы уже подтвердили участие в этом добром деле!"},
+                                    status=status.HTTP_400_BAD_REQUEST)
+                volunteer_participation.confirmed = True
+                volunteer_participation.save(update_fields=['confirmed'])
+                serializer = TaskParticipationSerializer(volunteer_participation)
+
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "Вы не взяли участие в этом добром деле!"},
+                                status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['post'], url_name='task_complete')
     @is_confirmed
@@ -456,6 +495,32 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
             return Response({'message': 'Delivery cancelled successfully'}, status=200)
         else:
             return Response({'error': 'You are not authorized to cancel this delivery'}, status=403)
+
+    @action(detail=True, methods=['post'], url_path='confirm')
+    @is_confirmed
+    def confirm_delivery(self, request, pk):
+        """
+        Confirm delivery.
+        """
+        try:
+            delivery = self.get_object()
+            assignment = delivery.assignments.filter(volunteer=request.user).first()
+
+            if assignment is not None:
+
+                if assignment.confirm:
+                    return Response({'error': 'Вы уже подтвердили участие в этой доставке.'}, status=400)
+
+                assignment.confirm = True
+                assignment.save()
+
+                volunteer_confirmed.send(sender=self.__class__, volunteer=request.user, assignment=assignment)
+
+                return Response({'message': 'Delivery confirmed successfully'}, status=200)
+            else:
+                return Response({'error': 'You are not assigned to this delivery.'}, status=400)
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
 
     @action(detail=True, methods=['post'], url_path='complete')
     @is_confirmed

@@ -52,6 +52,7 @@ class DeliveryAssignment(models.Model):
     delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, related_name='assignments',
                                  verbose_name='доставка')
     volunteer = models.ManyToManyField(User, related_name='assignments', verbose_name='волонтёр')
+    confirm = models.BooleanField(default=False, verbose_name='подтвержд.')
 
     def __str__(self):
         return format_html('<br>'.join([str(volunteer) for volunteer in self.volunteer.all()]))
@@ -89,6 +90,15 @@ class Task(models.Model):
     class Meta:
         verbose_name = 'доброе дело'
         verbose_name_plural = 'добрые дела'
+
+
+class TaskParticipation(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='task_part', verbose_name='задача')
+    volunteer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_part', verbose_name='волонтёр')
+    confirmed = models.BooleanField(default=False, verbose_name='подтверждено')
+
+    def __str__(self):
+        return f'{self.volunteer.tg_username} - {self.task.name}'
 
 
 class TaskCategory(models.Model):
