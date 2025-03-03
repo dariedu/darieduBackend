@@ -4,7 +4,7 @@ from rest_framework import serializers
 from address_app.models import Location
 from address_app.serializers import CitySerializer, CuratorSerializer
 
-from .models import Task, Delivery, DeliveryAssignment, TaskCategory
+from .models import Task, Delivery, DeliveryAssignment, TaskCategory, TaskParticipation
 
 
 class TaskCategorySerializer(serializers.ModelSerializer):
@@ -42,6 +42,12 @@ class TaskVolunteerSerializer(serializers.ModelSerializer):
             'id', 'category', 'name', 'city', 'volunteer_price', 'curator_price', 'description',
             'start_date', 'end_date', 'volunteers_needed', 'is_active', 'is_completed', 'curator',
         ]
+
+
+class TaskParticipationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaskParticipation
+        fields = ['id', 'task', 'volunteer', 'confirmed']
 
 
 class DeliveryAssignmentSerializer(serializers.ModelSerializer):

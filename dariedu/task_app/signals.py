@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 # from django.dispatch import Signal
 import django.dispatch
 from .export_delivery import export_deliveries
-from .models import DeliveryAssignment, Task, Delivery
+from .models import DeliveryAssignment, Task, Delivery, TaskParticipation
 from .tasks import send_message_to_telegram, send_massage_to_telegram_delivery
 from notifications_app.models import Notification
 from .export_gs_tasks import export_to_google_tasks, cancel_task_in_google_tasks, export_to_google_delivery, \
@@ -183,31 +183,44 @@ def notify_curator_on_confirmation(volunteer, assignment, **kwargs):
         send_massage_to_telegram_delivery.apply_async(args=[delivery.id, message], countdown=15)
 
 
-# @receiver(m2m_changed, sender=Task.volunteers.through)
-# def create_task(sender, instance, action, **kwargs):
-#     if action == 'post_add':
-#         # Проверяем, есть ли волонтеры
-#         if instance.volunteers.exists():
-#             task_id = instance.id
-#             user_id = instance.volunteers.first().id
-#             export_to_google_tasks.apply_async(args=[user_id, task_id], countdown=30)
-#     if action == 'post_remove':
-#         removed_volunteers = kwargs.get('pk_set', set())
-#         for user_id in removed_volunteers:
-#             task_id = instance.id
-#             cancel_task_in_google_tasks.apply_async(args=[user_id, task_id], countdown=30)
-#
-# @receiver(m2m_changed, sender=DeliveryAssignment.volunteer.through)
-# def create_delivery_assignment(sender, instance, action, **kwargs):
-#     if action == 'post_add':
-#         delivery_id = instance.delivery.id
-#         user_id = instance.volunteer.first().id
-#         export_to_google_delivery.apply_async(args=[user_id, delivery_id], countdown=30)
-#     if action == 'post_remove':
-#         removed_volunteers = kwargs.get('pk_set', set())
-#         for user_id in removed_volunteers:
-#             delivery_id = instance.delivery.id
-#             cancel_task_in_google_delivery.apply_async(args=[user_id, delivery_id], countdown=30)
+@receiver(post_save, sender=TaskParticipation)
+def notify_volunteer_on_confirmation_task(sender, instance, created, **kwargs):
+
+    if instance.confirmed:
+        message = (
+            f'Волонтер '
+            f'{instance.volunteer.tg_username if instance.volunteer.tg_username else instance.volunteer.username} '
+            f'подтвердил участие в Добром деле "{instance.task.name}".'
+        )
+
+        send_message_to_telegram.apply_async(args=[instance.task.id, message], countdown=15)
+
+
+@receiver(m2m_changed, sender=Task.volunteers.through)
+def create_task(sender, instance, action, **kwargs):
+    if action == 'post_add':
+        # Проверяем, есть ли волонтеры
+        if instance.volunteers.exists():
+            task_id = instance.id
+            user_id = instance.volunteers.first().id
+            export_to_google_tasks.apply_async(args=[user_id, task_id], countdown=30)
+    if action == 'post_remove':
+        removed_volunteers = kwargs.get('pk_set', set())
+        for user_id in removed_volunteers:
+            task_id = instance.id
+            cancel_task_in_google_tasks.apply_async(args=[user_id, task_id], countdown=30)
+
+@receiver(m2m_changed, sender=DeliveryAssignment.volunteer.through)
+def create_delivery_assignment(sender, instance, action, **kwargs):
+    if action == 'post_add':
+        delivery_id = instance.delivery.id
+        user_id = instance.volunteer.first().id
+        export_to_google_delivery.apply_async(args=[user_id, delivery_id], countdown=30)
+    if action == 'post_remove':
+        removed_volunteers = kwargs.get('pk_set', set())
+        for user_id in removed_volunteers:
+            delivery_id = instance.delivery.id
+            cancel_task_in_google_delivery.apply_async(args=[user_id, delivery_id], countdown=30)
 
 
 @receiver(post_save, sender=Delivery)

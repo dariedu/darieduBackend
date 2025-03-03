@@ -230,4 +230,16 @@ class Fix1(OpenApiViewExtension):
             def my(self, request, *args, **kwargs):
                 return super().my(request, *args, **kwargs)
 
+            @extend_schema(
+                tags=['Task_confirm/refuse'],
+            )
+            def refuse(self, request, *args, **kwargs):
+                return super().refuse(request, *args, **kwargs)
+
+            @extend_schema(
+                tags=['Task_confirm/refuse']
+            )
+            def confirm(self, request, *args, **kwargs):
+                return super().confirm(request, *args, **kwargs)
+
         return Fixed

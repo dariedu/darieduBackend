@@ -92,6 +92,15 @@ class Task(models.Model):
         verbose_name_plural = 'добрые дела'
 
 
+class TaskParticipation(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='task_part', verbose_name='задача')
+    volunteer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_part', verbose_name='волонтёр')
+    confirmed = models.BooleanField(default=False, verbose_name='подтверждено')
+
+    def __str__(self):
+        return f'{self.volunteer.tg_username} - {self.task.name}'
+
+
 class TaskCategory(models.Model):
     name = models.CharField(max_length=255, verbose_name='название')
     icon = models.ImageField(blank=True, null=True, verbose_name='иконка', upload_to='task_category_icons/',
