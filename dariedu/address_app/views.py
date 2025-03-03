@@ -3,6 +3,7 @@ import logging
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import render
+from django.utils import timezone
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -136,6 +137,6 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
 
 
 class RouteAssignmentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-    queryset = RouteAssignment.objects.all()
+    queryset = RouteAssignment.objects.filter(delivery__date__gte=timezone.now() - timezone.timedelta(days=14))
     serializer_class = RouteAssignmentSerializer
     permission_classes = [IsAuthenticated]

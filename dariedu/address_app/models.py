@@ -48,7 +48,7 @@ class RouteSheet(models.Model):
 
     @admin.display(description='адреса')
     def display_address(self):
-        return format_html('<br><br>'.join([address.address for address in self.address.all()]))
+        return format_html('<br><br>'.join([address.address for address in self.address.all().order_by('number')]))
 
     @admin.display(description='благополучатели')
     def display_beneficiaries(self):
@@ -106,12 +106,14 @@ class Address(models.Model):
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, related_name='address_location',
                                  verbose_name='локация', blank=True, null=True)
     route_sheet = models.ForeignKey(RouteSheet, on_delete=models.SET_NULL, related_name='address',
-                                    verbose_name='маршрутный лист', blank=True, null=True)
+                                    verbose_name='маршрут', blank=True, null=True)
+    number = models.IntegerField(verbose_name='№', blank=True, null=True, default=1)
+    dinners = models.IntegerField(verbose_name='обедов', blank=True, null=True, default=1)
 
     def __str__(self):
         return f'{self.address}'
 
-    @admin.display(description='маршрутный лист')
+    @admin.display(description='маршрут')
     def display_route_sheet(self):
         return self.route_sheet.name
 

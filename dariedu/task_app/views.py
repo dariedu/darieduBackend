@@ -116,7 +116,7 @@ class TaskViewSet(
             # return tasks where the current user is curator
             queryset = self.request.user.task_curator
             queryset = self.filter_queryset(queryset)
-            return queryset
+            return queryset.filter(start_date__gte=timezone.now() - timezone.timedelta(days=14))
 
         # all available tasks
         return super().get_queryset()
@@ -266,7 +266,7 @@ class TaskViewSet(
     @is_confirmed
     def curator_of(self, request):
         """
-        Get all tasks where current user is the curator of the task.
+        Get all tasks FOR LAST TWO WEEKS where current user is the curator of the task.
         Curators only.
         """
         tasks = self.get_queryset()

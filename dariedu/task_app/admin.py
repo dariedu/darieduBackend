@@ -141,12 +141,12 @@ class DeliveryAdmin(BaseAdmin, ExportActionMixin):
 
     @admin.display(description="дата начала")
     def date_format(self, obj):
-        return obj.date.astimezone(ZONE).strftime("%d.%m.%y %H:%M")
+        return format_html(f'<b>{obj.date.astimezone(ZONE).strftime("%d.%m.%y %H:%M")}</b>')
 
     list_display = (
+        'date_format',
         'location',
         'display_route_sheet',
-        'date_format',
         'curator',
         'volunteers_needed',
         'volunteers_taken',
