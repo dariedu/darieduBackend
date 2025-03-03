@@ -155,7 +155,7 @@ class Fix2(OpenApiViewExtension):
                 return super().take_delivery(request, pk)
 
             @extend_schema(
-                tags=['Deliveries'],
+                tags=['Deliveries_confirm/cancel'],
                 summary="Cancel delivery",
                 operation_id="cancelDelivery",
                 responses={
@@ -182,6 +182,16 @@ class Fix2(OpenApiViewExtension):
             )
             def delivery_activation(self, request, pk):
                 return super().delivery_activation(request, pk)
+
+            @extend_schema(
+                tags=['Deliveries_confirm/cancel'],
+                summary="Confirm delivery",
+                operation_id="confirmDelivery",
+                methods=['post'],
+                request=OpenApiTypes.NONE,
+            )
+            def confirm_delivery(self, request, pk):
+                return super().confirm_delivery(request, pk)
 
         return Fixed
 

@@ -52,6 +52,7 @@ class DeliveryAssignment(models.Model):
     delivery = models.ForeignKey(Delivery, on_delete=models.CASCADE, related_name='assignments',
                                  verbose_name='доставка')
     volunteer = models.ManyToManyField(User, related_name='assignments', verbose_name='волонтёр')
+    confirm = models.BooleanField(default=False, verbose_name='подтвержд.')
 
     def __str__(self):
         return format_html('<br>'.join([str(volunteer) for volunteer in self.volunteer.all()]))

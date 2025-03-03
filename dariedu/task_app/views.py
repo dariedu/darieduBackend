@@ -11,6 +11,7 @@ from .models import Task, Delivery, DeliveryAssignment, TaskCategory
 from .permissions import IsAbleCompleteTask, IsCurator, is_confirmed
 from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer, TaskVolunteerSerializer, \
     TaskCategorySerializer
+from .signals import volunteer_confirmed
 
 
 class TaskViewSet(
@@ -456,6 +457,32 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
             return Response({'message': 'Delivery cancelled successfully'}, status=200)
         else:
             return Response({'error': 'You are not authorized to cancel this delivery'}, status=403)
+
+    @action(detail=True, methods=['post'], url_path='confirm')
+    @is_confirmed
+    def confirm_delivery(self, request, pk):
+        """
+        Confirm delivery.
+        """
+        try:
+            delivery = self.get_object()
+            assignment = delivery.assignments.filter(volunteer=request.user).first()
+
+            if assignment is not None:
+
+                if assignment.confirm:
+                    return Response({'error': 'Вы уже подтвердили участие в этой доставке.'}, status=400)
+
+                assignment.confirm = True
+                assignment.save()
+
+                volunteer_confirmed.send(sender=self.__class__, volunteer=request.user, assignment=assignment)
+
+                return Response({'message': 'Delivery confirmed successfully'}, status=200)
+            else:
+                return Response({'error': 'You are not assigned to this delivery.'}, status=400)
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
 
     @action(detail=True, methods=['post'], url_path='complete')
     @is_confirmed
