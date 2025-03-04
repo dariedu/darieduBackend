@@ -177,6 +177,27 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
         except Exception as e:
             return Response({'error': str(e)}, status=400)
 
+    @extend_schema(
+        tags=['promo_confirm/cancel'],
+        summary="Получение подтвержденных поощрений",
+        request=OpenApiTypes.NONE
+    )
+    @action(detail=False, methods=['get'], url_path='confirmed')
+    def get_confirmed(self, request):
+        """
+        Получение подтвержденных поощрений
+        """
+        try:
+            user = request.user
+            participation = Participation.objects.filter(user=user, is_active=True, promotion__is_active=True).all()
+
+            serializer = ParticipationSerializer(participation, many=True)
+
+            return Response(serializer.data)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
+
     @action(detail=False, methods=['get'], url_path='promo_categories')
     def get_categories(self, request):
         """
