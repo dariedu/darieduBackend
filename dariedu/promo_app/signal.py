@@ -62,3 +62,23 @@ def signal_for_deleted_promo_users(sender, instance, **kwargs):
     message = f'Волонтер {user.tg_username if user.tg_username else user.name} отписался от поощрение "{name}"!'
 
     send_message_to_telegrams.apply_async(args=[instance.promotion.id, message], countdown=10)
+
+
+@receiver(post_save, sender=Participation)
+def signal_for_confirmation(sender, instance, created, **kwargs):
+    if instance.is_active:
+        user = instance.user
+        name = instance.promotion.name
+
+        notification = Notification.objects.create(
+            title='Подтверждение участия в Поощрении',
+            text=f'Волонтер {user.tg_username if user.tg_username else user.name} подтвердил участие в поощрении '
+                 f'"{name}"!',
+            obj_link=instance.promotion.get_absolute_url(),
+        )
+        notification.save()
+
+        message = (f'Волонтер {user.tg_username if user.tg_username else user.name}'
+                   f' подтвердил участие в поощрении "{name}"!')
+
+        send_message_to_telegrams.apply_async(args=[instance.promotion.id, message], countdown=10)

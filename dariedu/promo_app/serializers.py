@@ -37,9 +37,7 @@ class PromotionSerializer(serializers.ModelSerializer):
       
 
 class ParticipationSerializer(serializers.ModelSerializer):
-    promotion_id = serializers.IntegerField()
-    tg_id = serializers.IntegerField()
 
     class Meta:
         model = Participation
-        fields = ['promotion_id', 'tg_id']
+        fields = ['id', 'user', 'promotion', 'received_at', 'is_active']
