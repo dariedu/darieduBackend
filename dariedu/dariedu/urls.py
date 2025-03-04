@@ -33,7 +33,7 @@ from stories_app.urls import router as stories_approuter
 from notifications_app.urls import router as notification_approuter
 from user_app.views import RegistrationView, CustomTokenObtainPairView
 # from notifications_app.views import CreateNotificationView
-from promo_app.views import ParticipationView
+# from promo_app.views import ParticipationView
 
 router = routers.DefaultRouter()
 router.registry.extend(notification_approuter.registry)
@@ -45,7 +45,7 @@ router.registry.extend(address_approuter.registry)
 router.registry.extend(stories_approuter.registry)
 
 urlpatterns = [
-    path('api/participation/', ParticipationView.as_view()),
+    # path('api/participation/', ParticipationView.as_view()),
     # path('api/notifications/', CreateNotificationView.as_view()),
     # path('api/', include('notifications_app.urls')),
     path('stories/<slug:slug>/', StoriesDetailView.as_view()),

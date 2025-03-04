@@ -1,3 +1,5 @@
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
@@ -94,6 +96,11 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
         except Exception as e:
             return Response({'error': str(e)}, status=500)
 
+    @extend_schema(
+        tags=['promo_confirm/cancel'],
+        summary="Отмена поощрения",
+        request=OpenApiTypes.NONE,
+    )
     @action(detail=True, methods=['post'], url_path='cancel')
     def cancel_redeem(self, request, pk):
         """
@@ -117,6 +124,58 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
             return Response({'error': str(e)}, status=400)
         except Exception as e:
             return Response({'error': 'Internal Server Error'}, status=500)
+
+    @extend_schema(
+        tags=['promo_confirm/cancel'],
+        summary="Подтверждение участия в поощрении",
+        request=OpenApiTypes.NONE
+    )
+    @action(detail=True, methods=['post'], url_path='confirmed')
+    def confirmed(self, request, pk):
+        """
+        Подтверждение участия в поощрении
+        """
+        try:
+            promotion = get_object_or_404(Promotion, pk=pk)
+            user = request.user
+            participation = Participation.objects.filter(user=user, promotion=promotion).first()
+
+            if not participation:
+                return Response({'error': 'У вас нет этого поощрения'}, status=400)
+
+            if participation.is_active:
+                return Response({'error': 'Участие уже подтверждено'}, status=status.HTTP_400_BAD_REQUEST)
+
+            participation.is_active = True
+            participation.save_without_reward_check()
+
+            return Response({'message': 'Участие подтверждено'}, status=status.HTTP_200_OK)
+        except ValidationError as e:
+            return Response({'error': str(e)}, status=400)
+
+        except Exception as e:
+            return Response({'error': 'Internal Server Error'}, status=500)
+
+    @extend_schema(
+        tags=['promo_confirm/cancel'],
+        summary="Получение не подтвержденных поощрений",
+        request=OpenApiTypes.NONE
+    )
+    @action(detail=False, methods=['get'], url_path='not_confirmed')
+    def get_not_confirmed(self, request):
+        """
+        Получение не подтвержденных поощрений
+        """
+        try:
+            user = request.user
+            participation = Participation.objects.filter(user=user, is_active=False, promotion__is_active=True).all()
+
+            serializer = ParticipationSerializer(participation, many=True)
+
+            return Response(serializer.data)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
 
     @action(detail=False, methods=['get'], url_path='promo_categories')
     def get_categories(self, request):
@@ -145,18 +204,18 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-class ParticipationView(APIView):
-    """
-    Подтверждение участия в поощрении
-    """
-    def post(self, request):
-        promotion_id = request.data.get('promotion_id')
-        tg_id = request.data.get('tg_id')
-        participation = Participation.objects.filter(promotion_id=promotion_id, user__tg_id=tg_id).first()
-        if participation:
-            participation.is_active = True
-            participation.save_without_reward_check()
-            return Response({'message': 'Участие обновлено'}, status=status.HTTP_200_OK)
-        else:
-            return Response({'error': 'Участие не найдено'}, status=status.HTTP_404_NOT_FOUND)
+#
+# class ParticipationView(APIView):
+#     """
+#     Подтверждение участия в поощрении
+#     """
+#     def post(self, request):
+#         promotion_id = request.data.get('promotion_id')
+#         tg_id = request.data.get('tg_id')
+#         participation = Participation.objects.filter(promotion_id=promotion_id, user__tg_id=tg_id).first()
+#         if participation:
+#             participation.is_active = True
+#             participation.save_without_reward_check()
+#             return Response({'message': 'Участие обновлено'}, status=status.HTTP_200_OK)
+#         else:
+#             return Response({'error': 'Участие не найдено'}, status=status.HTTP_404_NOT_FOUND)
