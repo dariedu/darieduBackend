@@ -260,6 +260,25 @@ class TaskViewSet(
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=False, methods=['get'], url_name='list_confirmed_tasks')
+    @is_confirmed
+    def list_confirmed_tasks(self, request):
+        """
+        Get a list of confirmed tasks of a particular volunteer.
+        """
+        try:
+            user = request.user
+            tasks = TaskParticipation.objects.filter(volunteer=user, confirmed=True, task__is_active=True).all()
+
+            if tasks is None:
+                return Response({"error": "No tasks found"}, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = TaskParticipationSerializer(tasks, many=True)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
     @action(detail=True, methods=['post'], url_name='task_complete')
     @is_confirmed
     def complete(self, request, pk=None):
@@ -546,6 +565,21 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     def list_not_confirm(self, request):
         try:
             deliveries = DeliveryAssignment.objects.filter(confirm=False, volunteer=request.user,
+                                                           delivery__is_active=True).all()
+
+            if deliveries is None:
+                return Response({'error': 'No deliveries found'}, status=400)
+
+            serializer = DeliveryAssignmentSerializer(deliveries, many=True)
+            return Response(serializer.data, status=200)
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
+
+    @action(detail=False, methods=['get'], url_path='list_confirm')
+    @is_confirmed
+    def list_confirm(self, request):
+        try:
+            deliveries = DeliveryAssignment.objects.filter(confirm=True, volunteer=request.user,
                                                            delivery__is_active=True).all()
 
             if deliveries is None:

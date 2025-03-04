@@ -34,7 +34,7 @@ def send_message_to_telegrams(self, promotion_id, message):
     """
     Notifying the manager about the volunteer’s registration for incentives.
     """
-    logger.info('send_message_to_telegrams', promotion_id)
+    logger.info('send_message_to_telegrams: %s', promotion_id)
     try:
         promo = Promotion.objects.get(id=promotion_id)
     except Promotion.DoesNotExist:

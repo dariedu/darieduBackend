@@ -202,6 +202,15 @@ class Fix2(OpenApiViewExtension):
             def list_not_confirm(self, request):
                 return super().list_not_confirm(request)
 
+            @extend_schema(
+                tags=['Deliveries_confirm/cancel'],
+                summary="The list is confirmed deliveries ",
+                operation_id="listConfirm",
+                methods=['get'],
+            )
+            def list_confirm(self, request):
+                return super().list_confirm(request)
+
         return Fixed
 
       
@@ -256,5 +265,11 @@ class Fix1(OpenApiViewExtension):
             )
             def list_not_confirmed(self, request, *args, **kwargs):
                 return super().list_not_confirmed(request, *args, **kwargs)
+
+            @extend_schema(
+                tags=['Task_confirm/refuse']
+            )
+            def list_confirmed_tasks(self, request, *args, **kwargs):
+                return super().list_confirmed_tasks(request, *args, **kwargs)
 
         return Fixed
