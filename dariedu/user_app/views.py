@@ -153,18 +153,22 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
         """
         Обновление номера телефона через телеграм бот
         """
-
         try:
-            user = User.objects.get(pk=pk)
+            user = User.objects.get(pk=pk)  # Получаем пользователя по первичному ключу
         except User.DoesNotExist:
             return Response({"detail": "Пользователь не найден."}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = UserSerializer(user, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            user.refresh_from_db()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        phone_number = request.data.get('phone', None)
+        if phone_number is None:
+            return Response({"detail": "Номер телефона не предоставлен."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.phone = phone_number
+        user.save()
+
+        user.refresh_from_db()
+
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class RatingViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
