@@ -314,6 +314,11 @@ LOGGING = {
             'formatter': 'verbose',
             'level': logging.INFO,
         },
+        'api_task': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'detailed',
+            'level': logging.INFO,
+        },
         'django_request': {
             'class': 'logging.FileHandler',
             'filename': os.path.join(LOG_DIR, 'django_request.log'),
@@ -364,6 +369,11 @@ LOGGING = {
         },
     },
     'loggers': {
+        'api.task': {
+            'handlers': ['console', 'api_task'],
+            'level': 'INFO',
+            'propagate': True,
+        },
         'api.request': {
             'handlers': ['console', 'django_request'],
             'level': 'INFO',

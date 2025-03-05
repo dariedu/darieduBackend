@@ -1,3 +1,5 @@
+import logging
+
 from django.db.models import F
 from django.utils import timezone
 from rest_framework import viewsets, mixins, status
@@ -193,15 +195,21 @@ class TaskViewSet(
         Post request body should be empty. Will be ignored anyway.
         Authenticated only.
         """
+        logger = logging.getLogger('api.task')
+
+        logger.info(f":User  {request.user}, Request data: {request.data}")
+
         task = self.get_object()
 
         if request.user not in task.volunteers.all():
+            logger.warning(f"User  {request.user} tried to refuse task {task.id} without taking it.")
             return Response({"error": "You haven't taken this task!"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             participation = task.task_part.get(volunteer=request.user)
             participation.delete()
         except TaskParticipation.DoesNotExist:
+            logger.warning(f"Participation record not found for user {request.user} in task {task.id}.")
             return Response({"error": "Participation record not found."}, status=status.HTTP_400_BAD_REQUEST)
 
         Task.objects.filter(pk=task.pk).update(volunteers_taken=F('volunteers_taken') - 1)
