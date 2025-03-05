@@ -123,3 +123,17 @@ class SchemaLoggingMiddleware:
         for query in connection.queries:
             if "CREATE" in query['sql'] or "ALTER" in query['sql'] or "DROP" in query['sql']:
                 self.logger.info(f"Schema Change: {query['sql']} - Time: {query['time']}s")
+
+
+logger = logging.getLogger('authentication')
+
+class AuthenticationLoggingMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        auth_header = request.META.get('HTTP_AUTHORIZATION')
+        logger.info(f"Authorization header: {auth_header}")
+
+        response = self.get_response(request)
+        return response

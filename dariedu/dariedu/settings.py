@@ -93,6 +93,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'dariedu.middleware.AuthenticationLoggingMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -314,6 +315,11 @@ LOGGING = {
             'formatter': 'verbose',
             'level': logging.INFO,
         },
+        'auth': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'detailed',
+            'level': logging.INFO,
+        },
         'api_task': {
             'class': 'logging.StreamHandler',
             'formatter': 'detailed',
@@ -369,6 +375,11 @@ LOGGING = {
         },
     },
     'loggers': {
+        'authentication': {
+            'handlers': ['console', 'auth'],
+            'level': 'INFO',
+            'propagate': True,
+        },
         'api.task': {
             'handlers': ['console', 'api_task'],
             'level': 'INFO',
