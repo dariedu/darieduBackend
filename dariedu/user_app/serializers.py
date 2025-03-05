@@ -88,11 +88,6 @@ class UserSerializer(serializers.ModelSerializer):
 
         def update(self, instance, validated_data):
 
-            if 'phone' in validated_data:
-                instance.phone = validated_data['phone']
-                instance.save()
-                return instance
-
             instance.email = validated_data.get('email', instance.email)
             instance.photo = validated_data.get('photo', instance.photo)
             instance.city = validated_data.get('city', instance.city)
@@ -100,14 +95,5 @@ class UserSerializer(serializers.ModelSerializer):
             instance.consent_to_personal_data = validated_data.get('consent_to_personal_data',
                                                                    instance.consent_to_personal_data)
 
-            if any([
-                instance.last_name != validated_data.get('last_name', instance.last_name),
-                instance.name != validated_data.get('name', instance.name),
-                instance.surname != validated_data.get('surname', instance.surname),
-                instance.phone != validated_data.get('phone', instance.phone),
-                instance.birthday != validated_data.get('birthday', instance.birthday),
-                instance.tg_username != validated_data.get('tg_username', instance.tg_username),
-            ]):
-                raise serializers.ValidationError('Поьзовательские данные не могут быть изменены')
             instance.save()
             return instance
