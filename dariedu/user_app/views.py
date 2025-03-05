@@ -2,12 +2,16 @@ import os
 
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import viewsets, mixins, generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.decorators import action
+from rest_framework import serializers
 
 from .models import Rating
 from .serializers import UserSerializer, RatingSerializer, RegistrationSerializer, TelegramDataSerializer
@@ -97,12 +101,8 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
         import re
         import copy
 
-        serializer.validated_data.pop('last_name', None)
-        serializer.validated_data.pop('name', None)
-        serializer.validated_data.pop('surname', None)
-        serializer.validated_data.pop('phone', None)
-        serializer.validated_data.pop('birthday', None)
-        serializer.validated_data.pop('tg_username', None)
+        if serializer.validated_data.get('phone'):
+            raise serializers.ValidationError('Обновление номера телефона запрещено.')
 
         gdrive = GoogleUser()
         val_photo = serializer.validated_data.get('photo')
@@ -142,6 +142,29 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
         if tg_id is not None:
             queryset = queryset.filter(tg_id=tg_id)
         return queryset
+
+    @extend_schema(
+        tags=['update-phone'],
+        summary='Обновление номера телефона',
+        request=OpenApiTypes.NONE
+    )
+    @action(detail=True, methods=['patch'], url_name='update-phone')
+    def update_phone(self, request, pk=None):
+        """
+        Обновление номера телефона через телеграм бот
+        """
+
+        try:
+            user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({"detail": "Пользователь не найден."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            user.refresh_from_db()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RatingViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
