@@ -90,7 +90,8 @@ class CustomTokenObtainPairView(APIView):
         })
 
       
-class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
+class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.CreateModelMixin,
+                  viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
@@ -169,6 +170,22 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
 
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# class UpdatePhoneView(APIView):
+#     def patch(self, request):
+#         phone_number = request.data.get('phone', None)
+#         if phone_number is None:
+#             return Response({"detail": "Номер телефона не предоставлен."}, status=status.HTTP_400_BAD_REQUEST)
+#
+#         user = request.user
+#         user.phone = phone_number
+#         user.save()
+#
+#         user.refresh_from_db()
+#
+#         serializer = UserSerializer(user)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class RatingViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
