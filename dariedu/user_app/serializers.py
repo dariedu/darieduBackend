@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from address_app.serializers import CitySerializer
 from .models import Rating
-
+from address_app.models import City
 
 User = get_user_model()
 
@@ -47,7 +47,7 @@ class RatingSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     rating = RatingSerializer(read_only=True)
-    city = CitySerializer(read_only=True)
+    city = CitySerializer(read_only=False)
 
     class Meta:
         model = User
@@ -90,10 +90,17 @@ class UserSerializer(serializers.ModelSerializer):
 
             instance.email = validated_data.get('email', instance.email)
             instance.photo = validated_data.get('photo', instance.photo)
-            instance.city = validated_data.get('city', instance.city)
+            instance.phone = validated_data.get('phone', instance.phone)
+            # instance.city = validated_data.get('city', instance.city)
             instance.interests = validated_data.get('interests', instance.interests)
             instance.consent_to_personal_data = validated_data.get('consent_to_personal_data',
                                                                    instance.consent_to_personal_data)
+
+            city_data = validated_data.get('city')
+            if city_data:
+                city_id = city_data.get('city')
+                if city_id:
+                    instance.city = City.objects.get(pk=city_id)
 
             instance.save()
             return instance
