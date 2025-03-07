@@ -148,7 +148,7 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
         summary='Обновление номера телефона',
         request=OpenApiTypes.NONE
     )
-    @action(detail=True, methods=['patch'], url_name='update_phone')
+    @action(detail=True, methods=['post'], url_name='update_phone')
     def update_phone(self, request, pk=None):
         """
         Обновление номера телефона через телеграм бот
