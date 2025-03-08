@@ -98,3 +98,16 @@ class UserSerializer(serializers.ModelSerializer):
 
             instance.save()
             return instance
+
+
+class PhoneUpdateSerializer(serializers.Serializer):
+
+    class Meta:
+        model = User
+        fields = ['phone']
+
+    def update(self, instance, validated_data):
+        instance.phone = validated_data.get('phone', instance.phone)
+        instance.save()
+        return instance
+

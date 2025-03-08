@@ -14,7 +14,8 @@ from rest_framework.decorators import action
 from rest_framework import serializers
 
 from .models import Rating
-from .serializers import UserSerializer, RatingSerializer, RegistrationSerializer, TelegramDataSerializer
+from .serializers import UserSerializer, RatingSerializer, RegistrationSerializer, TelegramDataSerializer, \
+    PhoneUpdateSerializer
 from address_app.signals import get_phone_number
 from google_drive import GoogleUser
 
@@ -166,7 +167,7 @@ class UpdatePhoneView(APIView):
         user.phone = phone_number
         user.save()
 
-        serializer = UserSerializer(user)
+        serializer = PhoneUpdateSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
