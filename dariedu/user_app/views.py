@@ -1,6 +1,6 @@
 import os
 
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import get_user_model
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_view, extend_schema
@@ -157,10 +157,7 @@ class UpdatePhoneView(APIView):
         """
         Обновление номера телефона через телеграм бот
         """
-        try:
-            user = User.objects.get(pk=request.user.id)
-        except User.DoesNotExist:
-            return Response({"detail": "Пользователь не найден."}, status=status.HTTP_404_NOT_FOUND)
+        user = get_object_or_404(User, pk=pk)
 
         phone_number = request.data.get('phone', None)
         if phone_number is None:
@@ -168,8 +165,6 @@ class UpdatePhoneView(APIView):
 
         user.phone = phone_number
         user.save()
-
-        user.refresh_from_db()
 
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
