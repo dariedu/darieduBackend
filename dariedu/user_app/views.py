@@ -144,18 +144,21 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
             queryset = queryset.filter(tg_id=tg_id)
         return queryset
 
+
+class UpdatePhoneView(APIView):
+    permission_classes = [IsAuthenticated]
+
     @extend_schema(
         tags=['update-phone'],
         summary='Обновление номера телефона',
         request=OpenApiTypes.NONE
     )
-    @action(detail=True, methods=['post'], url_name='update_phone')
-    def update_phone(self, request, pk=None):
+    def patch(self, request, pk=None):
         """
         Обновление номера телефона через телеграм бот
         """
         try:
-            user = User.objects.get(pk=pk)  # Получаем пользователя по первичному ключу
+            user = User.objects.get(pk=request.user.id)
         except User.DoesNotExist:
             return Response({"detail": "Пользователь не найден."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -170,22 +173,6 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
 
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-# class UpdatePhoneView(APIView):
-#     def patch(self, request):
-#         phone_number = request.data.get('phone', None)
-#         if phone_number is None:
-#             return Response({"detail": "Номер телефона не предоставлен."}, status=status.HTTP_400_BAD_REQUEST)
-#
-#         user = request.user
-#         user.phone = phone_number
-#         user.save()
-#
-#         user.refresh_from_db()
-#
-#         serializer = UserSerializer(user)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class RatingViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):

@@ -31,7 +31,7 @@ from feedback_app.urls import router as feedback_approuter
 from address_app.urls import router as address_approuter
 from stories_app.urls import router as stories_approuter
 from notifications_app.urls import router as notification_approuter
-from user_app.views import RegistrationView, CustomTokenObtainPairView
+from user_app.views import RegistrationView, CustomTokenObtainPairView, UpdatePhoneView
 # from notifications_app.views import CreateNotificationView
 # from promo_app.views import ParticipationView
 
@@ -53,6 +53,7 @@ urlpatterns = [
     path('api/', include(router.urls)),
 
     path('api/registration/', RegistrationView.as_view()),
+    path('api/update_phone/<int:pk>/', UpdatePhoneView.as_view()),
 
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
