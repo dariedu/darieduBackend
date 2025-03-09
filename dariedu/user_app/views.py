@@ -103,8 +103,8 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
         import re
         import copy
 
-        if serializer.validated_data.get('phone'):
-            raise serializers.ValidationError('Обновление номера телефона запрещено.')
+        # if serializer.validated_data.get('phone'):
+        #     raise serializers.ValidationError('Обновление номера телефона запрещено.')
 
         gdrive = GoogleUser()
         val_photo = serializer.validated_data.get('photo')
