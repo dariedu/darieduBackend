@@ -12,6 +12,7 @@ from .permissions import IsAbleCompleteTask, IsCurator, is_confirmed
 from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer, TaskVolunteerSerializer, \
     TaskCategorySerializer, TaskParticipationSerializer
 from .signals import volunteer_confirmed
+from .tests.test_adminpanel import delivery
 
 
 class TaskViewSet(
@@ -249,7 +250,7 @@ class TaskViewSet(
         """
         try:
             user = request.user
-            tasks = TaskParticipation.objects.filter(volunteer=user, confirmed=False, task__is_active=True).all()
+            tasks = TaskParticipation.objects.filter(curator=user, confirmed=False, task__is_active=True).all()
 
             if tasks is None:
                 return Response({"error": "No tasks found"}, status=status.HTTP_400_BAD_REQUEST)
@@ -268,7 +269,7 @@ class TaskViewSet(
         """
         try:
             user = request.user
-            tasks = TaskParticipation.objects.filter(volunteer=user, confirmed=True, task__is_active=True).all()
+            tasks = TaskParticipation.objects.filter(curator=user, confirmed=True, task__is_active=True).all()
 
             if tasks is None:
                 return Response({"error": "No tasks found"}, status=status.HTTP_400_BAD_REQUEST)
@@ -564,7 +565,7 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     @is_confirmed
     def list_not_confirm(self, request):
         try:
-            deliveries = DeliveryAssignment.objects.filter(confirm=False, volunteer=request.user,
+            deliveries = DeliveryAssignment.objects.filter(confirm=False, delivery__curator=request.user,
                                                            delivery__is_active=True).all()
 
             if deliveries is None:
@@ -579,7 +580,7 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     @is_confirmed
     def list_confirm(self, request):
         try:
-            deliveries = DeliveryAssignment.objects.filter(confirm=True, volunteer=request.user,
+            deliveries = DeliveryAssignment.objects.filter(confirm=True, delivery__curator=request.user,
                                                            delivery__is_active=True).all()
 
             if deliveries is None:

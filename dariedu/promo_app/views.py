@@ -168,7 +168,7 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
         """
         try:
             user = request.user
-            participation = Participation.objects.filter(user=user, is_active=False, promotion__is_active=True).all()
+            participation = Participation.objects.filter(contact_person=user, is_active=False, promotion__is_active=True).all()
 
             serializer = ParticipationSerializer(participation, many=True)
 
@@ -189,7 +189,7 @@ class PromotionViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewset
         """
         try:
             user = request.user
-            participation = Participation.objects.filter(user=user, is_active=True, promotion__is_active=True).all()
+            participation = Participation.objects.filter(contact_person=user, is_active=True, promotion__is_active=True).all()
 
             serializer = ParticipationSerializer(participation, many=True)
 
