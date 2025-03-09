@@ -53,7 +53,7 @@ urlpatterns = [
     path('api/', include(router.urls)),
 
     path('api/registration/', RegistrationView.as_view()),
-    path('api/update_phone/<int:pk>/', UpdatePhoneView.as_view()),
+    path('api/update_phone/<int:tg_id>/', UpdatePhoneView.as_view()),
 
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

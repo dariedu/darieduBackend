@@ -104,7 +104,11 @@ class PhoneUpdateSerializer(serializers.Serializer):
 
     class Meta:
         model = User
-        fields = ['phone']
+        fields = ['tg_id', 'phone']
+
+        extra_kwargs = {
+            'tg_id': {'read_only': True},
+        }
 
     def update(self, instance, validated_data):
         instance.phone = validated_data.get('phone', instance.phone)

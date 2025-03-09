@@ -154,11 +154,11 @@ class UpdatePhoneView(APIView):
         summary='Обновление номера телефона',
         request=OpenApiTypes.NONE
     )
-    def patch(self, request, pk=None):
+    def patch(self, request, tg_id):
         """
         Обновление номера телефона через телеграм бот
         """
-        user = get_object_or_404(User, pk=pk)
+        user = get_object_or_404(User, tg_id=tg_id)
 
         phone_number = request.data.get('phone', None)
         if phone_number is None:
