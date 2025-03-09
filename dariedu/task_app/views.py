@@ -346,22 +346,24 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
                 pass
 
         if action == 'deliveries_curator' and self.request.user.is_staff:
-            return queryset.filter(is_active=True, curator=user)
+            return queryset.filter(is_active=True, curator=user).order_by('date')
 
         if free is not None and free.lower() == 'true':
-            queryset = queryset.filter(is_free=True).distinct()
+            queryset = queryset.filter(is_free=True).distinct().order_by('date')
         if active is not None and active.lower() == 'true':
-            queryset = queryset.filter(is_active=True, assignments__volunteer=user).distinct()
+            queryset = queryset.filter(is_active=True, assignments__volunteer=user).distinct().order_by('date')
         if completed is not None and completed.lower() == 'true':
-            queryset = queryset.filter(is_completed=True, assignments__volunteer=user).distinct()
+            queryset = queryset.filter(is_completed=True, assignments__volunteer=user).distinct().order_by('date')
         return queryset
 
     @action(detail=False, methods=['get'], url_path='volunteer')
     def volunteer_deliveries(self, request):
         """
         Пример фильтров для календаря:
-        api/deliveries/volunteer/?after=2024-10-05&before=2024-10-20 - для активных, выполняющихся и завершенных доставок
-        api/deliveries/volunteer/?date=2024-10-20 - для свободных доставок, выбор по конкретной дате. Подойдет для главной страницы
+        api/deliveries/volunteer/?after=2024-10-05&before=2024-10-20 - для активных,
+        выполняющихся и завершенных доставок
+        api/deliveries/volunteer/?date=2024-10-20 - для свободных доставок, выбор по конкретной дате.
+        Подойдет для главной страницы
         Формат даты: YYYY-MM-DD
         можно использовать вместе или по отдельности
         """
@@ -370,12 +372,13 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         date = self.request.query_params.get('date', None)
 
         free_deliveries = self.get_queryset().filter(is_free=True).exclude(
-            assignments__volunteer=request.user).distinct()
-        active_deliveries = self.get_queryset().filter(is_active=True, assignments__volunteer=request.user).distinct()
-        completed_deliveries = self.get_queryset().filter(is_completed=True,
-                                                          assignments__volunteer=request.user).distinct()
+            assignments__volunteer=request.user).distinct().order_by('date')
+        active_deliveries = self.get_queryset().filter(
+            is_active=True, assignments__volunteer=request.user).distinct().order_by('date')
+        completed_deliveries = self.get_queryset().filter(
+            is_completed=True, assignments__volunteer=request.user).distinct().order_by('date')
         executing_deliveries = self.get_queryset().filter(is_active=True, assignments__volunteer=request.user,
-                                                          in_execution=True).distinct()
+                                                          in_execution=True).distinct().order_by('date')
 
         if after:
             try:
@@ -424,9 +427,10 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     @action(detail=False, methods=['get'], url_path='curator')
     @is_confirmed
     def deliveries_curator(self, request):
-        total_deliveries = Delivery.objects.filter(in_execution=True, curator=request.user)
-        active_deliveries = Delivery.objects.filter(is_active=True, curator=request.user, in_execution=False)
-        complete_deliveries = Delivery.objects.filter(is_completed=True, curator=request.user)
+        total_deliveries = Delivery.objects.filter(in_execution=True, curator=request.user).order_by('date')
+        active_deliveries = Delivery.objects.filter(
+            is_active=True, curator=request.user, in_execution=False).order_by('date')
+        complete_deliveries = Delivery.objects.filter(is_completed=True, curator=request.user).order_by('date')
 
         executing_deliveries = []
         for delivery in total_deliveries:
@@ -453,7 +457,7 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         active_deliveries_list = []
         for delivery in active_deliveries:
             route_sheet_ids = [route.id for route in delivery.route_sheet.all()]
-            assignments = DeliveryAssignment.objects.filter(delivery=delivery)
+            assignments = DeliveryAssignment.objects.filter(delivery=delivery).order_by("delivery__date")
 
             volunteers_info = []
             for assignment in assignments:
@@ -475,7 +479,7 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         complete_deliveries_list = []
         for delivery in complete_deliveries:
             route_sheet_ids = [route.id for route in delivery.route_sheet.all()]
-            assignments = DeliveryAssignment.objects.filter(delivery=delivery)
+            assignments = DeliveryAssignment.objects.filter(delivery=delivery).order_by("delivery__date")
 
             volunteers_info = []
             for assignment in assignments:
@@ -615,7 +619,7 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         try:
             delivery = self.get_object()
             if self.request.user != delivery.curator:
-                return Response({'error': 'You are not authorized to complete this delivery'}, status=403)
+                return Response({'error': 'You are not authorized to activate this delivery'}, status=403)
             if delivery.in_execution is True:
                 return Response({'error': 'Delivery is already in execution'}, status=400)
             else:
