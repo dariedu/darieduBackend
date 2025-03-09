@@ -90,7 +90,6 @@ class UserSerializer(serializers.ModelSerializer):
 
             instance.email = validated_data.get('email', instance.email)
             instance.photo = validated_data.get('photo', instance.photo)
-            instance.phone = validated_data.get('phone', instance.phone)
             instance.city = validated_data.get('city', instance.city)
             instance.interests = validated_data.get('interests', instance.interests)
             instance.consent_to_personal_data = validated_data.get('consent_to_personal_data',
