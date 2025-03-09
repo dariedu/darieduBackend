@@ -1,6 +1,6 @@
 import os
 
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import get_user_model
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_view, extend_schema
@@ -14,7 +14,8 @@ from rest_framework.decorators import action
 from rest_framework import serializers
 
 from .models import Rating
-from .serializers import UserSerializer, RatingSerializer, RegistrationSerializer, TelegramDataSerializer
+from .serializers import UserSerializer, RatingSerializer, RegistrationSerializer, TelegramDataSerializer, \
+    PhoneUpdateSerializer
 from address_app.signals import get_phone_number
 from google_drive import GoogleUser
 
@@ -90,7 +91,8 @@ class CustomTokenObtainPairView(APIView):
         })
 
       
-class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
+class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.CreateModelMixin,
+                  viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
@@ -100,9 +102,6 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
     def perform_update(self, serializer: UserSerializer):
         import re
         import copy
-
-        if serializer.validated_data.get('phone'):
-            raise serializers.ValidationError('Обновление номера телефона запрещено.')
 
         gdrive = GoogleUser()
         val_photo = serializer.validated_data.get('photo')
@@ -143,20 +142,20 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
             queryset = queryset.filter(tg_id=tg_id)
         return queryset
 
+
+class UpdatePhoneView(APIView):
+    permission_classes = [IsAuthenticated]
+
     @extend_schema(
         tags=['update-phone'],
         summary='Обновление номера телефона',
         request=OpenApiTypes.NONE
     )
-    @action(detail=True, methods=['patch'], url_name='update_phone')
-    def update_phone(self, request, pk=None):
+    def patch(self, request, tg_id):
         """
         Обновление номера телефона через телеграм бот
         """
-        try:
-            user = User.objects.get(pk=pk)  # Получаем пользователя по первичному ключу
-        except User.DoesNotExist:
-            return Response({"detail": "Пользователь не найден."}, status=status.HTTP_404_NOT_FOUND)
+        user = get_object_or_404(User, tg_id=tg_id)
 
         phone_number = request.data.get('phone', None)
         if phone_number is None:
@@ -165,9 +164,7 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Updat
         user.phone = phone_number
         user.save()
 
-        user.refresh_from_db()
-
-        serializer = UserSerializer(user)
+        serializer = PhoneUpdateSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

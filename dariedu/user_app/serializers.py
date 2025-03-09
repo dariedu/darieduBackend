@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from address_app.serializers import CitySerializer
 from .models import Rating
-
+from address_app.models import City
 
 User = get_user_model()
 
@@ -97,3 +97,20 @@ class UserSerializer(serializers.ModelSerializer):
 
             instance.save()
             return instance
+
+
+class PhoneUpdateSerializer(serializers.Serializer):
+
+    class Meta:
+        model = User
+        fields = ['tg_id', 'phone']
+
+        extra_kwargs = {
+            'tg_id': {'read_only': True},
+        }
+
+    def update(self, instance, validated_data):
+        instance.phone = validated_data.get('phone', instance.phone)
+        instance.save()
+        return instance
+
