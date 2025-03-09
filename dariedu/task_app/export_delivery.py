@@ -8,6 +8,7 @@ from user_app.models import User
 from dariedu.gspread_config import gs
 
 from .models import Delivery
+from address_app.models import RouteAssignment
 
 logger = logging.getLogger('google.sheets')
 
@@ -43,14 +44,18 @@ def export_deliveries(self, delivery_id):
 
     rows = []
     for volunteer in volunteers:
+
+        route_assignment = RouteAssignment.objects.filter(delivery=delivery, volunteer=volunteer).first()
+
         row = [
             delivery.date.strftime('%d.%m.%Y'),
             delivery.location.address,
-            delivery.curator.name if delivery.curator else '',
+            f'{delivery.curator.last_name} {delivery.curator.name}'.strip(),
             f"{volunteer.last_name} {volunteer.name}".strip(),
             getattr(volunteer, 'tg_username', ''),
             getattr(volunteer, 'phone', ''),
-            volunteer.email
+            volunteer.email,
+            '✅' if route_assignment is not None else '❌'
         ]
         rows.append(row)
 
