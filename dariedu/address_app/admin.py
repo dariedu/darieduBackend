@@ -66,7 +66,7 @@ class AddressAdmin(BaseAdmin):
     inlines = [BeneficiarInline, ]
     list_display_links = ('address', 'route_sheet', 'location')
     autocomplete_fields = ['location', 'route_sheet']
-    ordering = ('route_sheet', 'number')
+    ordering = ('location', 'route_sheet', 'number')
     list_editable = ('number', 'dinners')
 
     @action(description='Добавить в маршрутный лист')
@@ -174,7 +174,7 @@ class RouteSheetAdmin(BaseAdmin):
     list_filter = ('location',)
     search_fields = ('name', 'location__address')
     list_display_links = ('name', 'location')
-    ordering = ('name',)
+    ordering = ('location', 'name',)
 
 
 @admin.register(Beneficiar)
