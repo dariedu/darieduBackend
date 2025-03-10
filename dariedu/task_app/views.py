@@ -269,7 +269,7 @@ class TaskViewSet(
         """
         try:
             user = request.user
-            tasks = TaskParticipation.objects.filter(curator=user, confirmed=True, task__is_active=True).all()
+            tasks = TaskParticipation.objects.filter(task__curator=user, confirmed=True, task__is_active=True).all()
 
             if tasks is None:
                 return Response({"error": "No tasks found"}, status=status.HTTP_400_BAD_REQUEST)
