@@ -250,7 +250,7 @@ class TaskViewSet(
         """
         try:
             user = request.user
-            tasks = TaskParticipation.objects.filter(curator=user, confirmed=False, task__is_active=True).all()
+            tasks = TaskParticipation.objects.filter(volunteer=user, confirmed=False, task__is_active=True).all()
 
             if tasks is None:
                 return Response({"error": "No tasks found"}, status=status.HTTP_400_BAD_REQUEST)
@@ -569,7 +569,7 @@ class DeliveryViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     @is_confirmed
     def list_not_confirm(self, request):
         try:
-            deliveries = DeliveryAssignment.objects.filter(confirm=False, delivery__curator=request.user,
+            deliveries = DeliveryAssignment.objects.filter(confirm=False, volunteer=request.user,
                                                            delivery__is_active=True).all()
 
             if deliveries is None:
