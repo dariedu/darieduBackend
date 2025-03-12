@@ -135,6 +135,54 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
             return Response(status=status.HTTP_403_FORBIDDEN,
                             data={'detail': 'Доступ запрещен'})
 
+    @action(detail=False, methods=['post'], url_name='unassign_route')
+    def unassign(self, request):
+        """
+        Unassign a routesheet by curator for a volunteer with id=volunteer_id for delivery with id=delivery_id
+        Body:
+        {
+            "routesheet_id": {id},
+            "volunteer_id": {id}
+            "delivery_id": {id}
+        }
+        """
+        if self.request.user.is_staff:
+            routesheet_id = self.request.data.get('routesheet_id', None)
+            logging.info(routesheet_id)
+            volunteer_id = self.request.data.get('volunteer_id', None)
+            logging.info(volunteer_id)
+            delivery_id = self.request.data.get('delivery_id', None)
+            logging.info(delivery_id)
+            try:
+                routesheet = RouteSheet.objects.get(id=routesheet_id)
+            except RouteSheet.DoesNotExist as error:
+                return Response(status=status.HTTP_404_NOT_FOUND,
+                                data={'detail': 'Такой маршрут не существует'})
+            except Exception as error:
+                return Response(status=status.HTTP_400_BAD_REQUEST,
+                                data={'detail': 'Некорректные данные маршрута'})
+            try:
+                delivery = Delivery.objects.get(id=delivery_id)
+            except Delivery.DoesNotExist as error:
+                return Response(status=status.HTTP_404_NOT_FOUND,
+                                data={'detail': 'Такой доставки не существует'})
+            except Exception as error:
+                logging.info(error)
+                return Response(status=status.HTTP_400_BAD_REQUEST,
+                                data={'detail': 'Некорректные данные доставки'})
+            if delivery.curator != self.request.user:
+                return Response(status=status.HTTP_403_FORBIDDEN,
+                                data={'detail': 'Вы не являетесь куратором этой доставки'})
+            try:
+                route = RouteAssignment.objects.get(route_sheet=routesheet,
+                                                    delivery=delivery,
+                                                    volunteer__id=volunteer_id)
+                route.delete()
+                return Response(status=status.HTTP_200_OK)
+            except RouteAssignment.DoesNotExist as error:
+                return Response(status=status.HTTP_404_NOT_FOUND,
+                                data={'detail': 'Этот волонтер не назначен на данный маршрут'})
+
 
 class RouteAssignmentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = RouteAssignment.objects.filter(delivery__date__gte=timezone.now() - timezone.timedelta(days=14))
