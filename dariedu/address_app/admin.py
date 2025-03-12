@@ -167,7 +167,7 @@ class RouteSheetAdmin(BaseAdmin):
         'display_address',
         'display_beneficiaries',
         'display_curator',
-        'diners_quantity'
+        'dinners_quantity'
     )
     fields = ('name', 'map', 'location')
     inlines = [AddressInline, ]

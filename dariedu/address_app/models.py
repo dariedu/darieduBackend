@@ -68,14 +68,13 @@ class RouteSheet(models.Model):
 
     def get_beneficiaries_quantity(self):
         addresses = self.address.all()
-        beneficiaries = []
+        quantity = 0
         for address in addresses:
-            for beneficiary in address.beneficiar.all():
-                beneficiaries.append(beneficiary)
-        return len(beneficiaries)
+            quantity += address.dinners
+        return quantity
 
     @admin.display(description='обедов')
-    def diners_quantity(self):
+    def dinners_quantity(self):
         return self.get_beneficiaries_quantity()
 
     class Meta:
