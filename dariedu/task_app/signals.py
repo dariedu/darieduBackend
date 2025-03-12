@@ -8,8 +8,7 @@ from .export_delivery import export_deliveries
 from .models import DeliveryAssignment, Task, Delivery, TaskParticipation
 from .tasks import send_message_to_telegram, send_massage_to_telegram_delivery
 from notifications_app.models import Notification
-from .export_gs_tasks import export_to_google_tasks, cancel_task_in_google_tasks, export_to_google_delivery, \
-    cancel_task_in_google_delivery
+from .export_gs_tasks import export_to_google_tasks, cancel_task_in_google_tasks
 from address_app.models import RouteAssignment
 
 User = get_user_model()
@@ -212,27 +211,27 @@ def create_task(sender, instance, action, **kwargs):
             task_id = instance.id
             cancel_task_in_google_tasks.apply_async(args=[user_id, task_id], countdown=30)
 
-@receiver(m2m_changed, sender=DeliveryAssignment.volunteer.through)
-def create_delivery_assignment(sender, instance, action, **kwargs):
-    if action == 'post_add':
-        delivery_id = instance.delivery.id
-        user_id = instance.volunteer.first().id
-        export_to_google_delivery.apply_async(args=[user_id, delivery_id], countdown=30)
-    if action == 'post_remove':
-        removed_volunteers = kwargs.get('pk_set', set())
-        for user_id in removed_volunteers:
-            delivery_id = instance.delivery.id
-            cancel_task_in_google_delivery.apply_async(args=[user_id, delivery_id], countdown=30)
+# @receiver(m2m_changed, sender=DeliveryAssignment.volunteer.through)
+# def create_delivery_assignment(sender, instance, action, **kwargs):
+#     if action == 'post_add':
+#         delivery_id = instance.delivery.id
+#         user_id = instance.volunteer.first().id
+#         export_to_google_delivery.apply_async(args=[user_id, delivery_id], countdown=30)
+#     if action == 'post_remove':
+#         removed_volunteers = kwargs.get('pk_set', set())
+#         for user_id in removed_volunteers:
+#             delivery_id = instance.delivery.id
+#             cancel_task_in_google_delivery.apply_async(args=[user_id, delivery_id], countdown=30)
 
 
-@receiver(post_save, sender=Delivery)
-def export_delivery_to_gs(sender, instance, created, **kwargs):
-    """
-    Функция для экспорта данных о доставке в Google Sheets
-    """
-    try:
-        if instance.is_completed:
-            delivery_id = instance.id
-            export_deliveries.apply_async(args=[delivery_id], countdown=30)
-    except Exception as e:
-        logger.error(f'Error exporting delivery to Google Sheets: {e}')
+# @receiver(post_save, sender=Delivery)
+# def export_delivery_to_gs(sender, instance, created, **kwargs):
+#     """
+#     Функция для экспорта данных о доставке в Google Sheets
+#     """
+#     try:
+#         if instance.is_completed:
+#             delivery_id = instance.id
+#             export_deliveries.apply_async(args=[delivery_id], countdown=30)
+#     except Exception as e:
+#         logger.error(f'Error exporting delivery to Google Sheets: {e}')
