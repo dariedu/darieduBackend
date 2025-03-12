@@ -85,8 +85,8 @@ class RouteSheet(models.Model):
 class RouteAssignment(models.Model):
     route_sheet = models.ForeignKey(RouteSheet, on_delete=models.CASCADE, related_name='assignments',
                                     verbose_name='маршрут')
-    volunteer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='route_assignments',
-                                  verbose_name='волонтёр')
+    volunteer = models.ManyToManyField(User, related_name='route_assignments',
+                                       verbose_name='волонтёр')
     delivery = models.ForeignKey('task_app.Delivery', on_delete=models.CASCADE, related_name='route_assignments',
                                  verbose_name='доставка')
 

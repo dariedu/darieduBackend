@@ -2,8 +2,10 @@ import logging
 
 from django.contrib.auth import get_user_model
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -71,66 +73,40 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
         Body:
         {
             "routesheet_id": {id},
-            "volunteer_id": {id}
+            "volunteer_id": {id},
             "delivery_id": {id}
         }
         """
         if self.request.user.is_staff:
             routesheet_id = self.request.data.get('routesheet_id', None)
-            logging.info(routesheet_id)
             volunteer_id = self.request.data.get('volunteer_id', None)
-            logging.info(volunteer_id)
             delivery_id = self.request.data.get('delivery_id', None)
-            logging.info(delivery_id)
-            try:
-                routesheet = RouteSheet.objects.get(id=routesheet_id)
-            except RouteSheet.DoesNotExist as error:
-                return Response(status=status.HTTP_404_NOT_FOUND,
-                                data={'detail': 'Такой маршрут не существует'})
-            except Exception as error:
-                return Response(status=status.HTTP_400_BAD_REQUEST,
-                                data={'detail': 'Некорректные данные маршрута'})
-            try:
-                delivery = Delivery.objects.get(id=delivery_id)
-            except Delivery.DoesNotExist as error:
-                return Response(status=status.HTTP_404_NOT_FOUND,
-                                data={'detail': 'Такой доставки не существует'})
-            except Exception as error:
-                logging.info(error)
-                return Response(status=status.HTTP_400_BAD_REQUEST,
-                                data={'detail': 'Некорректные данные доставки'})
+
+            routesheet = get_object_or_404(RouteSheet, id=routesheet_id)
+            delivery = get_object_or_404(Delivery, id=delivery_id)
+
             if delivery.curator != self.request.user:
                 return Response(status=status.HTTP_403_FORBIDDEN,
-                                data={'detail': 'Вы не являетесь куратором этой доставки'})
+                                data={'detail': 'Вы не являетесь куратором этой доставки'})
             if delivery.is_completed:
                 return Response(status=status.HTTP_400_BAD_REQUEST,
                                 data={'detail': 'Доставка уже завершена'})
             if routesheet.id not in delivery.route_sheet.all().values_list('id', flat=True):
                 return Response(status=status.HTTP_400_BAD_REQUEST,
                                 data={'detail': 'Данного маршрута нет в этой доставке'})
-            try:
-                user = User.objects.get(id=volunteer_id)
-            except User.DoesNotExist as error:
-                return Response(status=status.HTTP_404_NOT_FOUND,
-                                data={'detail': 'Такого пользователя не существует'})
-            except Exception as error:
-                return Response(status=status.HTTP_400_BAD_REQUEST,
-                                data={'detail': 'Некорректные данные пользователя'})
-            # все волонтёры, записанные на эту доставку:
-            volunteers_id = [assignment.volunteer.first().id for assignment in delivery.assignments.all()]
-            volunteers = User.objects.filter(id__in=volunteers_id)
-            if user in volunteers:
-                try:
-                    route = RouteAssignment.objects.get(route_sheet=routesheet, delivery=delivery)
-                    route.delete()
-                except RouteAssignment.DoesNotExist as error:
-                    pass
 
-                RouteAssignment.objects.create(volunteer=user, route_sheet=routesheet, delivery=delivery)
-                return Response(status=status.HTTP_200_OK)
-            else:
-                return Response(status=status.HTTP_403_FORBIDDEN,
-                                data={'detail': 'Пользователь не записан на эту доставку'})
+            user = get_object_or_404(User, id=volunteer_id)
+
+            rout_assignment = RouteAssignment.objects.filter(route_sheet=routesheet, delivery=delivery)
+
+            if rout_assignment.filter(volunteer=user).exists():
+                return Response(status=status.HTTP_400_BAD_REQUEST,
+                                data={'detail': 'Волонтёр уже назначен на этот маршрут'})
+
+            route_assignment = RouteAssignment.objects.create(route_sheet=routesheet, delivery=delivery)
+            route_assignment.volunteer.add(user)
+
+            return Response(status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN,
                             data={'detail': 'Доступ запрещен'})
@@ -142,7 +118,7 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
         Body:
         {
             "routesheet_id": {id},
-            "volunteer_id": {id}
+            "volunteer_id": {id},
             "delivery_id": {id}
         }
         """
