@@ -70,9 +70,15 @@ class RouteSheetSerializer(serializers.ModelSerializer):
     location = LocationSerializer(read_only=True)
     address = AddressSerializer(many=True, read_only=True)
     dinners = serializers.SerializerMethodField(read_only=True)
+    volunteers = serializers.SerializerMethodField(read_only=True)
 
     def get_dinners(self, obj):
         return obj.get_beneficiaries_quantity()
+
+    def get_volunteers(self, obj):
+        route_assignments = RouteAssignment.objects.filter(route_sheet=obj)
+        volunteers = [volunteer.id for assignment in route_assignments for volunteer in assignment.volunteer.all()]
+        return volunteers
 
     class Meta:
         model = RouteSheet
