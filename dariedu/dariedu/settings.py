@@ -280,8 +280,6 @@ CACHES = {
 }
 
 FIRST_ROW_VALUES_CACHE_KEY = 'first_row_values'
-FIRST_ROW_VALUES_CACHE_KEY_2 = 'first_row_values_2'
-FIRST_ROW_VALUES_CACHE_KEY_3 = 'first_row_values_3'
 FIRST_ROW_VALUES_CACHE_KEY_4 = 'first_row_values_4'
 
 CACHE_STATS_WEEK_KEY = 'cache_stats_week'
