@@ -168,3 +168,13 @@ class RouteAssignmentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, v
     queryset = RouteAssignment.objects.filter(delivery__date__gte=timezone.now() - timezone.timedelta(days=14))
     serializer_class = RouteAssignmentSerializer
     permission_classes = [IsAuthenticated]
+
+    @action(detail=True, methods=['get'], url_path='by_delivery')
+    def by_delivery(self, request, pk=None):
+        """
+        Вывод маршрутов по доставке
+        """
+        delivery = get_object_or_404(Delivery, pk=pk)
+        route_assignments = RouteAssignment.objects.filter(delivery=delivery)
+        serializer = RouteAssignmentSerializer(route_assignments, many=True)
+        return Response(serializer.data)
