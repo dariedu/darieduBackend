@@ -149,17 +149,21 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
                 return Response(status=status.HTTP_400_BAD_REQUEST,
                                 data={'detail': 'Данного маршрута нет в этой доставке'})
 
-            route_assignment = get_object_or_404(RouteAssignment, route_sheet=routesheet, delivery=delivery)
+            route_assignments = RouteAssignment.objects.filter(route_sheet=routesheet, delivery=delivery)
+
+            if not route_assignments.exists():
+                return Response(status=status.HTTP_404_NOT_FOUND, data={'detail': 'Назначение не найдено'})
 
             user = get_object_or_404(User, id=volunteer_id)
 
-            if user not in route_assignment.volunteer.all():
-                return Response(status=status.HTTP_400_BAD_REQUEST,
-                                data={'detail': f'Волонтёр с ID {volunteer_id} не назначен на этот маршрут'})
+            for route_assignment in route_assignments:
+                if user in route_assignment.volunteer.all():
+                    route_assignment.volunteer.remove(user)
+                    return Response(status=status.HTTP_200_OK)
 
-            route_assignment.volunteer.remove(user)
+            return Response(status=status.HTTP_400_BAD_REQUEST,
+                            data={'detail': f'Волонтёр с ID {volunteer_id} не назначен на этот маршрут'})
 
-            return Response(status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN,
                             data={'detail': 'Доступ запрещен'})
