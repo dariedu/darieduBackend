@@ -95,10 +95,12 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
                 return Response(status=status.HTTP_400_BAD_REQUEST,
                                 data={'detail': 'Данного маршрута нет в этой доставке'})
 
-            route_assignment, created = RouteAssignment.objects.get_or_create(
-                route_sheet=routesheet,
-                delivery=delivery
-            )
+            route_assignments = RouteAssignment.objects.filter(route_sheet=routesheet, delivery=delivery)
+
+            if not route_assignments.exists():
+                route_assignment = RouteAssignment.objects.create(route_sheet=routesheet, delivery=delivery)
+            else:
+                route_assignment = route_assignments.first()
 
             current_count = route_assignment.volunteer.count()
 
