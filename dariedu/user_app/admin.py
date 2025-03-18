@@ -9,7 +9,7 @@ from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
 
 from .google_export import export_to_gs
-from user_app.models import Rating, Volunteer, Employee, Curator
+from user_app.models import Rating, Volunteer, Employee, Curator, University
 
 from .export import CombineResource
 
@@ -66,6 +66,7 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
         'is_superuser',
         'tg_id',
         'city',
+        'university',
     )
     list_editable = ('is_confirmed',)
     list_filter = (
@@ -77,6 +78,7 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
         'consent_to_personal_data',
         'rating',
         'metier',
+        'university',
     )
     fieldsets = [
         (None, {"fields": [
@@ -97,6 +99,7 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
             "rating",
             "city",
             "metier",
+            "university",
             "interests",
             "consent_to_personal_data",
         ]}),
@@ -136,3 +139,10 @@ class RatingAdmin(BaseAdmin):
     list_display = ('level', 'hours_needed')
     ordering = ('hours_needed',)
     list_editable = ('hours_needed',)
+
+
+@admin.register(University)
+class UniversityAdmin(BaseAdmin):
+
+    list_display = ('name',)
+    ordering = ('name',)

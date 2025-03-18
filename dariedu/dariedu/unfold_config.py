@@ -137,6 +137,13 @@ UNFOLD_CONFIG = {
                             # "badge": 'admin',
                             "permission": lambda request: request.user.is_superuser,
                         },
+                        {
+                            "title": _("Университеты"),
+                            "icon": "manage_accounts",
+                            "link": reverse_lazy("admin:user_app_university_changelist"),
+                            # "badge": 'admin',
+                            "permission": lambda request: request.user.is_superuser,
+                        },
 # {
 #                             "title": _("Волонтёры"),
 #                             "icon": "manage_accounts",

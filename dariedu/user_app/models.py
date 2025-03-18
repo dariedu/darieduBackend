@@ -41,6 +41,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     interests = models.TextField(blank=True, null=True, verbose_name='интересы')
     metier = models.CharField(choices=METIERS, max_length=50, blank=True, null=True, verbose_name='род деятельности',
                               default=None)
+    university = models.ForeignKey('user_app.University', on_delete=models.PROTECT, blank=True, null=True,
+                                   related_name='users', verbose_name='университет')
 
     USERNAME_FIELD = 'tg_id'
     REQUIRED_FIELDS = []
@@ -116,3 +118,17 @@ class Rating(models.Model):
     class Meta:
         verbose_name = 'рейтинг'
         verbose_name_plural = 'рейтинги'
+
+
+class University(models.Model):
+    """
+    University model
+    """
+    name = models.CharField(max_length=255, verbose_name='название')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'университет'
+        verbose_name_plural = 'университеты'

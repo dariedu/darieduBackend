@@ -72,6 +72,7 @@ class UserSerializer(serializers.ModelSerializer):
             'is_superuser',
             'is_staff',
             'metier',
+            'university',
             'interests',
             'consent_to_personal_data'
         ]
