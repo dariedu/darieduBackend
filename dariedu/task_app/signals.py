@@ -1,7 +1,9 @@
-from django.db.models.signals import m2m_changed, post_save
+from django.db.models import F
+from django.db.models.signals import m2m_changed, post_save, post_delete, pre_save
 from django.dispatch import receiver
 import logging
 from django.contrib.auth import get_user_model
+from kombu.asynchronous.http import Response
 
 from .export_delivery import export_deliveries
 import django.dispatch
@@ -34,6 +36,50 @@ def update_delivery_status(sender, instance, action, **kwargs):
             # delivery.in_execution = False
             delivery.is_free = True
         delivery.save()
+
+
+@receiver(pre_save, sender=Task)
+def duration_of_task(sender, instance, **kwargs):
+    """
+    Определение длительности задачи
+    """
+    if instance.start_date.date() > instance.end_date.date():
+        instance.end_date = instance.start_date
+    if instance.start_date.date() == instance.end_date.date():
+        instance.is_one_day = True
+    else:
+        instance.is_one_day = False
+
+
+@receiver(post_delete, sender=TaskParticipation)
+def delete_volunteer_task(sender, instance, **kwargs):
+    """
+    Ручное Удаление волонтера из задачи
+    """
+    if post_delete:
+        task = instance.task
+        Task.objects.filter(pk=task.pk).update(volunteers_taken=F('volunteers_taken') - 1)
+        task.volunteers.remove(instance.volunteer)
+
+        task.refresh_from_db()
+
+
+@receiver(post_save, sender=TaskParticipation)
+def complete_task_for_volunteer(sender, instance, created, **kwargs):
+    """
+    Ручное Удаление завершение задачи
+    """
+    if instance.is_completed:
+        task = instance.task
+        user = instance.volunteer
+
+        Task.objects.filter(pk=task.pk).update(volunteers_taken=F('volunteers_taken') - 1)
+
+        task.volunteers.remove(user)
+
+        user.update_volunteer_hours(hours=user.volunteer_hour + task.volunteer_price,
+                                    point=user.point + task.volunteer_price)
+        user.save(update_fields=['volunteer_hour', 'point'])
 
 
 @receiver(post_save, sender=Delivery)
@@ -78,55 +124,67 @@ def update_points_hours_task(sender, instance, created, **kwargs):
         logger.error(f'Error updating points and hours: {e}')
 
 
-@receiver(m2m_changed, sender=Task.volunteers.through)
-def send_message_to_telegram_on_volunteer_signup(sender, instance, action, **kwargs):
-    if action == 'post_add':
+accept_task = django.dispatch.Signal()
 
-        volunteer_ids = kwargs.get('pk_set', [])
-        for volunteer_id in volunteer_ids:
+@receiver(accept_task)
+def send_message_to_telegram_on_volunteer_signup(sender, instance, user, **kwargs):
+    try:
+        message = (f'Волонтер {user.tg_username if user.tg_username else user.name} '
+                   f'записался на выполнение Доброго дела "{instance.name}"!')
 
-            try:
-                user = User.objects.get(id=volunteer_id)
-            except User.DoesNotExist:
-                logger.error(f"User  with id {volunteer_id} does not exist.")
-                return
+        send_message_to_telegram.apply_async(args=[instance.id, message], countdown=15)
 
-            message = (f'Волонтер {user.tg_username if user.tg_username else user.name}'
-                       f' записался на выполнение Доброго дела "{instance.name}"!')
+        volunteer = instance.volunteers.get(id=user.id)
 
-            send_message_to_telegram.apply_async(args=[instance.id, message], countdown=15)
+        create_notification(instance, volunteer)
 
-            volunteer = instance.volunteers.get(id=volunteer_id)
+    except User.DoesNotExist:
+        logger.error(f"User  with id {user.id} does not exist.")
+    except instance.volunteers.model.DoesNotExist:
+        logger.error(f"Volunteer with id {user.id} is not associated with task {instance.id}.")
+    except Exception as e:
+        logger.error(f"An error occurred while processing the volunteer signup: {e}")
 
-            notification = Notification.objects.create(
-                title='Запись на выполнение Доброго дела',
-                text=f'Волонтер {volunteer.tg_username if volunteer.tg_username else volunteer.name} '
-                     f'записался на выполнение Доброго дела "{instance.name}"!',
-                obj_link=instance.get_absolute_url(),
-            )
-            notification.save()
 
-    if action == 'post_remove':
-        removed_volunteers = kwargs.get('pk_set', set())
+def create_notification(instance, volunteer):
+    """Создает уведомление о записи волонтера на задачу."""
+    notification = Notification.objects.create(
+        title='Запись на выполнение Доброго дела',
+        text=f'Волонтер {volunteer.tg_username if volunteer.tg_username else volunteer.name} '
+             f'записался на выполнение Доброго дела "{instance.name}"!',
+        obj_link=instance.get_absolute_url(),
+    )
+    notification.save()
 
-        for user_id in removed_volunteers:
-            try:
-                user = User.objects.get(id=user_id)
-            except User.DoesNotExist:
-                logger.error(f"User  with id {user_id} does not exist.")
-                return
 
-            message = (f'Волонтер {user.tg_username if user.tg_username else user.name} '
-                       f'отказался от выполнения Доброго дела "{instance.name}"!')
-            send_message_to_telegram.apply_async(args=[instance.id, message], countdown=15)
+refuse_task = django.dispatch.Signal()
 
-            notification = Notification.objects.create(
-                title='Отказ от выполнения Доброго дела',
-                text=f'Волонтер {user.tg_username if user.tg_username else user.name} '
-                     f'отказался от выполнения Доброго дела "{instance.name}"!',
-                obj_link=instance.get_absolute_url(),
-            )
-            notification.save()
+@receiver(refuse_task)
+def send_message_to_telegram_on_volunteer_refuse(sender, instance, user, **kwargs):
+    try:
+
+        message = (f'Волонтер {user.tg_username if user.tg_username else user.name} '
+                   f'отказался от выполнения Доброго дела "{instance.name}"!')
+
+        send_message_to_telegram.apply_async(args=[instance.id, message], countdown=15)
+
+        create_notification_refuse(instance, user)
+
+    except User.DoesNotExist:
+        logger.error(f"User  with id {user.id} does not exist.")
+    except Exception as e:
+        logger.error(f"An error occurred while processing the volunteer signup: {e}")
+
+
+def create_notification_refuse(instance, volunteer):
+    """Создает уведомление об отказе волонтера от задачи."""
+    notification = Notification.objects.create(
+        title='Отказ волонтера',
+        text=f'Волонтер {volunteer.tg_username if volunteer.tg_username else volunteer.name} '
+             f'отказался от выполнения Доброго дела "{instance.name}"!',
+        obj_link=instance.get_absolute_url(),
+    )
+    notification.save()
 
 
 @receiver(m2m_changed, sender=DeliveryAssignment.volunteer.through)

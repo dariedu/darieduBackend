@@ -1,3 +1,5 @@
+import datetime
+
 from django.urls import reverse
 from django.contrib import admin
 from django.db import models
@@ -75,6 +77,7 @@ class Task(models.Model):
     volunteers_taken = models.PositiveIntegerField(verbose_name='волонтёров взяли', default=0)
     is_active = models.BooleanField(default=True, verbose_name='активная')
     is_completed = models.BooleanField(default=False, verbose_name='завершена')
+    is_one_day = models.BooleanField(default=True, verbose_name='Однодневная задача')
 
     city = models.ForeignKey(City, on_delete=models.PROTECT, verbose_name='город')
     curator = models.ForeignKey(User, on_delete=models.PROTECT, related_name='task_curator',
@@ -96,9 +99,23 @@ class TaskParticipation(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='task_part', verbose_name='задача')
     volunteer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_part', verbose_name='волонтёр')
     confirmed = models.BooleanField(default=False, verbose_name='подтверждено')
+    is_completed = models.BooleanField(default=False, verbose_name='завершить')
+    # active = models.BooleanField(default=True, verbose_name='актив.')
 
     def __str__(self):
         return f'{self.volunteer.tg_username} - {self.task.name}'
+
+    # def save(self, *args, **kwargs):
+    #
+    #     if self.completed:
+    #         self.active = False
+
+        # super().save(*args, **kwargs)
+
+    def complete(self):
+        self.is_completed = True
+
+        self.save()
 
 
 class TaskCategory(models.Model):

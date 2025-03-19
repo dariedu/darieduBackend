@@ -17,9 +17,10 @@ from unfold.contrib.filters.admin import RangeDateFilter
 from unfold.decorators import action
 from unfold.contrib.import_export.forms import (ExportForm, ImportForm,
                                                 SelectableFieldsExportForm)
+from django import forms
 
 from .export_XLSX import CombinedResource, CombinedResourceDelivery
-from .models import Delivery, Task, DeliveryAssignment, TaskCategory
+from .models import Delivery, Task, DeliveryAssignment, TaskCategory, TaskParticipation
 
 
 User = get_user_model()
@@ -36,10 +37,22 @@ class BaseAdmin(ModelAdmin, ImportExportModelAdmin):
     list_fullwidth = True
 
 
+class VolunteerTaskInline(admin.TabularInline):
+    model = TaskParticipation
+    extra = 0
+    readonly_fields = ('volunteer', 'confirmed')
+    can_delete = True
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(is_completed=False)
+
+
 @admin.register(Task)
 class TaskAdmin(BaseAdmin, ExportActionMixin):
     resource_class = CombinedResource
     actions = ['export_as_xlsx']
+    inlines = [VolunteerTaskInline]
 
     @admin.display(description="описание доброго дела")
     def description_short(self, obj):
@@ -73,7 +86,7 @@ class TaskAdmin(BaseAdmin, ExportActionMixin):
     list_display_links = ('start_date_format', 'end_date_format', 'name', 'description_short')
     list_editable = ('volunteer_price', 'curator_price', 'volunteers_needed', 'is_active', 'is_completed')
     list_filter = ['is_active', 'category', 'start_date']
-    readonly_fields = ('volunteers', )  # TODO maybe we should have opportunity to edit volunteers
+    readonly_fields = ('volunteers', 'is_one_day')  # TODO maybe we should have opportunity to edit volunteers
     search_fields = ('name', 'start_date', 'description')
     ordering = ('-start_date',)
     start_date_format.admin_order_field = 'start_date'
