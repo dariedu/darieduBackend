@@ -29,6 +29,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     point = models.PositiveIntegerField(default=0, verbose_name='баллы')
     is_superuser = models.BooleanField(default=False, verbose_name='Сотрудник')
     is_staff = models.BooleanField(default=False, verbose_name='Куратор')
+    is_admin = models.BooleanField(default=False, verbose_name='Администратор')
     is_confirmed = models.BooleanField(default=False, verbose_name='\u2714')  # confirmed тут ✔️
     consent_to_personal_data = models.BooleanField(default=False, verbose_name='Согласие',
                                                    help_text='Принятие условий договора-оферты')

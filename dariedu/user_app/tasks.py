@@ -58,6 +58,42 @@ def check_users_task():
         logger.error(f'An error occurred: {str(e)}', exc_info=True)
         return str(e)
 
+    # async def async_send_message(chat_id, message):
+    #     payload = {'chat_id': chat_id, 'text': message}
+    #
+    #     async with httpx.AsyncClient() as client:
+    #         response = await client.post(url, json=payload)
+    #     return response
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=10)
+def send_message_to_telegram_is_admin(self, message):
+    """
+     Notification to the admin about registration of a new volunteer.
+     """
+    logger = logging.getLogger('celery_log')
+
+    logger.info(f'Sending message to admin: {message}')
+
+    try:
+        admin = User.objects.get(is_admin=True)
+        chat_id = admin.tg_id
+    except User.DoesNotExist:
+        logger.error("Admin user does not exist.")
+        return
+
+    try:
+        loop = asyncio.get_event_loop()
+        response = loop.run_until_complete(async_send_message(chat_id, message))
+
+        if response.status_code == 200:
+            logger.info(f'Message sent to {chat_id}: {message}')
+        else:
+            logger.error(f'Failed to send message to {chat_id}: {response.text}')
+            raise Exception(f'Error from Telegram API: {response.text}')
+    except Exception as e:
+        logger.error(f'An error occurred while sending message to {chat_id}: {str(e)}')
+        raise self.retry(exc=e)
+
 
 METIERS = (
     ('schoolchild', 'Школьник'),
