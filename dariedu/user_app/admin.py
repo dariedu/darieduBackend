@@ -1,6 +1,8 @@
+from django import forms
 from django.contrib import admin
 from django.utils.html import format_html
 from django.contrib.auth import get_user_model
+from django.contrib import messages
 
 from import_export.admin import ImportExportModelAdmin, ExportActionMixin
 
@@ -45,6 +47,18 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
         return None
     birthday_format.admin_order_field = 'birthday'
 
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if obj is not None and not obj.is_superuser:
+            form.base_fields['is_admin'].widget = forms.HiddenInput()
+        return form
+
+    def save_model(self, request, obj, form, change):
+        if obj.is_admin and not obj.is_superuser:
+            messages.warning(request, "Только суперпользователь может быть администратором.")
+            return obj
+        super().save_model(request, obj, form, change)
+
     list_display = (
         'is_confirmed',
         'rating',
@@ -64,6 +78,7 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
         'email',
         'consent_to_personal_data',
         'is_superuser',
+        'is_admin',
         'tg_id',
         'city',
         'university',
@@ -102,6 +117,7 @@ class UserAdmin(BaseAdmin, ExportActionMixin):
             "university",
             "interests",
             "consent_to_personal_data",
+            'is_admin',
         ]}),
         ("Уровень доступа", {"fields": ["is_staff", "is_superuser"]}),
     ]
