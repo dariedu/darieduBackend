@@ -11,7 +11,7 @@ from .models import Task, Delivery, DeliveryAssignment, TaskCategory, TaskPartic
 from .permissions import IsAbleCompleteTask, IsCurator, is_confirmed
 from .serializers import TaskSerializer, DeliverySerializer, DeliveryAssignmentSerializer, TaskVolunteerSerializer, \
     TaskCategorySerializer, TaskParticipationSerializer
-from .signals import volunteer_confirmed
+from .signals import volunteer_confirmed, accept_task, refuse_task
 from .tests.test_adminpanel import delivery
 
 
@@ -171,7 +171,12 @@ class TaskViewSet(
         task = self.get_object()
 
         if request.user in task.volunteers.all():
-            return Response({"error": "You've already taken this task!"}, status=status.HTTP_400_BAD_REQUEST)
+            if task.is_one_day:
+                return Response({"error": "You've already taken this task!"}, status=status.HTTP_400_BAD_REQUEST)
+
+            participation = task.task_part.get(volunteer=request.user)
+            if participation.is_completed is False:
+                return Response({"error": "You've already taken this task!"}, status=status.HTTP_400_BAD_REQUEST)
 
         if task.volunteers_taken >= task.volunteers_needed:
             return Response({"error": "This task is full!"}, status=status.HTTP_400_BAD_REQUEST)
@@ -182,6 +187,9 @@ class TaskViewSet(
         TaskParticipation.objects.create(task=task, volunteer=request.user)
 
         task.refresh_from_db()
+
+        accept_task.send(sender=self.__class__, instance=task, user=request.user)
+
         serializer = self.get_serializer(task)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -205,11 +213,12 @@ class TaskViewSet(
         except TaskParticipation.DoesNotExist:
             return Response({"error": "Participation record not found."}, status=status.HTTP_400_BAD_REQUEST)
 
-        Task.objects.filter(pk=task.pk).update(volunteers_taken=F('volunteers_taken') - 1)
-
         task.volunteers.remove(request.user)
 
         task.refresh_from_db()
+
+        refuse_task.send(sender=self.__class__, instance=task, user=request.user)
+
         serializer = self.get_serializer(task)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
