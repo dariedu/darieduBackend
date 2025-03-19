@@ -1,9 +1,11 @@
 import logging
 
 from django.contrib.auth import get_user_model
-from django.db.models import Q
-from django.shortcuts import render
+from django.db.models import Q, Count
+from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -67,124 +69,118 @@ class RouteSheetViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewse
     @action(detail=False, methods=['post'], url_name='assign_route')
     def assign(self, request):
         """
-        Assign a routesheet by curator to a volunteer with id=volunteer_id for delivery with id=delivery_id
+        Assign a routesheet by curator to multiple volunteers for a delivery with id=delivery_id
         Body:
         {
             "routesheet_id": {id},
-            "volunteer_id": {id}
+            "volunteer_ids": [{id1}, {id2}, ...],
             "delivery_id": {id}
         }
         """
         if self.request.user.is_staff:
-            routesheet_id = self.request.data.get('routesheet_id', None)
-            logging.info(routesheet_id)
-            volunteer_id = self.request.data.get('volunteer_id', None)
-            logging.info(volunteer_id)
-            delivery_id = self.request.data.get('delivery_id', None)
-            logging.info(delivery_id)
-            try:
-                routesheet = RouteSheet.objects.get(id=routesheet_id)
-            except RouteSheet.DoesNotExist as error:
-                return Response(status=status.HTTP_404_NOT_FOUND,
-                                data={'detail': 'Такой маршрут не существует'})
-            except Exception as error:
-                return Response(status=status.HTTP_400_BAD_REQUEST,
-                                data={'detail': 'Некорректные данные маршрута'})
-            try:
-                delivery = Delivery.objects.get(id=delivery_id)
-            except Delivery.DoesNotExist as error:
-                return Response(status=status.HTTP_404_NOT_FOUND,
-                                data={'detail': 'Такой доставки не существует'})
-            except Exception as error:
-                logging.info(error)
-                return Response(status=status.HTTP_400_BAD_REQUEST,
-                                data={'detail': 'Некорректные данные доставки'})
+            routesheet_id = request.data.get('routesheet_id', None)
+            volunteer_ids = request.data.get('volunteer_ids', [])
+            delivery_id = request.data.get('delivery_id', None)
+
+            routesheet = get_object_or_404(RouteSheet, id=routesheet_id)
+            delivery = get_object_or_404(Delivery, id=delivery_id)
+
             if delivery.curator != self.request.user:
                 return Response(status=status.HTTP_403_FORBIDDEN,
-                                data={'detail': 'Вы не являетесь куратором этой доставки'})
+                                data={'detail': 'Вы не являетесь куратором этой доставки'})
             if delivery.is_completed:
                 return Response(status=status.HTTP_400_BAD_REQUEST,
                                 data={'detail': 'Доставка уже завершена'})
             if routesheet.id not in delivery.route_sheet.all().values_list('id', flat=True):
                 return Response(status=status.HTTP_400_BAD_REQUEST,
                                 data={'detail': 'Данного маршрута нет в этой доставке'})
-            try:
-                user = User.objects.get(id=volunteer_id)
-            except User.DoesNotExist as error:
-                return Response(status=status.HTTP_404_NOT_FOUND,
-                                data={'detail': 'Такого пользователя не существует'})
-            except Exception as error:
-                return Response(status=status.HTTP_400_BAD_REQUEST,
-                                data={'detail': 'Некорректные данные пользователя'})
-            # все волонтёры, записанные на эту доставку:
-            volunteers_id = [assignment.volunteer.first().id for assignment in delivery.assignments.all()]
-            volunteers = User.objects.filter(id__in=volunteers_id)
-            if user in volunteers:
-                try:
-                    route = RouteAssignment.objects.get(route_sheet=routesheet, delivery=delivery)
-                    route.delete()
-                except RouteAssignment.DoesNotExist as error:
-                    pass
 
-                RouteAssignment.objects.create(volunteer=user, route_sheet=routesheet, delivery=delivery)
-                return Response(status=status.HTTP_200_OK)
+            route_assignments = RouteAssignment.objects.filter(route_sheet=routesheet, delivery=delivery)
+
+            if not route_assignments.exists():
+                route_assignment = RouteAssignment.objects.create(route_sheet=routesheet, delivery=delivery)
             else:
-                return Response(status=status.HTTP_403_FORBIDDEN,
-                                data={'detail': 'Пользователь не записан на эту доставку'})
+                route_assignment = route_assignments.first()
+
+            current_count = route_assignment.volunteer.count()
+
+            if current_count + len(volunteer_ids) > 2:
+                return Response(status=status.HTTP_400_BAD_REQUEST,
+                                data={'detail': 'На один маршрут можно назначить максимум два волонтера'})
+
+            for volunteer_id in volunteer_ids:
+                user = get_object_or_404(User, id=volunteer_id)
+
+                if user in route_assignment.volunteer.all():
+                    return Response(status=status.HTTP_400_BAD_REQUEST,
+                                    data={'detail': f'Волонтёр с ID {volunteer_id} уже назначен на этот маршрут'})
+
+                route_assignment.volunteer.add(user)
+
+            return Response(status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN,
                             data={'detail': 'Доступ запрещен'})
 
-    @action(detail=False, methods=['post'], url_name='unassign_route')
-    def unassign(self, request):
+    @action(detail=False, methods=['post'], url_name='remove_volunteer')
+    def remove_volunteer(self, request):
         """
-        Unassign a routesheet by curator for a volunteer with id=volunteer_id for delivery with id=delivery_id
+        Remove a volunteer from a routesheet for a delivery with id=delivery_id
         Body:
         {
             "routesheet_id": {id},
-            "volunteer_id": {id}
+            "volunteer_id": {id},
             "delivery_id": {id}
         }
         """
         if self.request.user.is_staff:
-            routesheet_id = self.request.data.get('routesheet_id', None)
-            logging.info(routesheet_id)
-            volunteer_id = self.request.data.get('volunteer_id', None)
-            logging.info(volunteer_id)
-            delivery_id = self.request.data.get('delivery_id', None)
-            logging.info(delivery_id)
-            try:
-                routesheet = RouteSheet.objects.get(id=routesheet_id)
-            except RouteSheet.DoesNotExist as error:
-                return Response(status=status.HTTP_404_NOT_FOUND,
-                                data={'detail': 'Такой маршрут не существует'})
-            except Exception as error:
-                return Response(status=status.HTTP_400_BAD_REQUEST,
-                                data={'detail': 'Некорректные данные маршрута'})
-            try:
-                delivery = Delivery.objects.get(id=delivery_id)
-            except Delivery.DoesNotExist as error:
-                return Response(status=status.HTTP_404_NOT_FOUND,
-                                data={'detail': 'Такой доставки не существует'})
-            except Exception as error:
-                logging.info(error)
-                return Response(status=status.HTTP_400_BAD_REQUEST,
-                                data={'detail': 'Некорректные данные доставки'})
+            routesheet_id = request.data.get('routesheet_id', None)
+            volunteer_id = request.data.get('volunteer_id', None)
+            delivery_id = request.data.get('delivery_id', None)
+
+            routesheet = get_object_or_404(RouteSheet, id=routesheet_id)
+            delivery = get_object_or_404(Delivery, id=delivery_id)
+
             if delivery.curator != self.request.user:
                 return Response(status=status.HTTP_403_FORBIDDEN,
-                                data={'detail': 'Вы не являетесь куратором этой доставки'})
-            try:
-                route = RouteAssignment.objects.get(route_sheet=routesheet,
-                                                    delivery=delivery,
-                                                    volunteer__id=volunteer_id)
-                route.delete()
-                return Response(status=status.HTTP_200_OK)
-            except RouteAssignment.DoesNotExist as error:
-                return Response(status=status.HTTP_404_NOT_FOUND,
-                                data={'detail': 'Этот волонтер не назначен на данный маршрут'})
+                                data={'detail': 'Вы не являетесь куратором этой доставки'})
+            if delivery.is_completed:
+                return Response(status=status.HTTP_400_BAD_REQUEST,
+                                data={'detail': 'Доставка уже завершена'})
+            if routesheet.id not in delivery.route_sheet.all().values_list('id', flat=True):
+                return Response(status=status.HTTP_400_BAD_REQUEST,
+                                data={'detail': 'Данного маршрута нет в этой доставке'})
 
+            route_assignments = RouteAssignment.objects.filter(route_sheet=routesheet, delivery=delivery)
+
+            if not route_assignments.exists():
+                return Response(status=status.HTTP_404_NOT_FOUND, data={'detail': 'Назначение не найдено'})
+
+            user = get_object_or_404(User, id=volunteer_id)
+
+            for route_assignment in route_assignments:
+                if user in route_assignment.volunteer.all():
+                    route_assignment.volunteer.remove(user)
+                    return Response(status=status.HTTP_200_OK)
+
+            return Response(status=status.HTTP_400_BAD_REQUEST,
+                            data={'detail': f'Волонтёр с ID {volunteer_id} не назначен на этот маршрут'})
+
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN,
+                            data={'detail': 'Доступ запрещен'})
 
 class RouteAssignmentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = RouteAssignment.objects.filter(delivery__date__gte=timezone.now() - timezone.timedelta(days=14))
     serializer_class = RouteAssignmentSerializer
     permission_classes = [IsAuthenticated]
+
+    @action(detail=True, methods=['get'], url_path='by_delivery')
+    def by_delivery(self, request, pk=None):
+        """
+        Вывод маршрутов по доставке
+        """
+        delivery = get_object_or_404(Delivery, pk=pk)
+        route_assignments = RouteAssignment.objects.filter(delivery=delivery)
+        serializer = RouteAssignmentSerializer(route_assignments, many=True)
+        return Response(serializer.data)

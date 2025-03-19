@@ -263,10 +263,6 @@ def delete_cached_gsheets():
     try:
         cache.delete(settings.FIRST_ROW_VALUES_CACHE_KEY)
         time.sleep(1)
-        cache.delete(settings.FIRST_ROW_VALUES_CACHE_KEY_2)
-        time.sleep(1)
-        cache.delete(settings.FIRST_ROW_VALUES_CACHE_KEY_3)
-        time.sleep(1)
         cache.delete(settings.FIRST_ROW_VALUES_CACHE_KEY_4)
     except Exception as e:
         logger.error(f"Error while deleting cached data: {e}")
