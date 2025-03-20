@@ -1,5 +1,4 @@
-import datetime
-
+from datetime import datetime, time
 from django.urls import reverse
 from django.contrib import admin
 from django.db import models
@@ -71,8 +70,8 @@ class Task(models.Model):
     volunteer_price = models.PositiveIntegerField(verbose_name='волонтёрские часы', default=2)
     curator_price = models.PositiveIntegerField(verbose_name='кураторские часы', default=2)
     description = models.TextField(blank=True, null=True, verbose_name='описание')
-    start_date = models.DateTimeField(verbose_name='дата начала')
-    end_date = models.DateTimeField(verbose_name='дата конца')
+    start_date = models.DateTimeField(default=datetime.combine(datetime.today(), time.min), verbose_name='дата начала')
+    end_date = models.DateTimeField(default=datetime.combine(datetime.today(), time.min), verbose_name='дата конца')
     volunteers_needed = models.PositiveIntegerField(verbose_name='требуется волонтёров', default=1)
     volunteers_taken = models.PositiveIntegerField(verbose_name='волонтёров взяли', default=0)
     is_active = models.BooleanField(default=True, verbose_name='активная')
