@@ -49,7 +49,7 @@ class Promotion(models.Model):
     for_curators_only = models.BooleanField(default=False, verbose_name='только для кураторов')
     is_active = models.BooleanField(default=True, verbose_name='активная')
     ticket_file = models.URLField(blank=True, null=True, verbose_name='файл')  # TODO: upload to where ?
-    about_tickets = models.TextField(blank=True, null=True, verbose_name='информация о билетах', max_length=255)
+    about_tickets = models.TextField(blank=True, null=True, verbose_name='информация о билетах')
 
     # Срок действия поощрения.
     # Если поощрение бессрочное, устанавливается `is_permanent = True`, а поле `end_date`
