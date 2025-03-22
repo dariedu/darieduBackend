@@ -32,16 +32,17 @@ def signal_for_promo_tickets(sender, instance, created, **kwargs):
 def signal_for_promo_users(sender, instance, created, **kwargs):
     if created:
         user = instance.user
+        username = f'@{user.tg_username}' if f'@{user.tg_username}' else user.name
         name = instance.promotion.name
         notification = Notification.objects.create(
             title='Запись на Поощрение',
-            text=f'Волонтер {user.tg_username if user.tg_username else user.name} записался на поощрение '
+            text=f'Волонтер {username} записался на поощрение '
                  f'"{name}"!',
             obj_link=instance.promotion.get_absolute_url(),
         )
         notification.save()
 
-        message = f'Волонтер {user.tg_username if user.tg_username else user.name} записался на поощрение "{name}"!'
+        message = f'Волонтер {username} записался на поощрение "{name}"!'
 
         send_message_to_telegrams.apply_async(args=[instance.promotion.id, message], countdown=10)
 
@@ -49,17 +50,19 @@ def signal_for_promo_users(sender, instance, created, **kwargs):
 @receiver(post_delete, sender=Participation)
 def signal_for_deleted_promo_users(sender, instance, **kwargs):
     user = instance.user
+    username = f'@{user.tg_username}' if f'@{user.tg_username}' else user.name
     name = instance.promotion.name
 
     notification = Notification.objects.create(
         title='Отказ от Поощрения',
-        text=f'Волонтер {user.tg_username if user.tg_username else user.name} отписался от поощрения '
+        text=f'Волонтер {username} отписался от поощрения '
              f'"{name}"!',
         obj_link=instance.promotion.get_absolute_url(),
     )
     notification.save()
 
-    message = f'Волонтер {user.tg_username if user.tg_username else user.name} отписался от поощрение "{name}"!'
+    message = (f'Волонтер {username} '
+               f'отписался от поощрение "{name}"!')
 
     send_message_to_telegrams.apply_async(args=[instance.promotion.id, message], countdown=10)
 
@@ -68,17 +71,19 @@ def signal_for_deleted_promo_users(sender, instance, **kwargs):
 def signal_for_confirmation(sender, instance, created, **kwargs):
     if instance.is_active:
         user = instance.user
+        username = f'@{user.tg_username}' if f'@{user.tg_username}' else user.name
         name = instance.promotion.name
 
         notification = Notification.objects.create(
             title='Подтверждение участия в Поощрении',
-            text=f'Волонтер {user.tg_username if user.tg_username else user.name} подтвердил участие в поощрении '
+            text=f'Волонтер {username} '
+                 f'подтвердил участие в поощрении '
                  f'"{name}"!',
             obj_link=instance.promotion.get_absolute_url(),
         )
         notification.save()
 
-        message = (f'Волонтер {user.tg_username if user.tg_username else user.name}'
+        message = (f'Волонтер {username}'
                    f' подтвердил участие в поощрении "{name}"!')
 
         send_message_to_telegrams.apply_async(args=[instance.promotion.id, message], countdown=10)

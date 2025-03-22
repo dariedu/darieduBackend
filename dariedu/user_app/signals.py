@@ -23,9 +23,10 @@ def create_user(sender, instance, created, **kwargs):
         instance.is_adult = age >= 18
         instance.save()
 
+        name = f'@{instance.tg_username}' if f'@{instance.tg_username}' else f'{instance.name} {instance.last_name}'
+
         if instance.is_adult:
             try:
-                name = instance.tg_username if instance.tg_username else f'{instance.name} {instance.last_name}'
                 message = f'Зарегистрировался новый пользователь {name}'
                 send_message_to_telegram_is_admin.apply_async(args=[message], countdown=10)
             except Exception as e:
@@ -33,14 +34,13 @@ def create_user(sender, instance, created, **kwargs):
 
             notification = Notification.objects.create(
                 title='Новый пользователь',
-                text=f'Зарегистрировался новый пользователь {instance}',
+                text=f'Зарегистрировался новый пользователь {name}',
                 obj_link=instance.get_absolute_url(),
                 created=timezone.now()
             )
             notification.save()
         else:
             try:
-                name = instance.tg_username if instance.tg_username else f'{instance.name} {instance.last_name}'
                 message = f'Зарегистрировался несовершеннолетний пользователь {name}'
                 send_message_to_telegram_is_admin.apply_async(args=[message], countdown=10)
             except Exception as e:
@@ -48,7 +48,7 @@ def create_user(sender, instance, created, **kwargs):
 
             notification = Notification.objects.create(
                 title='Несовершеннолетний пользователь',
-                text=f'Зарегистрировался несовершеннолетний пользователь {instance}',
+                text=f'Зарегистрировался несовершеннолетний пользователь {name}',
                 obj_link=instance.get_absolute_url(),
                 created=timezone.now()
             )
