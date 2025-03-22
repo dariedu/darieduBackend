@@ -41,14 +41,14 @@ app.conf.beat_schedule = {
         'task': 'user_app.tasks.update_ratings',
         'schedule': crontab(hour='02', minute='00'),
     },
-    'update-volunteer-stats-minutely': {
-        'task': 'statistics_app.tasks.update_statistics',
-        'schedule': crontab(minute=0),
-    },
-    'update-all-statistics': {
-        'task': 'statistics_app.tasks.all_statistics',
-        'schedule': crontab(minute=0),
-    },
+    # 'update-volunteer-stats-minutely': {
+    #     'task': 'statistics_app.tasks.update_statistics',
+    #     'schedule': crontab(minute=0),
+    # },
+    # 'update-all-statistics': {
+    #     'task': 'statistics_app.tasks.all_statistics',
+    #     'schedule': crontab(minute=0),
+    # },
     'check-users': {
         'task': 'user_app.tasks.check_users_task',
         'schedule': crontab(hour=17, minute=00, day_of_week='tue'),

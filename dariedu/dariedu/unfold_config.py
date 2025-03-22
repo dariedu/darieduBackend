@@ -257,41 +257,41 @@ UNFOLD_CONFIG = {
 
                     ],
                 },
-                {
-                    "title": _("Статистика"),
-                    "separator": True,
-                    "collapsible": True,
-                    "items": [
-                        {
-                            "title": _("Статистика за неделю"),
-                            "icon": "request_quote",
-                            "link": reverse_lazy("admin:statistics_app_statisticsbyweek_changelist"),
-                            # "badge": "main admin",
-                            "permission": lambda request: request.user.is_superuser,
-                        },
-                        {
-                            "title": _("Статистика за месяц"),
-                            "icon": "request_quote",
-                            "link": reverse_lazy("admin:statistics_app_statisticsbymonth_changelist"),
-                            # "badge": "main admin",
-                            "permission": lambda request: request.user.is_superuser,
-                        },
-                        {
-                            "title": _("Статистика за год"),
-                            "icon": "request_quote",
-                            "link": reverse_lazy("admin:statistics_app_statisticsbyyear_changelist"),
-                            # "badge": "main admin",
-                            "permission": lambda request: request.user.is_superuser,
-                        },
-                        {
-                            "title": _("Статистика баллов и часов"),
-                            "icon": "request_quote",
-                            "link": reverse_lazy("admin:statistics_app_allstatistics_changelist"),
-                            # "badge": "main admin",
-                            "permission": lambda request: request.user.is_superuser,
-                        },
-                    ]
-                }
+                # {
+                #     "title": _("Статистика"),
+                #     "separator": True,
+                #     "collapsible": True,
+                #     "items": [
+                #         {
+                #             "title": _("Статистика за неделю"),
+                #             "icon": "request_quote",
+                #             "link": reverse_lazy("admin:statistics_app_statisticsbyweek_changelist"),
+                #             # "badge": "main admin",
+                #             "permission": lambda request: request.user.is_superuser,
+                #         },
+                #         {
+                #             "title": _("Статистика за месяц"),
+                #             "icon": "request_quote",
+                #             "link": reverse_lazy("admin:statistics_app_statisticsbymonth_changelist"),
+                #             # "badge": "main admin",
+                #             "permission": lambda request: request.user.is_superuser,
+                #         },
+                #         {
+                #             "title": _("Статистика за год"),
+                #             "icon": "request_quote",
+                #             "link": reverse_lazy("admin:statistics_app_statisticsbyyear_changelist"),
+                #             # "badge": "main admin",
+                #             "permission": lambda request: request.user.is_superuser,
+                #         },
+                #         {
+                #             "title": _("Статистика баллов и часов"),
+                #             "icon": "request_quote",
+                #             "link": reverse_lazy("admin:statistics_app_allstatistics_changelist"),
+                #             # "badge": "main admin",
+                #             "permission": lambda request: request.user.is_superuser,
+                #         },
+                #     ]
+                # }
             ],
         },
     }

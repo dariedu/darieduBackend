@@ -6,7 +6,7 @@ import logging
 
 from notifications_app.models import Notification
 from user_app.tasks import export_to_google, update_google_sheet, send_message_to_telegram_is_admin
-from statistics_app.models import Statistics
+# from statistics_app.models import Statistics
 
 User = get_user_model()
 logger = logging.getLogger('django.server')
@@ -67,31 +67,31 @@ def create_users(sender, instance, created, **kwargs):
         update_google_sheet.apply_async(args=[user_id], countdown=15)
 
 
-@receiver(post_save, sender=User)
-def update_volunteer_stats(sender, instance, created, **kwargs):
-    today = timezone.now().date()
-
-    if created:
-        Statistics.objects.create(
-            volunteer=instance,
-            points=instance.point,
-            volunteer_hours=instance.volunteer_hour,
-            period=today
-        )
-    else:
-        stats, _ = Statistics.objects.get_or_create(
-            volunteer=instance,
-            period=today
-        )
-
-        if instance.old_point > instance.point:
-            point_difference = instance.old_point - instance.point
-            stats.points += point_difference
-
-        volunteer_hour_difference = instance.volunteer_hour - instance.old_volunteer_hour
-        if volunteer_hour_difference > 0:
-            stats.volunteer_hours += volunteer_hour_difference
-        else:
-            stats.volunteer_hours = max(0, stats.volunteer_hours + volunteer_hour_difference)
-
-        stats.save()
+# @receiver(post_save, sender=User)
+# def update_volunteer_stats(sender, instance, created, **kwargs):
+#     today = timezone.now().date()
+#
+#     if created:
+#         Statistics.objects.create(
+#             volunteer=instance,
+#             points=instance.point,
+#             volunteer_hours=instance.volunteer_hour,
+#             period=today
+#         )
+#     else:
+#         stats, _ = Statistics.objects.get_or_create(
+#             volunteer=instance,
+#             period=today
+#         )
+#
+#         if instance.old_point > instance.point:
+#             point_difference = instance.old_point - instance.point
+#             stats.points += point_difference
+#
+#         volunteer_hour_difference = instance.volunteer_hour - instance.old_volunteer_hour
+#         if volunteer_hour_difference > 0:
+#             stats.volunteer_hours += volunteer_hour_difference
+#         else:
+#             stats.volunteer_hours = max(0, stats.volunteer_hours + volunteer_hour_difference)
+#
+#         stats.save()
