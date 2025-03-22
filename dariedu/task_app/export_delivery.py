@@ -47,23 +47,27 @@ def export_deliveries(self, delivery_id):
 
         route_assignment = RouteAssignment.objects.filter(delivery=delivery, volunteer=volunteer).first()
 
-        addresses = Address.objects.filter(route_sheet__in=delivery.route_sheet.all())
-        beneficiaries = Beneficiar.objects.filter(address__in=addresses)
+        if route_assignment:
+            route_sheet = route_assignment.route_sheet
+            addresses = Address.objects.filter(route_sheet=route_sheet)
+            beneficiaries = Beneficiar.objects.filter(address__in=addresses)
+            beneficiary_names = ', '.join(
+                [f"{beneficiary.full_name.split()[0]} {beneficiary.full_name.split()[1][0]}. "
+                 f"{beneficiary.full_name.split()[2][0]}." for beneficiary in
+                 beneficiaries])
 
-        beneficiary_names = ', '.join([beneficiary.full_name for beneficiary in beneficiaries])
-
-        row = [
-            delivery.date.strftime('%d.%m.%Y'),
-            delivery.location.address,
-            f'{delivery.curator.last_name} {delivery.curator.name}'.strip(),
-            f"{volunteer.last_name} {volunteer.name}".strip(),
-            getattr(volunteer, 'tg_username', ''),
-            getattr(volunteer, 'phone', ''),
-            volunteer.email,
-            '✅' if route_assignment is not None else '❌',
-            beneficiary_names
-        ]
-        rows.append(row)
+            row = [
+                delivery.date.strftime('%d.%m.%Y'),
+                delivery.location.address,
+                f'{delivery.curator.last_name} {delivery.curator.name}'.strip(),
+                f"{volunteer.last_name} {volunteer.name}".strip(),
+                getattr(volunteer, 'tg_username', ''),
+                getattr(volunteer, 'phone', ''),
+                volunteer.email,
+                '✅' if route_assignment is not None else '❌',
+                beneficiary_names
+            ]
+            rows.append(row)
 
     try:
         # headers = worksheet.row_values(1)
