@@ -129,7 +129,9 @@ accept_task = django.dispatch.Signal()
 @receiver(accept_task)
 def send_message_to_telegram_on_volunteer_signup(sender, instance, user, **kwargs):
     try:
-        message = (f'Волонтер {user.tg_username if user.tg_username else user.name} '
+        username = f"@{user.tg_username}"if f"@{user.tg_username}" else user.name
+
+        message = (f'Волонтер {username} '
                    f'записался на выполнение Доброго дела "{instance.name}"!')
 
         send_message_to_telegram.apply_async(args=[instance.id, message], countdown=15)
@@ -148,9 +150,11 @@ def send_message_to_telegram_on_volunteer_signup(sender, instance, user, **kwarg
 
 def create_notification(instance, volunteer):
     """Создает уведомление о записи волонтера на задачу."""
+    username = f"@{volunteer.tg_username}"if f"@{volunteer.tg_username}" else volunteer.name
+
     notification = Notification.objects.create(
         title='Запись на выполнение Доброго дела',
-        text=f'Волонтер {volunteer.tg_username if volunteer.tg_username else volunteer.name} '
+        text=f'Волонтер {username} '
              f'записался на выполнение Доброго дела "{instance.name}"!',
         obj_link=instance.get_absolute_url(),
     )
@@ -162,8 +166,9 @@ refuse_task = django.dispatch.Signal()
 @receiver(refuse_task)
 def send_message_to_telegram_on_volunteer_refuse(sender, instance, user, **kwargs):
     try:
+        username = f"@{user.tg_username}"if f"@{user.tg_username}" else user.name
 
-        message = (f'Волонтер {user.tg_username if user.tg_username else user.name} '
+        message = (f'Волонтер {username} '
                    f'отказался от выполнения Доброго дела "{instance.name}"!')
 
         send_message_to_telegram.apply_async(args=[instance.id, message], countdown=15)
@@ -178,9 +183,11 @@ def send_message_to_telegram_on_volunteer_refuse(sender, instance, user, **kwarg
 
 def create_notification_refuse(instance, volunteer):
     """Создает уведомление об отказе волонтера от задачи."""
+    username = f"@{volunteer.tg_username}"if f"@{volunteer.tg_username}" else volunteer.name
+
     notification = Notification.objects.create(
         title='Отказ волонтера',
-        text=f'Волонтер {volunteer.tg_username if volunteer.tg_username else volunteer.name} '
+        text=f'Волонтер {username} '
              f'отказался от выполнения Доброго дела "{instance.name}"!',
         obj_link=instance.get_absolute_url(),
     )
@@ -202,7 +209,9 @@ def send_message_to_telegram_on_volunteer_signup_delivery(sender, instance, acti
 
             date = instance.delivery.date.strftime('%d.%m.%Y')
             location = instance.delivery.location.address
-            message = (f'Волонтер {user.tg_username if user.tg_username else user.name} '
+            username = f"@{user.tg_username}"if f"@{user.tg_username}" else user.name
+
+            message = (f'Волонтер {username} '
                        f'записался на доставку дата: {date}, локация: {location}!')
             send_massage_to_telegram_delivery.apply_async(args=[instance.delivery.id, message], countdown=15)
 
@@ -219,7 +228,9 @@ def send_message_to_telegram_on_volunteer_signup_delivery(sender, instance, acti
 
             date = instance.delivery.date.strftime('%d.%m.%Y')
             location = instance.delivery.location.address
-            message = (f'Волонтер {user.tg_username if user.tg_username else user.name} '
+            username = f"@{user.tg_username}"if f"@{user.tg_username}" else user.name
+
+            message = (f'Волонтер {username} '
                        f'отказался от доставки дата: {date}, локация: {location}!')
             send_massage_to_telegram_delivery.apply_async(args=[instance.delivery.id, message], countdown=15)
 
@@ -230,10 +241,11 @@ volunteer_confirmed = django.dispatch.Signal()
 def notify_curator_on_confirmation(volunteer, assignment, **kwargs):
     delivery = assignment.delivery
     curator = delivery.curator
+    username = f"@{volunteer.tg_username}"if f"@{volunteer.tg_username}" else volunteer.name
 
     if curator:
         message = (
-            f'Волонтер {volunteer.tg_username if volunteer.tg_username else volunteer.username} '
+            f'Волонтер {username} '
             f'подтвердил участие в доставке на дату {delivery.date.strftime("%d.%m.%Y")}, '
             f'локация: {delivery.location.address}.'
         )
@@ -245,9 +257,10 @@ def notify_curator_on_confirmation(volunteer, assignment, **kwargs):
 def notify_volunteer_on_confirmation_task(sender, instance, created, **kwargs):
 
     if instance.confirmed:
+        username = f"@{instance.volunteer.tg_username}"if f"@{instance.volunteer.tg_username}"\
+            else instance.volunteer.name
         message = (
-            f'Волонтер '
-            f'{instance.volunteer.tg_username if instance.volunteer.tg_username else instance.volunteer.username} '
+            f'Волонтер {username} '
             f'подтвердил участие в Добром деле "{instance.task.name}".'
         )
 
